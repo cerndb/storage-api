@@ -370,14 +370,3 @@ class NetAppops(BasicStorage):
 
 
 		
-
-if __name__=="__main__":	
-	a=NetAppops("dbnasc501-c:/ORA/dbs00/DNFS")
-	a.GetInfoPath()
-	#a.GetInfoVolandAggr()
-	a.GetSnapshotsList()
-	#a.CreateSnapshot()
-	#a.CreateSnapshot("putamadre2") 
-	#a.DeleteSnapshot("putamadre2") 
-	#a.GetSnapshotsList()
-	a.CloneSnapshot("snapscript_01042016_141722")

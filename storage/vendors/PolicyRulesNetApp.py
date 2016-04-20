@@ -239,21 +239,3 @@ class PolicyRulesNetApp(NetAppops,BasicStorage):
 		return 0
 	
 
-if __name__=="__main__":
-#self,clustername,volname,initial_size,final_size,increment,vserver,firewall_name, firewall_ip,junction_path, type,snaps=0, business=0	
-	a=PolicyRulesNetApp.ExistingVolume("dbnasc501-c:/ORA/dbs00/DNFS")
-	#a.PolicyCreate("ruben")
-	#r=a.CreateRule("ruben","133.133.33.313")
-	a.PolicyDelete("ruben")
-	#rules=a.GetRuleAll("dnfs")
-	#print(rules)
-	#p=a.GetRule("dnfs","128.142.157.40")
-	#print(p)		
-	#r=a.CreateRule("dnfs","133.133.33.313")
-	#r=a.CreateRule("dnfs","133.133.33.32")
-	#r=a.CreateRule("dnfs","133.133.33.35")	
-	#print(r)		
-	#r=a.DeleteRule("dnfs","133.133.33.32")
-	#print(r)
-	#r=a.PolicyCreate("totem")
-	#print(r)

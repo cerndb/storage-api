@@ -297,14 +297,5 @@ class NetAppprov(NetAppops,BasicStorage):
 			
 	
 
-if __name__=="__main__":
-#self,clustername,volname,initial_size,final_size,increment,vserver,firewall_name, firewall_ip,junction_path, type,snaps=0,firewall_ip=0, business=0	
-	a=NetAppprov('dbnasc','toTo',1,100,1,'vs2sx50','kk','/ORA/dbs00/TOTO','hdd-aggr',1,'199.22.22.22',"dbod")
-	#b=NetAppprov.ExistingVol("dbnasc501-c:/ORA/dbs00/TOTO")	
-	a.CreateVolume()
-	a.SetAutoSize(100,3)
-	a.SetSnapAutoDeletion("snap_reserve",10,"oldest_first","scheduled")	
-	#a.CreateVolume()
-	#b=NetAppprov.ExistingVol('dbnasc222:/ORA/dbs00/TOTO')
-	#b.DeleteVolume()	
+	
 	
