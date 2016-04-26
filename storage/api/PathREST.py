@@ -8,7 +8,8 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
-
+from flask import Flask, request
+from flask.ext.restful import Api, Resource
 import sys
 import re
 import logging
