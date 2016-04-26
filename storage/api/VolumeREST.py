@@ -8,8 +8,7 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
-from flask import Flask, request
-from flask.ext.restful import Api, Resource
+
 import sys
 import re
 import logging
@@ -21,100 +20,7 @@ from storage.vendors.NetAppprov import NetAppprov
 from storage.vendors.PolicyRulesNetApp import PolicyRulesNetApp
 from storage.vendors.StorageException import StorageException
 
-app = Flask(__name__)
-api = Api(app)
 
-class PathREST(Resource):
-	logger=None
-	def __init__(self):
-		''' Method definition '''
-		if __name__ == '__main__':
-			PathREST.logger = logging.getLogger('storage-api-console')
-		else:
-			PathREST.logger = logging.getLogger('storage-api')
-		
-			
-	def get(self, path):
-		bpath=base64.urlsafe_b64decode(path)
-		spath=bpath.decode('ascii')
-		baseclass=BasicStorage(spath)
-		if baseclass.GetType() == "NetApp":
-			netapp=NetAppops(spath)
-			result=netapp.GetSnapshotsList()
-			if result is None:
-				StorageRest.logger.debug("we got 0 snapshots")
-				return { 'snapshots': 'NONE' }, 200
-			PathREST.logger.debug("we got %s snapshots",len(result))
-			return  { 'snapshots': result }, 200
-	
-	def post(self,path):
-		bpath=base64.urlsafe_b64decode(path)
-		spath=bpath.decode('ascii')
-		PathREST.logger.debug("path is: %s",spath)
-		
-		sname=None
-		clone=None
-		if 'snapname' in request.form.keys():
-			bname=base64.urlsafe_b64decode(request.form['snapname'])
-			sname=bname.decode('ascii')
-			PathREST.logger.debug("new snapshot name is: %s",sname)
-		if 'clone' in request.form.keys():
-			PathREST.logger.debug("want a clone")
-			clone=request.form['clone']
-			
-		baseclass=BasicStorage(spath)
-		if baseclass.GetType() == "NetApp":
-			netapp=NetAppops(spath)
-			try:
-				if sname is None:
-					if clone:
-						PathREST.logger.debug("1")
-						return { 'snapshot_clone creation ': 'No snapshot provided for clonning'}, 400 
-					else:
-						result=netapp.CreateSnapshot()
-				else:
-					PathREST.logger.debug("2")
-					if clone:
-						result=netapp.CloneSnapshot(sname)
-
-					else:
-						result=netapp.CreateSnapshot(sname)
-			except Exception as ex:
-				PathREST.logger.debug("Exception taken: %s",str(ex))
-				return { 'snapshot_clone creation ': 'error ' + str(ex) }, 500
-
-			PathREST.logger.debug("snapshot_clone created")
-			if result==0: 
-				return { 'snapshot_clone creation ': 'success' }, 200
-			if len(result) > 1:
-				return { 'snapshot_clone creation ': 'success - junction-path:' + result }, 200
-
-
-	def delete(self,path):
-		bpath=base64.urlsafe_b64decode(path)
-		spath=bpath.decode('ascii')
-		PathREST.logger.debug("path is: %s",spath)
-		
-		if 'snapname' in request.form.keys():
-			bname=base64.urlsafe_b64decode(request.form['snapname'])
-			sname=bname.decode('ascii')
-		else:
-			PathREST.logger.debug("new snapshot name is: %s",sname)
-			return { 'snapshot deletion ': 'snapname missing!!' }, 400
-		
-		baseclass=BasicStorage(spath)
-		if baseclass.GetType() == "NetApp":
-			netapp=NetAppops(spath)
-			try:
-				result=netapp.DeleteSnapshot(sname)
-			except Exception as ex:
-				PathREST.logger.debug("Exception got error: {0}".format(str(ex)))
-				return { 'snapshot deletion ': 'error {0}'.format(str(ex)) }, 400
-		
-		PathREST.logger.debug("snapshot deleted")
-		return { 'snapshot deletion ': 'success' }, 200
-
-		
 class VolumeREST(Resource):
 	logger=None
 	def __init__(self):
@@ -320,80 +226,3 @@ class VolumeREST(Resource):
 
 		
 
-class RulesREST(Resource):
-	logger=None
-	def __init__(self):
-		''' Method definition '''
-		if __name__ == '__main__':
-			RulesREST.logger = logging.getLogger('storage-api-console')
-		else:
-			RulesREST.logger = logging.getLogger('storage-api')	
-       	
-	def get(self,path):
-		'''Retrieved policy and rules linked to a controller:mountpath tuple'''
-		bpath=base64.urlsafe_b64decode(path)
-		spath=bpath.decode('ascii')
-		RulesREST.logger.debug("path is: %s",spath)
-		
-		baseclass=BasicStorage(spath)
-		if baseclass.GetType() == "NetApp":
-			exportpolicy=PolicyRulesNetApp.ExistingVolume(spath)
-			try:
-				result=exportpolicy.GetRuleAllREST()
-			except Exception as ex:
-				return { 'rules ops ': 'error: ' + str(ex) }, 500
-			else:
-				if result is None:
-					return { 'rules ops ': 'No rules found' }, 200
-				else:
-					return { 'rules ops ': 'success ' + str(result) }, 200
-	
-	def put(self,path):
-		''' Add or remove an IP on a given existing policy'''
-		bpath=base64.urlsafe_b64decode(path)
-		spath=bpath.decode('ascii')
-		RulesREST.logger.debug("path is: %s",spath)
-		
-		baseclass=BasicStorage(spath)
-		if baseclass.GetType() == "NetApp":
-			exportpolicy=PolicyRulesNetApp.ExistingVolume(spath)
-
-		deleterule=None
-		addrule=None
-		if 'deleterule' in request.form.keys():
-			deleterule=base64.urlsafe_b64decode(request.form['deleterule']).decode('ascii')	
-		if 'addrule' in request.form.keys():
-			addrule=base64.urlsafe_b64decode(request.form['addrule']).decode('ascii')	
-		
-		baseclass=BasicStorage(spath)
-		if baseclass.GetType() == "NetApp":
-			exportpolicy=PolicyRulesNetApp.ExistingVolume(spath)
-		
-		result=None
-		if addrule:
-			result=exportpolicy.CreateRuleREST(addrule)
-			if result==0:
-				return { 'rules ops ': 'success ' + str(addrule) + ' was added.' }, 200
-		elif deleterule:
-			result=exportpolicy.DeleteRuleREST(deleterule)
-			if result==0:
-				return { 'rules ops ': 'success ' + str(deleterule) + ' was removed.' }, 200
-
-
-		return { 'rules ops ': 'noops. Please contact admins'  }, 500
-		
-		
-		
-			
-	
-
-
-
-
-
-api.add_resource(PathREST, '/storage/api/v1.0/paths/<string:path>')
-api.add_resource(VolumeREST, '/storage/api/v1.0/volumes/<string:volname>')
-api.add_resource(RulesREST, '/storage/api/v1.0/exports/<string:path>')
-
-if __name__ == '__main__':
-    app.run(debug=True)
