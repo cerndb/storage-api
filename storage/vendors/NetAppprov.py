@@ -45,6 +45,7 @@ class NetAppprov(NetAppops,BasicStorage):
 		self.clustername=clustername
 
 		#Apriori we dont want snapshots, snaps equal 0
+		NetAppprov.logger.debug("snaps is: %s " %  str(snaps))
 		self.snaps=snaps
 		#type can be: hybrid-aggr, hdd-aggr, ssd-aggr
 		self.type=type
@@ -59,7 +60,10 @@ class NetAppprov(NetAppops,BasicStorage):
 	@staticmethod
 	def ExistingVol(serverpath):
 		comodin=NetAppops(serverpath)
-		comodin.GetInfoPath()
+		try:
+			comodin.GetInfoPath()
+		except Exception as ex:
+			return None
 		if 'vserver' in comodin.volume.keys():
 			return NetAppprov(comodin.clustertoconnect[0],comodin.volume['name'],1,1,1,comodin.volume['vserver'],comodin.volume['policy'],comodin.volume['junction-path'],'hybrid-aggr')
 		else:
@@ -165,10 +169,10 @@ class NetAppprov(NetAppops,BasicStorage):
 			api1.child_add_string("size",str(self.initial_size) + 'g')
 			api1.child_add_string("junction-path",self.junction_path)
 			api1.child_add_string("snapshot-policy","none")
-			if self.snaps == 1:
-				api1.child_add_string("percentage-snapshot-reserve","20");
+			if self.snaps:
+				api1.child_add_string("percentage-snapshot-reserve","20")
 			else:
-				api1.child_add_string("percentage-snapshot-reserve","0");
+				api1.child_add_string("percentage-snapshot-reserve","0")
 			
 			if self.admin_vserver is None:
 				self.admin_vserver=super(NetAppprov,self).CreateServer(self.business,self.vserver)			
@@ -196,7 +200,8 @@ class NetAppprov(NetAppops,BasicStorage):
 					if (resp==0):
 						NetAppprov.logger.debug("rule %s has been added.",self.firewall_ip)
 
-			
+			NetAppprov.logger.debug("query looks like: %s",api1.sprintf())
+
 			resp=self.admin_vserver.invoke_elem(api1)
 			if (resp and resp.results_errno() != 0):
 				NetAppprov.logger.error("some error while trying to create volume %s",resp.results_reason())
@@ -204,12 +209,24 @@ class NetAppprov(NetAppops,BasicStorage):
 				raise StorageException("Error while creating volume: %s",resp.results_reason())
 
 		#volume created!
+		
+		if self.snaps:
+			resp=self.SetSnapAutoDeletion("snap_reserve",10,"oldest_first","scheduled")
+			if resp == 0:
+				NetAppprov.logger.debug("snapautodeletion set for volume: %s",self.volname)
+			else:
+				NetAppprov.logger.debug("snapautodeletion failed for volume: %s",self.volname)
+		#Autosize
+		if int(self.final_size) > 0 and int(self.increment) > 0:
+			resp=self.SetAutoSize(self.final_size,self.increment)
+			if resp == 0:
+				NetAppprov.logger.debug("autosize set for volume: %s",self.volname)
+			else:
+				NetAppprov.logger.debug("autosize failed for volume: %s",self.volname)
+
 		NetAppprov.logger.debug("volume has been created!!")
 		NetAppprov.logger.debug("end")
 		return 0
-
-	
-	
 		
 	def SetAutoSize(self,maxsize,increment):
 		'''All values provided on GB'''
@@ -217,7 +234,11 @@ class NetAppprov(NetAppops,BasicStorage):
 		if self.admin_vserver is None:
 			self.admin_vserver=super(NetAppprov,self).CreateServer(self.business,self.vserver)		
 		
-		resp=self.admin_vserver.invoke("volume-autosize-set","volume",self.volname,"increment-size",str(increment) + 'g',"maximum-size",str(maxsize) + 'g',"is-enabled","true")	
+		if increment==0:
+			resp=self.admin_vserver.invoke("volume-autosize-set","volume",self.volname,"maximum-size",str(maxsize) + 'g',"is-enabled","true")	
+		else:
+			resp=self.admin_vserver.invoke("volume-autosize-set","volume",self.volname,"increment-size",str(increment) + 'g',"maximum-size",str(maxsize) + 'g',"is-enabled","true")	
+			
 		if isinstance(resp,NaElement) and resp.results_errno() != 0:
 			NetAppprov.logger.error("query failed: reason %s error number: %s ", resp.results_reason(),resp.results_errno())
 			return None
@@ -285,7 +306,9 @@ class NetAppprov(NetAppops,BasicStorage):
 
 		if self.admin_vserver is None:
 			self.admin_vserver=super(NetAppprov,self).CreateServer(self.business,self.vserver)	
-
+		
+		NetAppprov.logger.debug("query looks like: %s",snapmod.sprintf())
+		
 		resp=self.admin_vserver.invoke_elem(snapmod)
 		if isinstance(resp,NaElement) and resp.results_errno() != 0:
 			NetAppprov.logger.debug("failed to set snap autodeletion configuration with error: %s error number: %s ", resp.results_reason(),resp.results_errno())
@@ -294,6 +317,10 @@ class NetAppprov(NetAppops,BasicStorage):
 		NetAppprov.logger.debug("snap autodeletion configuration set for %s",self.volname)
 		NetAppprov.logger.debug("end")
 		return 0
+
+
+
+
 			
 	
 

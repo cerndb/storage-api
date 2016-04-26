@@ -96,18 +96,18 @@ class NetAppops(BasicStorage):
 		return s
 
 	def GetVserver(self):
-		NetAppops.logger.debug("Begin")
+		NetAppops.logger.debug("begin")
 		if self.server_zapi is None:
 			if len(self.volume) ==0 or 'vserver' not in self.volume.keys():
 				self.GetInfoPath()
 			self.CreateServer(self.clustertoconnect[0],self.volume['vserver'])
-		NetAppops.logger.debug("End")
+		NetAppops.logger.debug("end")
 
 		
 	def GetInfoPath(self, admin=1):
 		'''It's supposed to just retrieved one volume.'''
 
-		NetAppops.logger.debug("Begin")
+		NetAppops.logger.debug("begin")
 		s=self.CreateServer(self.clustertoconnect[0])
 			
 		tag=None
@@ -162,7 +162,9 @@ class NetAppops(BasicStorage):
 
 			volist = resp.child_get("attributes-list").children_get()
 			v_name=v_aggregate=v_vserver=v_autosizeon=v_state=None
-			v_total_size=v_used_size=0
+			v_total_size=0
+			v_used_size=0
+			v_snap_percentage=0
 			for v in volist:
 				v_attrs=v.child_get("volume-id-attributes")
 				if v_attrs:
@@ -179,6 +181,8 @@ class NetAppops(BasicStorage):
 					self.volume["total_size"]=v_total_size
 					v_used_size=v_size_attrs.child_get_string("size-used")
 					self.volume["used_size"]=v_used_size
+					v_snap_percentage=v_size_attrs.child_get_string("percentage-snapshot-reserve")
+					self.volume["snap_reserved"]=v_snap_percentage
 
 				v_autosize_attrs=v.child_get("volume-autosize-attributes")
 				if v_autosize_attrs:
@@ -206,12 +210,12 @@ class NetAppops(BasicStorage):
 		NetAppops.logger.debug("metadata about the volume: %s",self.volume)		
 		
 
-		NetAppops.logger.debug("End")
+		NetAppops.logger.debug("end")
 		return self.volume
 
 	def GetInfoVolandAggr(self):
 		''' '''
-		NetAppops.logger.debug("Begin")
+		NetAppops.logger.debug("begin")
 		if not self.volume:
 			self.GetInfoPath()
 		
@@ -259,12 +263,12 @@ class NetAppops(BasicStorage):
 		
 		NetAppops.logger.debug("metadata about the aggregate: %s",aggrVol)
 		
-		NetAppops.logger.debug("End")
+		NetAppops.logger.debug("end")
 		return self.volume
 
 	def GetSnapshotsList(self):
 		'''List all snapshots linked to a path'''
-		NetAppops.logger.debug("Begin")
+		NetAppops.logger.debug("begin")
 
 		self.GetVserver()
 		
@@ -291,12 +295,12 @@ class NetAppops(BasicStorage):
 
 			
 		NetAppops.logger.debug("snaps retrieved for volume %s: %s",self.volume["name"],snaps)
-		NetAppops.logger.debug("End")
+		NetAppops.logger.debug("end")
 		return snaps
 
 	def CreateSnapshot(self,name=0):
 		'''It creates a snapshot with the name provided, if any'''
-		NetAppops.logger.debug("Begin")
+		NetAppops.logger.debug("begin")
 		if name==0:
 			name='snapscript_{}'.format(time.strftime("%d%m%Y_%H%M%S", time.gmtime()))
 			NetAppops.logger.debug("snap name %s",name)
@@ -306,12 +310,12 @@ class NetAppops(BasicStorage):
 			NetAppops.logger.error("while creating an snapshot: reason %s error number: %s ", resp.results_reason(),resp.results_errno())
 			raise StorageException("while creating an snapshot: reason %s error number: %s ", resp.results_reason(),resp.results_errno())
 		NetAppops.logger.debug("snapshot %s created",name)
-		NetAppops.logger.debug("End")
+		NetAppops.logger.debug("end")
 		return 0
 
 	def RestoreSnapshot(self,name):
 		'''It restores an snapshot on our instance volume'''
-		NetAppops.logger.debug("Begin")
+		NetAppops.logger.debug("begin")
 		if name is None:
 			NetAppops.logger.error("an snapshot needs to be provided")
 			raise StorageException("an snapshot needs to be provided")
@@ -321,27 +325,15 @@ class NetAppops(BasicStorage):
 			NetAppops.logger.error("while restoring snapshot %s on volume %s: reason %s error number: %s ", name, self.volume["name"],resp.results_reason(),resp.results_errno())
 			raise StorageException("while restoring  snapshot %s on volume %s: reason %s error number: %s ",name, self.volume["name"],resp.results_reason(),resp.results_errno())
 		NetAppops.logger.debug("snapshot %s restored",name)
-		NetAppops.logger.debug("End")
-		return 0
-	def DeleteSnapshot(self,name):
-		'''It deletes an snapshot on our instance volume'''
-		NetAppops.logger.debug("Begin")
-		if name is None:
-			NetAppops.logger.error("an snapshot needs to be provided")
-			raise StorageException("an snapshot needs to be provided")
-		self.GetVserver()	
-		resp = self.server_zapi.invoke("snapshot-delete","volume", self.volume["name"],"snapshot", name)
-		if (resp.results_errno() != 0):	
-			NetAppops.logger.error("while deleting snapshot %s on volume %s: reason %s error number: %s ", name, self.volume["name"],resp.results_reason(),resp.results_errno())
-			raise StorageException("while deleting  snapshot %s on volume %s: reason %s error number: %s ",name, self.volume["name"],resp.results_reason(),resp.results_errno())
-		NetAppops.logger.debug("snapshot %s deleted",name)
-		NetAppops.logger.debug("End")
+		NetAppops.logger.debug("end")
 		return 0
 	
-	def CloneSnapshot(self,snapshot,junction_path=0):
+	def CloneSnapshot(self,snapshot=0,junction_path=0):
 		'''Create a clone. License is requrired.'''
 		NetAppops.logger.debug("begin")
 		appendstr='_{}'.format(time.strftime("%d%m%Y_%H%M%S", time.gmtime()))	
+		if 'name' not in self.volume:
+			self.GetInfoPath(0)
 		volname = self.volume["name"] + appendstr + 'clone'
 		NetAppops.logger.debug("volname is: %s",volname)
 		if not junction_path:
@@ -353,6 +345,9 @@ class NetAppops(BasicStorage):
 		api.child_add_string('junction-path',junction_path)
 		api.child_add_string('volume',volname)
 		api.child_add_string('parent-volume',self.volume["name"])
+		if not snapshot:
+			api.child_add_string('parent-snapshot',snapshot)
+
 		self.GetVserver()	
 		resp = self.server_zapi.invoke_elem(api)
 		if (resp.results_errno() != 0):	
@@ -363,8 +358,23 @@ class NetAppops(BasicStorage):
 		NetAppops.logger.debug("end")
 		return junction_path
 
-			
+	def DeleteSnapshot(self,name):
+		'''It deletes an snapshot on our instance volume'''
+		NetAppops.logger.debug("begin")
+		if name is None:
+			NetAppops.logger.error("an snapshot needs to be provided")
+			raise StorageException("an snapshot needs to be provided")
+		self.GetVserver()	
+		resp = self.server_zapi.invoke("snapshot-delete","volume", self.volume["name"],"snapshot", name)
+		if (resp.results_errno() != 0):	
+			NetAppops.logger.error("while deleting snapshot %s on volume %s: reason %s error number: %s ", name, self.volume["name"],resp.results_reason(),resp.results_errno())
+			raise StorageException("while deleting  snapshot %s on volume %s: reason %s error number: %s ",name, self.volume["name"],resp.results_reason(),resp.results_errno())
+		NetAppops.logger.debug("snapshot %s deleted",name)
+		NetAppops.logger.debug("end")
+		return 0
+	
 
+			
 
 
 

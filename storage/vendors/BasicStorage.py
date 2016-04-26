@@ -12,7 +12,6 @@ import re
 import logging
 import sys
 import ssl
-sys.path.append("..")
 from storage.config import CONFIG
 
 class BasicStorage(object):

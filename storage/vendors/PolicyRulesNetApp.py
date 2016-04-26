@@ -63,7 +63,14 @@ class PolicyRulesNetApp(NetAppops,BasicStorage):
 		PolicyRulesNetApp.logger.debug("end")
 		return 0
 	
-		
+	def CreateRuleREST(self,ip):
+		'''Add a new rule to an existing policy. '''	
+		PolicyRulesNetApp.logger.debug("begin")
+		if 'policy' in self.volume.keys():
+			return self.CreateRule(self.volume['policy'],ip)
+		else:
+			raise StorageException("volume dictionary has not been initialised. This method needs to be called from an existing volume.")	
+
 	def CreateRule(self,policy,ip):
 		''' '''
 		match=self.GetRule(policy,ip)
@@ -121,9 +128,15 @@ class PolicyRulesNetApp(NetAppops,BasicStorage):
 				PolicyRulesNetApp.logger.debug("rule %s not found",ip)
 				PolicyRulesNetApp.logger.debug("end")
 				return None
-		
 	
-
+		
+	def GetRuleAllREST(self):
+		'''Get all rules linked to a tuple: controller + mount point'''
+		PolicyRulesNetApp.logger.debug("begin")
+		if 'policy' in self.volume.keys():
+			return self.GetRuleAll(self.volume['policy'])
+		else:
+			raise StorageException("volume dictionary has not been initialised. This method needs to be called from an existing volume.")	
 	def GetRuleAll(self,policy):
 		''' '''
 		PolicyRulesNetApp.logger.debug("begin")
@@ -172,6 +185,13 @@ class PolicyRulesNetApp(NetAppops,BasicStorage):
 			first+=1
 		PolicyRulesNetApp.logger.debug("end")
 		return allrules
+	
+	def DeleteRuleREST(self,ip):
+		''' Deletes a certain indexed rule in a policy and re-orders remaining rules'''
+		if 'policy' in self.volume.keys():
+			return self.DeleteRule(self.volume['policy'],ip)
+		else:
+			raise StorageException("volume dictionary has not been initialised. This method needs to be called from an existing volume.")	
 
 	def DeleteRule(self,policy,ip):
 		''' Deletes a certain indexed rule in a policy and re-orders remaining rules'''
@@ -180,7 +200,7 @@ class PolicyRulesNetApp(NetAppops,BasicStorage):
 		index=self.GetRule(policy,ip)
 		if not index:
 			PolicyRulesNetApp.logger.debug("Rule: %s in policy: %s doesnt exist.", ip,policy)
-			return None
+			return 0
 
 		api=NaElement("export-rule-destroy")
 		api.child_add_string("policy-name",policy)
@@ -215,6 +235,7 @@ class PolicyRulesNetApp(NetAppops,BasicStorage):
 		else:
 			NetAppops.logger.debug("No more rules available")	
 
+		NetAppops.logger.debug("Rule %s was deleted in policy: %s",ip,policy)
 		PolicyRulesNetApp.logger.debug("end")
 		return 0
 
