@@ -8,7 +8,7 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
-from flask import Flask, request
+from flask import Flask, session, request
 from flask.ext.restful import Api, Resource
 import sys
 import re
@@ -31,7 +31,20 @@ class PathREST(Resource):
 		else:
 			PathREST.logger = logging.getLogger('storage-api')
 		
-			
+	def isrole(role_name):
+		def role_decorator(func):
+			def role_wrapper(*args,**kwargs):
+				if 'user' not in session:
+					VolumeREST.logger.debug("no user information retrieved, may be not signed up!")
+					return { "isrole" : 'no authentication' }, 403
+				elif role_name in session['user'].get('Group'):
+					return func(*args,**kwargs)
+				else:
+					VolumeREST.logger.debug("no group membership present.")
+					return { "isrole" : 'no authentication' }, 403
+			return role_wrapper
+		return role_decorator
+	
 	def get(self, path):
 		bpath=base64.urlsafe_b64decode(path)
 		spath=bpath.decode('ascii')
@@ -45,6 +58,7 @@ class PathREST(Resource):
 			PathREST.logger.debug("we got %s snapshots",len(result))
 			return  { 'snapshots': result }, 200
 	
+	@isrole("it-dep-db")
 	def post(self,path):
 		bpath=base64.urlsafe_b64decode(path)
 		spath=bpath.decode('ascii')
@@ -88,6 +102,7 @@ class PathREST(Resource):
 				return { 'snapshot_clone creation ': 'success - junction-path:' + result }, 200
 
 
+	@isrole("it-dep-db")
 	def delete(self,path):
 		bpath=base64.urlsafe_b64decode(path)
 		spath=bpath.decode('ascii')

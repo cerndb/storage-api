@@ -8,7 +8,7 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
-from flask import Flask, request
+from flask import Flask, session, request
 from flask.ext.restful import Api, Resource
 import sys
 import re
@@ -30,7 +30,21 @@ class RulesREST(Resource):
 			RulesREST.logger = logging.getLogger('storage-api-console')
 		else:
 			RulesREST.logger = logging.getLogger('storage-api')	
-       	
+       
+	def isrole(role_name):
+		def role_decorator(func):
+			def role_wrapper(*args,**kwargs):
+				if 'user' not in session:
+					RulesREST.logger.debug("no user information retrieved, may be not signed up!")
+					return { "isrole" : 'no authentication' }, 403
+				elif role_name in session['user'].get('Group'):
+					return func(*args,**kwargs)
+				else:
+					RulesREST.logger.debug("no group membership present.")
+					return { "isrole" : 'no authentication' }, 403
+			return role_wrapper
+		return role_decorator
+	
 	def get(self,path):
 		'''Retrieved policy and rules linked to a controller:mountpath tuple'''
 		bpath=base64.urlsafe_b64decode(path)
@@ -49,7 +63,9 @@ class RulesREST(Resource):
 					return { 'rules ops ': 'No rules found' }, 200
 				else:
 					return { 'rules ops ': 'success ' + str(result) }, 200
+
 	
+	@isrole("it-dep-db")
 	def put(self,path):
 		''' Add or remove an IP on a given existing policy'''
 		bpath=base64.urlsafe_b64decode(path)

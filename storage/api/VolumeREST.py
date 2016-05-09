@@ -8,7 +8,7 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
-from flask import Flask, request
+from flask import Flask, session, request
 from flask.ext.restful import Api, Resource
 import sys
 import re
@@ -31,6 +31,20 @@ class VolumeREST(Resource):
 		else:
 			VolumeREST.logger = logging.getLogger('storage-api')	
        
+	def isrole(role_name):
+		def role_decorator(func):
+			def role_wrapper(*args,**kwargs):
+				if 'user' not in session:
+					VolumeREST.logger.debug("no user information retrieved, may be not signed up!")
+					return { "isrole" : 'no authentication' }, 403
+				elif role_name in session['user'].get('Group'):
+					return func(*args,**kwargs)
+				else:
+					VolumeREST.logger.debug("no group membership present.")
+					return { "isrole" : 'no authentication' }, 403
+			return role_wrapper
+		return role_decorator
+
 	def get(self,volname):	
 		'''Retrieve information of a given volume represented by its mount path at the server. In case there are snapshots available those are also retrieved.'''
 		bpath=base64.urlsafe_b64decode(volname)
@@ -54,7 +68,9 @@ class VolumeREST(Resource):
 					if snaps and len(snaps) > 0 :
 						 return { 'volume get ': 'success ' + str(result) + "snaps list: " + str(snaps) }, 20	
 				return { 'volume get ': 'success ' + str(result) }, 200	
-				
+
+
+	@isrole("it-dep-db")			
 	def post(self,volname):
 		'''Creation of a new volume.  Some parameters are required:
 			-volname
@@ -167,20 +183,30 @@ class VolumeREST(Resource):
 		else:
 			return { 'volume creation ': 'wrong vendor' }, 400
 
-			
+
+
+
+	@isrole("it-db-storage")		
 	def delete(self,volname):
 		''' Deletes a volume. It's represented by its junction path and IP to mount.'''
 		bpath=base64.urlsafe_b64decode(volname)
 		spath=bpath.decode('ascii')
 		VolumeREST.logger.debug("path is: %s",spath)
 		
+		clone=0		
+		if 'clone' in request.form.keys():
+			clone = 1
+
 		baseclass=BasicStorage(spath)
 		if baseclass.GetType() == "NetApp":
 			netapp=NetAppprov.ExistingVol(spath)
 			if not isinstance(netapp,(BasicStorage,NetAppprov)):
 				return { 'volume deletion ': 'error no online volume found' }, 500
 			try:
-				result=netapp.DeleteVolume()
+				if clone:
+					result=netapp.DeleteVolume()
+				else:
+					result=netapp.RestrictVolume()
 			except Exception as ex:
 				VolumeREST.logger.debug('problem deleting volume' + str(ex))
 				return { 'volume deletion ': 'error ' + str(ex) }, 500
@@ -195,7 +221,8 @@ class VolumeREST(Resource):
 		else:
 			return { 'volume deletion ': 'wrong vendor' }, 400
 		
-		
+	
+	@isrole("it-dep-db")
 	def put(self, volname):
 		'''Modify autosize. Values should be provided on GB. You can modify maximum autosize and increment'''
 		bpath=base64.urlsafe_b64decode(volname)

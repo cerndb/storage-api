@@ -249,7 +249,7 @@ class NetAppprov(NetAppops,BasicStorage):
 
 
 	
-	def DeleteVolume(self):
+	def RestrictVolume(self):
 		''' In reality volume is restricted. No NFS access.'''
 		NetAppprov.logger.debug("begin")
 		in1=NaElement("volume-unmount")
@@ -261,21 +261,59 @@ class NetAppprov(NetAppops,BasicStorage):
 			self.admin_vserver=super(NetAppprov,self).CreateServer(self.business,self.vserver)
 		resp=self.admin_vserver.invoke_elem(in1)
 		if (resp and resp.results_errno() != 0):
-			NetAppprov.logger.error("some error while trying to create volume %s",resp.results_reason())
+			NetAppprov.logger.error("some error while trying to unmount volume %s",resp.results_reason())
 			NetAppprov.logger.debug("end")
-			raise StorageException("Error while creating volume: %s",resp.results_reason())
+			raise StorageException("Error while unmount volume: %s",resp.results_reason())
 		
 		api=NaElement('volume-restrict')
 		api.child_add_string('name',self.volname)
 		self.admin_vserver.invoke_elem(api)
 		if (resp and resp.results_errno() != 0):
-			NetAppprov.logger.error("some error while trying to create volume %s",resp.results_reason())
+			NetAppprov.logger.error("some error while trying to restrict volume %s",resp.results_reason())
 			NetAppprov.logger.debug("end")
-			raise StorageException("Error while creating volume: %s",resp.results_reason())
+			raise StorageException("Error while restrict volume: %s",resp.results_reason())
+
+		NetAppprov.logger.debug("Volume %s has been restricted." % self.volname)
+		NetAppprov.logger.debug("end")
+		return 0
+
+	def DeleteVolume(self):
+		'''Deletes a volume permanently!'''
+		NetAppprov.logger.debug("begin")
+		in1=NaElement("volume-unmount")
+		if self.volname:
+			in1.child_add_string("volume-name",self.volname);
+		else:
+			raise StorageException("internal structure hasnt been initialized.")
+		if self.admin_vserver is None:
+			self.admin_vserver=super(NetAppprov,self).CreateServer(self.business,self.vserver)
+		resp=self.admin_vserver.invoke_elem(in1)
+		if (resp and resp.results_errno() != 0):
+			NetAppprov.logger.error("some error while trying to unmount volume %s",resp.results_reason())
+			NetAppprov.logger.debug("end")
+			raise StorageException("Error while unmount volume: %s",resp.results_reason())
+		in2=NaElement("volume-offline")
+		in2.child_add_string("name",self.volname)
+		resp=self.admin_vserver.invoke_elem(in2)
+		if (resp and resp.results_errno() != 0):
+			NetAppprov.logger.error("some error while trying to offline volume %s",resp.results_reason())
+			NetAppprov.logger.debug("end")
+			raise StorageException("Error while offline volume: %s",resp.results_reason())
+		in3=NaElement("volume-destroy")	
+		in3.child_add_string("name",self.volname)
+		resp=self.admin_vserver.invoke_elem(in3)
+		if (resp and resp.results_errno() != 0):
+			NetAppprov.logger.error("some error while trying to destroy volume %s",resp.results_reason())
+			NetAppprov.logger.debug("end")
+			raise StorageException("Error while destroy volume: %s",resp.results_reason())
+
 
 		NetAppprov.logger.debug("Volume %s has been deleted." % self.volname)
 		NetAppprov.logger.debug("end")
 		return 0
+
+
+
 
 	def SetSnapAutoDeletion(self,trigger,space,order,delpolicy):
 		'''Setting Snap autodeletion.'''
@@ -320,8 +358,6 @@ class NetAppprov(NetAppops,BasicStorage):
 
 
 
-
-			
 	
 
 	

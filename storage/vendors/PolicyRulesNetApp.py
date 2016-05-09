@@ -38,6 +38,7 @@ class PolicyRulesNetApp(NetAppops,BasicStorage):
 		comodin.GetInfoPath(0)
 		return comodin
 
+	
 	def PolicyCreate(self,policy):
 		''' Create a new policy'''
 		PolicyRulesNetApp.logger.debug("begin")
