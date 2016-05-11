@@ -73,23 +73,22 @@ class PathREST(Resource):
 			- clone: 1 -> clone is created from snapname, 0 no clone just a snapshot to be created
 		'''
 		args = self.reqparse.parse_args()
+		sname=None
+		clone=None
 		try:
 			bpath=base64.urlsafe_b64decode(path)
 			spath=bpath.decode('ascii')
-		except Exception as ex:
-			return { 'get': 'wrong format ' + str(ex) }, 400
-		PathREST.logger.debug("path is: %s",spath)
 		
-		sname=None
-		clone=None
-		if 'snapname' in request.form.keys():
-			bname=base64.urlsafe_b64decode(args['snapname'])
-			sname=bname.decode('ascii')
-			PathREST.logger.debug("new snapshot name is: %s",sname)
-		if 'clone' in request.form.keys():
-			PathREST.logger.debug("want a clone")
-			clone=args['clone']
-		try:	
+			PathREST.logger.debug("path is: %s",spath)
+			
+			if 'snapname' in request.form.keys():
+				bname=base64.urlsafe_b64decode(args['snapname'])
+				sname=bname.decode('ascii')
+				PathREST.logger.debug("new snapshot name is: %s",sname)
+			if 'clone' in request.form.keys():
+				PathREST.logger.debug("want a clone")
+				clone=args['clone']
+		
 			baseclass=BasicStorage(spath)
 		except Exception as ex:
 			return { 'get': 'wrong format ' + str(ex) }, 400
