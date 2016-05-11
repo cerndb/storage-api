@@ -27,8 +27,9 @@ setup(name='storage.api',
       scripts=[],
       test_suite="",
       requires=[
-          'ConfigParser',
-          'flask.ext.restful',
-          'flask',
+		'ConfigParser',
+		'flask.ext.restful',
+		'flask',
+		'flask_sso',
           ],
      )

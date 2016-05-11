@@ -9,7 +9,7 @@
 # or submit itself to any jurisdiction.
 
 from flask import Flask, session, request
-from flask.ext.restful import Api, Resource
+from flask.ext.restful import Api, Resource, reqparse
 import sys
 import re
 import logging
@@ -30,7 +30,27 @@ class VolumeREST(Resource):
 			VolumeREST.logger = logging.getLogger('storage-api-console')
 		else:
 			VolumeREST.logger = logging.getLogger('storage-api')	
-       
+		self.reqparse_post = reqparse.RequestParser(bundle_errors=True)
+		self.reqparse_post.add_argument('vendor',type=str, location='form',required=True)
+		self.reqparse_post.add_argument('clustername',type=str, location='form',required=True)
+		self.reqparse_post.add_argument('initsize',type=int, location='form',required=True)
+		self.reqparse_post.add_argument('maximumsize',type=int, location='form',required=True)
+		self.reqparse_post.add_argument('incrementsize',type=int, location='form',required=True)
+		self.reqparse_post.add_argument('vserver',type=str, location='form',required=True)
+		self.reqparse_post.add_argument('policy',type=str, location='form',required=True)
+		self.reqparse_post.add_argument('junctionpath',type=str, location='form',required=True)
+		self.reqparse_post.add_argument('typeaggr',type=str, location='form',required=True)
+		self.reqparse_post.add_argument('snapenable',type=int, location='form',default=1)
+		self.reqparse_post.add_argument('ip',type=str, location='form',default=0)
+		self.reqparse_post.add_argument('business',type=str, location='form',default=0)
+		self.reqparse_delete=reqparse.RequestParser()
+		self.reqparse_delete.add_argument('clone',type=int,default=0)
+		self.reqparse_put=reqparse.RequestParser()
+		self.reqparse_put.add_argument('maxautosize',type=int,required=True)
+		self.reqparse_put.add_argument('increment',type=int,default=0)
+
+		
+      
 	def isrole(role_name):
 		def role_decorator(func):
 			def role_wrapper(*args,**kwargs):
@@ -46,12 +66,18 @@ class VolumeREST(Resource):
 		return role_decorator
 
 	def get(self,volname):	
-		'''Retrieve information of a given volume represented by its mount path at the server. In case there are snapshots available those are also retrieved.'''
-		bpath=base64.urlsafe_b64decode(volname)
-		spath=bpath.decode('ascii')
+		'''Retrieve information of a given volume represented by its mount path at the server. In case there are snapshots available those are also retrieved.
+			volname is coded in base64. 	
+		'''
+		try:
+			bpath=base64.urlsafe_b64decode(volname)
+			spath=bpath.decode('ascii')
+			baseclass=BasicStorage(spath)
+		except Exception as ex:
+			return { 'get': 'wrong format ' + str(ex) }, 400
+
 		VolumeREST.logger.debug("path is: %s",spath)
 		
-		baseclass=BasicStorage(spath)
 		if baseclass.GetType() == "NetApp":
 			netapp=NetAppprov.ExistingVol(spath)
 			if not isinstance(netapp,(BasicStorage,NetAppprov)):
@@ -70,7 +96,7 @@ class VolumeREST(Resource):
 				return { 'volume get ': 'success ' + str(result) }, 200	
 
 
-	@isrole("it-dep-db")			
+	@isrole("it-dep-db")		
 	def post(self,volname):
 		'''Creation of a new volume.  Some parameters are required:
 			-volname
@@ -87,82 +113,33 @@ class VolumeREST(Resource):
 			-vendor: NetApp, PureStorage, Ceph
 		'''
 		#'dbnasc','toTo',1,100,1,'vs2sx50','kk','/ORA/dbs00/TOTO','hdd-aggr',1,'199.22.22.22',"dbod"
-		if 'vendor' in request.form.keys():
-			vendor=request.form['vendor']
-			VolumeREST.logger.debug('vendor is: ' + vendor)
-		else:
-			return { 'volume creation ': 'error: missing parameter vendor' }, 400
-
-		if 'clustername' in request.form.keys():
-			clustername=request.form['clustername']
-			VolumeREST.logger.debug('clustername is: ' + clustername)
-		else:
-			return { 'volume creation ': 'error: missing parameter clustername' }, 400
+		args = self.reqparse_post.parse_args()
+		vendor=args['vendor']
+		VolumeREST.logger.debug('vendor is: ' + vendor)
+		clustername=args['clustername']
 		if not volname:
 			return { 'volume creation ': 'error: missing parameter volname' }, 400
 		else:
 			VolumeREST.logger.debug('volname is: ' + volname)
-
-
-		if 'initsize' in request.form.keys():
-			initsize=request.form['initsize']
-			VolumeREST.logger.debug('initsize is:' + str(initsize))
-		else:
-			return { 'volume creation ': 'error: missing parameter initsize' }, 400
-
-		if 'maximumsize' in request.form.keys():
-			maximumsize=request.form['maximumsize']
-			VolumeREST.logger.debug('maximumsize is:' + str(maximumsize))
-		else:	
-			return { 'volume creation ': 'error: missing parameter maximumsize' }, 400
-
-		if 'incrementsize' in request.form.keys():
-			incrementsize=request.form['incrementsize']
-			VolumeREST.logger.debug('incrementsize is:' + str(incrementsize))
-		else:
-			return { 'volume creation ': 'error: missing parameter incrementsize' }, 400
-
-		if 'vserver' in request.form.keys():
-			vserver=request.form['vserver']
-			VolumeREST.logger.debug('vserver is:' + vserver)
-		else:
-			return { 'volume creation ': 'error: missing parameter vserver' }, 400
-
-		if 'policy' in request.form.keys():
-			policy=request.form['policy']
-			VolumeREST.logger.debug('policy is:' + policy)
-		else:
-			return { 'volume creation ': 'error: missing parameter policy' }, 400
-
-		if 'junctionpath' in request.form.keys():
-			junctionpath=base64.urlsafe_b64decode(request.form['junctionpath']).decode('ascii')
-			VolumeREST.logger.debug('junctionpath is:' + junctionpath)
-		else:
-			return { 'volume creation ': 'error: missing parameter junctionpath' }, 400
-
-		if 'typeaggr' in request.form.keys():
-			typeaggr=request.form['typeaggr']
-			VolumeREST.logger.debug('typeaggr is:' + typeaggr)
-		else:
-			return { 'volume creation ': 'error: missing parameter typeaggr' }, 400
-		
-		if 'snapenable' not in request.form.keys():
-			#default we create volumes with a snapshot reserve area
-			snapenable=1
-		else:
-			snapenable=request.form['snapenable']
-		VolumeREST.logger.debug('snapenable is:' + snapenable)
-
-		if 'ip' in request.form.keys():
-			ip=base64.urlsafe_b64decode(request.form['ip']).decode('ascii')
-		else:
-			ip=0
+		initsize=args['initsize']
+		VolumeREST.logger.debug('maximumsize is:' + str(initsize))
+		maximumsize=request.form['maximumsize']
+		VolumeREST.logger.debug('maximumsize is:' + str(maximumsize))
+		incrementsize=request.form['incrementsize']
+		VolumeREST.logger.debug('incrementsize is:' + str(incrementsize))
+		vserver=args['vserver']
+		VolumeREST.logger.debug('vserver is:' + vserver)
+		policy=args['policy']
+		VolumeREST.logger.debug('policy is:' + policy)
+		junctionpath=base64.urlsafe_b64decode(args['junctionpath']).decode('ascii')
+		VolumeREST.logger.debug('junctionpath is:' + junctionpath)
+		typeaggr=args['typeaggr']
+		VolumeREST.logger.debug('typeaggr is:' + typeaggr)
+		snapenable=args['snapenable']
+		VolumeREST.logger.debug('snapenable is:' + str(snapenable))
+		ip=base64.urlsafe_b64decode(args['ip']).decode('ascii')
 		VolumeREST.logger.debug('ip is:' + str(ip))
-
-		if 'business' in request.form.keys():
-			business=request.form['business']
-		else:
-			business=0
+		business=args['business']
 		VolumeREST.logger.debug('business is:' + str(business))
 		
 		if vendor == 'NetApp':
@@ -188,16 +165,20 @@ class VolumeREST(Resource):
 
 	@isrole("it-db-storage")		
 	def delete(self,volname):
-		''' Deletes a volume. It's represented by its junction path and IP to mount.'''
-		bpath=base64.urlsafe_b64decode(volname)
-		spath=bpath.decode('ascii')
-		VolumeREST.logger.debug("path is: %s",spath)
-		
-		clone=0		
-		if 'clone' in request.form.keys():
-			clone = 1
+		''' Deletes a volume. It's represented by its junction path and IP to mount.
+			If clone form variable is present, the volume is removed, otherwise is set in restricted mode (NetApp).
+		'''
+		try:
+			bpath=base64.urlsafe_b64decode(volname)
+			spath=bpath.decode('ascii')
+			baseclass=BasicStorage(spath)
+		except Exception as ex:
+			return { 'get': 'wrong format ' + str(ex) }, 400
 
-		baseclass=BasicStorage(spath)
+		VolumeREST.logger.debug("path is: %s",spath)
+		args = self.reqparse_delete.parse_args()
+		clone=args['clone']
+
 		if baseclass.GetType() == "NetApp":
 			netapp=NetAppprov.ExistingVol(spath)
 			if not isinstance(netapp,(BasicStorage,NetAppprov)):
@@ -225,20 +206,18 @@ class VolumeREST(Resource):
 	@isrole("it-dep-db")
 	def put(self, volname):
 		'''Modify autosize. Values should be provided on GB. You can modify maximum autosize and increment'''
-		bpath=base64.urlsafe_b64decode(volname)
-		spath=bpath.decode('ascii')
+		try:
+			bpath=base64.urlsafe_b64decode(volname)
+			spath=bpath.decode('ascii')
+			baseclass=BasicStorage(spath)
+		except Exception as ex:
+			return { 'get': 'wrong format ' + str(ex) }, 400
 		VolumeREST.logger.debug("path is: %s",spath)
 		
-		if 'maxautosize' in request.form.keys():
-			maxautosize=request.form['maxautosize']
-		else:
-			return { 'volume setautosize ': 'error no maxautosize provided!!' }, 400
-		if 'increment' in request.form.keys():
-			increment=request.form['increment']
-		else:
-			increment=0
+		args=self.reqparse_put.parse_args()
+		maxautosize=args['maxautosize']
+		increment=args['increment']
 		
-		baseclass=BasicStorage(spath)
 		if baseclass.GetType() == "NetApp":
 			netapp=NetAppprov.ExistingVol(spath)
 			if not isinstance(netapp,(BasicStorage,NetAppprov)):

@@ -9,7 +9,7 @@
 # or submit itself to any jurisdiction.
 
 from flask import Flask, session, request
-from flask.ext.restful import Api, Resource
+from flask.ext.restful import Api, Resource, reqparse
 import sys
 import re
 import logging
@@ -30,54 +30,73 @@ class PathREST(Resource):
 			PathREST.logger = logging.getLogger('storage-api-console')
 		else:
 			PathREST.logger = logging.getLogger('storage-api')
-		
+		self.reqparse = reqparse.RequestParser()
+		self.reqparse.add_argument('snapname',type=str, location='form')
+		self.reqparse.add_argument('clone',type=int, location='form')
+
 	def isrole(role_name):
 		def role_decorator(func):
 			def role_wrapper(*args,**kwargs):
 				if 'user' not in session:
-					VolumeREST.logger.debug("no user information retrieved, may be not signed up!")
+					PathREST.logger.debug("no user information retrieved, may be not signed up!")
 					return { "isrole" : 'no authentication' }, 403
 				elif role_name in session['user'].get('Group'):
 					return func(*args,**kwargs)
 				else:
-					VolumeREST.logger.debug("no group membership present.")
+					PathREST.logger.debug("no group membership present.")
 					return { "isrole" : 'no authentication' }, 403
 			return role_wrapper
 		return role_decorator
 	
 	def get(self, path):
-		bpath=base64.urlsafe_b64decode(path)
-		spath=bpath.decode('ascii')
-		baseclass=BasicStorage(spath)
+		'''Retrieve all snapshots if any'''
+		try:
+			bpath=base64.urlsafe_b64decode(path)
+			spath=bpath.decode('ascii')
+			baseclass=BasicStorage(spath)
+		except Exception as ex:
+			return { 'get': 'wrong format ' + str(ex) }, 400
+	
 		if baseclass.GetType() == "NetApp":
 			netapp=NetAppops(spath)
 			result=netapp.GetSnapshotsList()
 			if result is None:
-				StorageRest.logger.debug("we got 0 snapshots")
+				PathREST.logger.debug("we got 0 snapshots")
 				return { 'snapshots': 'NONE' }, 200
 			PathREST.logger.debug("we got %s snapshots",len(result))
 			return  { 'snapshots': result }, 200
 	
 	@isrole("it-dep-db")
 	def post(self,path):
-		bpath=base64.urlsafe_b64decode(path)
-		spath=bpath.decode('ascii')
+		'''Creates an snapshot or a clone (if license available in controller). 
+			- snapname: base64 encoded name of the snapshot
+			- clone: 1 -> clone is created from snapname, 0 no clone just a snapshot to be created
+		'''
+		args = self.reqparse.parse_args()
+		try:
+			bpath=base64.urlsafe_b64decode(path)
+			spath=bpath.decode('ascii')
+		except Exception as ex:
+			return { 'get': 'wrong format ' + str(ex) }, 400
 		PathREST.logger.debug("path is: %s",spath)
 		
 		sname=None
 		clone=None
 		if 'snapname' in request.form.keys():
-			bname=base64.urlsafe_b64decode(request.form['snapname'])
+			bname=base64.urlsafe_b64decode(args['snapname'])
 			sname=bname.decode('ascii')
 			PathREST.logger.debug("new snapshot name is: %s",sname)
 		if 'clone' in request.form.keys():
 			PathREST.logger.debug("want a clone")
-			clone=request.form['clone']
-			
-		baseclass=BasicStorage(spath)
+			clone=args['clone']
+		try:	
+			baseclass=BasicStorage(spath)
+		except Exception as ex:
+			return { 'get': 'wrong format ' + str(ex) }, 400
+
 		if baseclass.GetType() == "NetApp":
-			netapp=NetAppops(spath)
-			try:
+			try:	
+				netapp=NetAppops(spath)
 				if sname is None:
 					if clone:
 						PathREST.logger.debug("1")
@@ -88,7 +107,6 @@ class PathREST(Resource):
 					PathREST.logger.debug("2")
 					if clone:
 						result=netapp.CloneSnapshot(sname)
-
 					else:
 						result=netapp.CreateSnapshot(sname)
 			except Exception as ex:
@@ -104,18 +122,26 @@ class PathREST(Resource):
 
 	@isrole("it-dep-db")
 	def delete(self,path):
-		bpath=base64.urlsafe_b64decode(path)
-		spath=bpath.decode('ascii')
+		'''Delete a given snapshot'''
+		args = self.reqparse.parse_args()
+		try:
+			bpath=base64.urlsafe_b64decode(path)
+			spath=bpath.decode('ascii')
+		except Exception as ex:
+			return { 'get': 'wrong format ' + str(ex) }, 400
 		PathREST.logger.debug("path is: %s",spath)
 		
 		if 'snapname' in request.form.keys():
-			bname=base64.urlsafe_b64decode(request.form['snapname'])
+			bname=base64.urlsafe_b64decode(args['snapname'])
 			sname=bname.decode('ascii')
 		else:
 			PathREST.logger.debug("new snapshot name is: %s",sname)
 			return { 'snapshot deletion ': 'snapname missing!!' }, 400
-		
-		baseclass=BasicStorage(spath)
+
+		try:		
+			baseclass=BasicStorage(spath)
+		except Exception as ex:
+			return { 'get': 'wrong format ' + str(ex) }, 400
 		if baseclass.GetType() == "NetApp":
 			netapp=NetAppops(spath)
 			try:

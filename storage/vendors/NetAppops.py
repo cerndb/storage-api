@@ -345,10 +345,11 @@ class NetAppops(BasicStorage):
 		api.child_add_string('junction-path',junction_path)
 		api.child_add_string('volume',volname)
 		api.child_add_string('parent-volume',self.volume["name"])
-		if not snapshot:
+		if snapshot:
 			api.child_add_string('parent-snapshot',snapshot)
 
 		self.GetVserver()	
+		NetAppops.logger.debug("query looks like: %s",api.sprintf())
 		resp = self.server_zapi.invoke_elem(api)
 		if (resp.results_errno() != 0):	
 			NetAppops.logger.error("while cloning snapshot %s on volume %s: reason %s error number: %s ", snapshot, self.volume["name"],resp.results_reason(),resp.results_errno())

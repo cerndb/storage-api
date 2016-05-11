@@ -11,14 +11,12 @@
 import os
 import sys
 
+# python will run in a virtual environment
 activate_this = '/ORA/dbs01/work/storage-api/v1/bin/activate_this.py'
-#execfile(activate_this, dict(__file__=activate_this))
-
-#exec(open("/ORA/dbs01/work/storage-api/v1/bin/activate_this.py").read())
 with open(activate_this) as f:
     code = compile(f.read(), activate_this, 'exec')
     exec(code, dict(__file__=activate_this))
 
 
-# Ensure there is an app.py script in the current folder
+# WSGI requirement
 from storage.api.handlers import app as application 

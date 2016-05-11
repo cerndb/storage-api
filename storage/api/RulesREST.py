@@ -9,7 +9,7 @@
 # or submit itself to any jurisdiction.
 
 from flask import Flask, session, request
-from flask.ext.restful import Api, Resource
+from flask.ext.restful import Api, Resource, reqparse
 import sys
 import re
 import logging
@@ -30,7 +30,10 @@ class RulesREST(Resource):
 			RulesREST.logger = logging.getLogger('storage-api-console')
 		else:
 			RulesREST.logger = logging.getLogger('storage-api')	
-       
+		self.reqparse_put = reqparse.RequestParser(bundle_errors=True)
+		self.reqparse_put.add_argument('addrule',type=str, location='form')
+		self.reqparse_put.add_argument('deleterule',type=str, location='form')
+
 	def isrole(role_name):
 		def role_decorator(func):
 			def role_wrapper(*args,**kwargs):
@@ -46,12 +49,17 @@ class RulesREST(Resource):
 		return role_decorator
 	
 	def get(self,path):
-		'''Retrieved policy and rules linked to a controller:mountpath tuple'''
-		bpath=base64.urlsafe_b64decode(path)
-		spath=bpath.decode('ascii')
+		'''Retrieved policy and rules linked to a controller:mountpath tuple. Path provided in base64 coding.'''
+		try:
+			bpath=base64.urlsafe_b64decode(path)
+			spath=bpath.decode('ascii')
+			baseclass=BasicStorage(spath)
+		except Exception as ex:
+			return { 'get': 'wrong format ' + str(ex) }, 400
+
+
 		RulesREST.logger.debug("path is: %s",spath)
 		
-		baseclass=BasicStorage(spath)
 		if baseclass.GetType() == "NetApp":
 			exportpolicy=PolicyRulesNetApp.ExistingVolume(spath)
 			try:
@@ -67,35 +75,35 @@ class RulesREST(Resource):
 	
 	@isrole("it-dep-db")
 	def put(self,path):
-		''' Add or remove an IP on a given existing policy'''
-		bpath=base64.urlsafe_b64decode(path)
-		spath=bpath.decode('ascii')
-		RulesREST.logger.debug("path is: %s",spath)
-		
-		baseclass=BasicStorage(spath)
-		if baseclass.GetType() == "NetApp":
-			exportpolicy=PolicyRulesNetApp.ExistingVolume(spath)
-
+		''' Add or remove an IP on a given existing policy. IP provided in base64 coding.'''
 		deleterule=None
 		addrule=None
-		if 'deleterule' in request.form.keys():
-			deleterule=base64.urlsafe_b64decode(request.form['deleterule']).decode('ascii')	
-		if 'addrule' in request.form.keys():
-			addrule=base64.urlsafe_b64decode(request.form['addrule']).decode('ascii')	
+		try:
+			bpath=base64.urlsafe_b64decode(path)
+			spath=bpath.decode('ascii')
+			baseclass=BasicStorage(spath)
+			RulesREST.logger.debug("path is: %s",spath)
 		
-		baseclass=BasicStorage(spath)
+			args = self.reqparse_put.parse_args()
+			if 'deleterule' in request.form.keys():
+				deleterule=base64.urlsafe_b64decode(args['deleterule']).decode('ascii')	
+			if 'addrule' in request.form.keys():
+				addrule=base64.urlsafe_b64decode(args['addrule']).decode('ascii')	
+		except Exception as ex:
+			return { 'get': 'wrong format ' + str(ex) }, 400
+		
+		
 		if baseclass.GetType() == "NetApp":
 			exportpolicy=PolicyRulesNetApp.ExistingVolume(spath)
-		
-		result=None
-		if addrule:
-			result=exportpolicy.CreateRuleREST(addrule)
-			if result==0:
-				return { 'rules ops ': 'success ' + str(addrule) + ' was added.' }, 200
-		elif deleterule:
-			result=exportpolicy.DeleteRuleREST(deleterule)
-			if result==0:
-				return { 'rules ops ': 'success ' + str(deleterule) + ' was removed.' }, 200
+			result=None
+			if addrule:
+				result=exportpolicy.CreateRuleREST(addrule)
+				if result==0:
+					return { 'rules ops ': 'success ' + str(addrule) + ' was added.' }, 200
+			elif deleterule:
+				result=exportpolicy.DeleteRuleREST(deleterule)
+				if result==0:
+					return { 'rules ops ': 'success ' + str(deleterule) + ' was removed.' }, 200
 
 
 		return { 'rules ops ': 'noops. Please contact admins'  }, 500
