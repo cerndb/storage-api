@@ -143,8 +143,8 @@ class VolumeREST(Resource):
 		VolumeREST.logger.debug('business is:' + str(business))
 		
 		if vendor == 'NetApp':
-			netapp=NetAppprov(clustername,volname,initsize,maximumsize,incrementsize,vserver,policy,junctionpath,typeaggr,ip,snapenable,business)
 			try:
+				netapp=NetAppprov(clustername,volname,initsize,maximumsize,incrementsize,vserver,policy,junctionpath,typeaggr,ip,snapenable,business)
 				result=netapp.CreateVolume()
 			except Exception as ex:
 				VolumeREST.logger.debug('problem creating volume' + str(ex))
