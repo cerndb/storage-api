@@ -1,0 +1,4 @@
+flask
+flask-restful
+flask-sso
+mod_wsgi
