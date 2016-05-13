@@ -59,7 +59,11 @@ class PathREST(Resource):
 	
 		if baseclass.GetType() == "NetApp":
 			netapp=NetAppops(spath)
-			result=netapp.GetSnapshotsList()
+			try:
+				result=netapp.GetSnapshotsList()
+			except StorageException as ex:
+				return  { 'Error retrieving volume information, may be volume is not online. Contact storage admins!': str(ex) }, 500
+			
 			if result is None:
 				PathREST.logger.debug("we got 0 snapshots")
 				return { 'snapshots': 'NONE' }, 200
