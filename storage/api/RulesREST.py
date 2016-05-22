@@ -40,7 +40,7 @@ class RulesREST(Resource):
 				if 'user' not in session:
 					RulesREST.logger.debug("no user information retrieved, may be not signed up!")
 					return { "isrole" : 'no authentication' }, 403
-				elif role_name in session['user'].get('Group'):
+				elif role_name in session['user'].get('Group').split(';'):
 					return func(*args,**kwargs)
 				else:
 					RulesREST.logger.debug("no group membership present.")
@@ -75,7 +75,11 @@ class RulesREST(Resource):
 	
 	@isrole("it-dep-db")
 	def put(self,path):
-		''' Add or remove an IP on a given existing policy. IP provided in base64 coding.'''
+		''' Add or remove an IP on a given existing policy. IP provided in base64 coding.
+			-addrule: to add an IP
+			-deleterule: to delete an IP
+		IP should be an IPv4 IP.
+		'''
 		deleterule=None
 		addrule=None
 		try:
@@ -87,10 +91,16 @@ class RulesREST(Resource):
 			args = self.reqparse_put.parse_args()
 			if 'deleterule' in request.form.keys():
 				deleterule=base64.urlsafe_b64decode(args['deleterule']).decode('ascii')	
+				assert re.search('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',deleterule), "Please provide an IPv4"
 			if 'addrule' in request.form.keys():
-				addrule=base64.urlsafe_b64decode(args['addrule']).decode('ascii')	
+				addrule=base64.urlsafe_b64decode(args['addrule']).decode('ascii')
+				assert re.search('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',deleterule), "Please provide an IPv4"
+			if not (addrule or delete):
+				return { 'put': 'please provide either deleterule or addrule'}, 400
+			
+
 		except Exception as ex:
-			return { 'get': 'wrong format ' + str(ex) }, 400
+			return { 'put': 'wrong format ' + str(ex) }, 400
 		
 		
 		if baseclass.GetType() == "NetApp":

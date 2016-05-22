@@ -10,7 +10,7 @@
 
 from flask import Flask, session, request
 from flask.ext.restful import Api, Resource, reqparse
-import sys
+import sys,traceback
 import re
 import logging
 import base64
@@ -57,7 +57,7 @@ class VolumeREST(Resource):
 				if 'user' not in session:
 					VolumeREST.logger.debug("no user information retrieved, may be not signed up!")
 					return { "isrole" : 'no authentication' }, 403
-				elif role_name in session['user'].get('Group'):
+				elif role_name in session['user'].get('Group').split(';'):
 					return func(*args,**kwargs)
 				else:
 					VolumeREST.logger.debug("no group membership present.")
@@ -147,7 +147,9 @@ class VolumeREST(Resource):
 				netapp=NetAppprov(clustername,volname,initsize,maximumsize,incrementsize,vserver,policy,junctionpath,typeaggr,ip,snapenable,business)
 				result=netapp.CreateVolume()
 			except Exception as ex:
-				VolumeREST.logger.debug('problem creating volume' + str(ex))
+				exc_type, exc_value, exc_traceback = sys.exc_info()
+				VolumeREST.logger.debug('problem creating volume : ' + str(ex))
+				VolumeREST.logger.debug('problem creating volume : ' + repr(traceback.format_exception(exc_type, exc_value, exc_traceback)))
 				return { 'volume creation ': 'error ' + str(ex) }, 500
 			else:
 				if (result==0):
@@ -193,14 +195,14 @@ class VolumeREST(Resource):
 				return { 'volume deletion ': 'error ' + str(ex) }, 500
 			else:
 				if (result==0):
-					VolumeREST.logger.debug('Volume %s has been deleted',netapp.volname)
+					VolumeREST.logger.debug('Volume %s has been deleted/restricted',netapp.volname)
 					return { 'volume deletion ': 'success' }, 200
 				else:
-					VolumeREST.logger.debug('Volume %s deletion has failed',netapp.volname)
+					VolumeREST.logger.debug('Volume %s deletion/restriction has failed',netapp.volname)
 					return { 'volume deletion ': 'error deleting' + netapp.volname }, 500
 
 		else:
-			return { 'volume deletion ': 'wrong vendor' }, 400
+			return { 'volume deletion/restriction ': 'wrong vendor' }, 400
 		
 	
 	@isrole("it-dep-db")

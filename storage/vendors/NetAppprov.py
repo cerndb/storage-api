@@ -33,7 +33,7 @@ class NetAppprov(NetAppops,BasicStorage):
 		NetAppprov.logger.debug("Begin")
 		#should we use a subset or all possible aggregates
 		self.volname=volname.lower()
-		assert re.search('^[/\-_\w]+$',self.volume), "volume name contains strange characters"
+		assert re.search('^[\-_\w]+$',self.volname), "volume name contains strange characters"
 		self.initial_size=initial_size
 		self.final_size=final_size
 		self.increment=increment
