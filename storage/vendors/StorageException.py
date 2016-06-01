@@ -8,4 +8,6 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
-class StorageException(Exception): pass
+
+class StorageException(Exception):
+    pass

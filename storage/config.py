@@ -17,7 +17,7 @@ import json
 CONFIG = {}
 
 try: 
-	with open('/ORA/dbs01/work/storage-api/storage/logging.conf') as jdata:
+	with open('/etc/storage/logging.conf') as jdata:
 	    	config_logging = json.load(jdata)
 
 	logging.config.dictConfig(config_logging)
@@ -25,7 +25,7 @@ try:
 
 	logger.debug("logger has been initialised")
 	
-	with open('/ORA/dbs01/work/storage-api/storage/storage.conf') as jdataf:
+	with open('/etc/storage/storage.conf') as jdataf:
     		CONFIG = json.load(jdataf)
 	
 	

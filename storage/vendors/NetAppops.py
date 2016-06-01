@@ -14,7 +14,7 @@ import re
 import time
 import logging
 from storage.config import CONFIG
-sys.path.append("/ORA/dbs01/work/storage-api/lib/python/NetApp")
+sys.path.append("/opt/netapp-manageability-sdk-5.4P1/lib/python/NetApp")
 from NaServer import *
 from storage.vendors.BasicStorage import BasicStorage
 from storage.vendors.StorageException import StorageException

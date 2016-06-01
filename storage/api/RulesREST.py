@@ -32,7 +32,7 @@ class RulesREST(Resource):
 			RulesREST.logger = logging.getLogger('storage-api')	
 		self.reqparse_put = reqparse.RequestParser(bundle_errors=True)
 		self.reqparse_put.add_argument('addrule',type=str, location='form')
-		self.reqparse_put.add_argument('deleterule',type=str, location='form')
+		self.reqparse_put.add_argument('removerule',type=str, location='form')
 
 	def isrole(role_name):
 		def role_decorator(func):
@@ -80,7 +80,7 @@ class RulesREST(Resource):
 			-deleterule: to delete an IP
 		IP should be an IPv4 IP.
 		'''
-		deleterule=None
+		removerule=None
 		addrule=None
 		try:
 			bpath=base64.urlsafe_b64decode(path)
@@ -89,13 +89,13 @@ class RulesREST(Resource):
 			RulesREST.logger.debug("path is: %s",spath)
 		
 			args = self.reqparse_put.parse_args()
-			if 'deleterule' in request.form.keys():
-				deleterule=base64.urlsafe_b64decode(args['deleterule']).decode('ascii')	
-				assert re.search('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',deleterule), "Please provide an IPv4"
+			if 'removerule' in request.form.keys():
+				removerule=base64.urlsafe_b64decode(args['removerule']).decode('ascii')	
+				assert re.search('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',removerule), "Please provide an IPv4"
 			if 'addrule' in request.form.keys():
 				addrule=base64.urlsafe_b64decode(args['addrule']).decode('ascii')
-				assert re.search('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',deleterule), "Please provide an IPv4"
-			if not (addrule or delete):
+				assert re.search('^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}',addrule), "Please provide an IPv4"
+			if not (addrule or removerule):
 				return { 'put': 'please provide either deleterule or addrule'}, 400
 			
 
@@ -110,10 +110,10 @@ class RulesREST(Resource):
 				result=exportpolicy.CreateRuleREST(addrule)
 				if result==0:
 					return { 'rules ops ': 'success ' + str(addrule) + ' was added.' }, 200
-			elif deleterule:
-				result=exportpolicy.DeleteRuleREST(deleterule)
+			elif removerule:
+				result=exportpolicy.DeleteRuleREST(removerule)
 				if result==0:
-					return { 'rules ops ': 'success ' + str(deleterule) + ' was removed.' }, 200
+					return { 'rules ops ': 'success ' + str(removerule) + ' was removed.' }, 200
 
 
 		return { 'rules ops ': 'noops. Please contact admins'  }, 500
