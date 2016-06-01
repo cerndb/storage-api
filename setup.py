@@ -9,7 +9,7 @@
 # or submit itself to any jurisdiction.
 
 """
-DB On Demand REST API server setup file
+Storage REST API server setup file
 """
 
 from setuptools import setup, find_packages
@@ -27,9 +27,9 @@ setup(name='storage.api',
       scripts=[],
       test_suite="",
       requires=[
-          'ConfigParser',
-          'flask.ext.restful',
-          'flask',
-          'flask_sso',
-      ],
-      )
+		'ConfigParser',
+		'flask.ext.restful',
+		'flask',
+		'flask_sso',
+          ],
+     )

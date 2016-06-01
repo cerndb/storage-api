@@ -12,7 +12,7 @@ import os
 import sys
 
 # python will run in a virtual environment
-activate_this = '/ORA/dbs01/work/storage-api/v1/bin/activate_this.py'
+activate_this = './bin/activate_this.py' 
 with open(activate_this) as f:
     code = compile(f.read(), activate_this, 'exec')
     exec(code, dict(__file__=activate_this))
