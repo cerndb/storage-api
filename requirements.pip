@@ -1,4 +1,5 @@
 flask
 flask-restful
 flask-sso
+mod_wsgi-httpd
 mod_wsgi
