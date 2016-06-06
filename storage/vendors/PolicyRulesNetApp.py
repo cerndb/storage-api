@@ -13,11 +13,12 @@ import sys
 from storage.vendors.BasicStorage import BasicStorage
 from storage.vendors.StorageException import StorageException
 from storage.vendors.NetAppops import NetAppops
-sys.path.append("/opt/netapp-manageability-sdk-5.4P1/lib/python/NetApp")
-from NaServer import *
+sys.path.append("/opt/netapp-manageability-sdk-5.4P1/lib/python/NetApp")  # noqa
+from NaServer import *                                                    # noqa
 
 
 class PolicyRulesNetApp(NetAppops, BasicStorage):
+    '''This class handles the access to a given file system, it also handles the creation/destruction of policies together with individual rules.'''
     def __init__(self, serverpath):
         if __name__ == '__main__':
             PolicyRulesNetApp.logger = logging.getLogger('storage-api-console')
@@ -29,12 +30,14 @@ class PolicyRulesNetApp(NetAppops, BasicStorage):
 
     @staticmethod
     def NewVolume(serverpath, vserver):
+        '''While operating with Rules and Policies, a volume is required.'''
         comodin = PolicyRulesNetApp(serverpath)
         comodin.volume['vserver'] = vserver
         return comodin
 
     @staticmethod
     def ExistingVolume(serverpath):
+        '''While operating with Rules and Policies, a volume is required.'''
         comodin = PolicyRulesNetApp(serverpath)
         comodin.GetInfoPath(0)
         return comodin
@@ -74,7 +77,7 @@ class PolicyRulesNetApp(NetAppops, BasicStorage):
                 "volume dictionary has not been initialised. This method needs to be called from an existing volume.")
 
     def CreateRule(self, policy, ip):
-        ''' '''
+        '''Create a rule if it's not existent.'''
         match = self.GetRule(policy, ip)
         if match is None:
             rule = NaElement("export-rule-create")
@@ -114,7 +117,7 @@ class PolicyRulesNetApp(NetAppops, BasicStorage):
             return 0
 
     def GetRule(self, policy, ip):
-        ''' '''
+        '''Check if a given IP is part of a policy's rules.'''
         PolicyRulesNetApp.logger.debug("begin")
         allrules = self.GetRuleAll(policy)
         if allrules is None:
@@ -141,7 +144,7 @@ class PolicyRulesNetApp(NetAppops, BasicStorage):
                 "volume dictionary has not been initialised. This method needs to be called from an existing volume.")
 
     def GetRuleAll(self, policy):
-        ''' '''
+         '''List all rules on a given policy.'''
         PolicyRulesNetApp.logger.debug("begin")
         tag = "more"
         allrules = {}
@@ -190,7 +193,7 @@ class PolicyRulesNetApp(NetAppops, BasicStorage):
         return allrules
 
     def DeleteRuleREST(self, ip):
-        ''' Deletes a certain indexed rule in a policy and re-orders remaining rules'''
+        ''' Deletes a certain indexed rule in a policy and re-orders remaining rules.'''
         if 'policy' in self.volume.keys():
             return self.DeleteRule(self.volume['policy'], ip)
         else:
@@ -198,7 +201,7 @@ class PolicyRulesNetApp(NetAppops, BasicStorage):
                 "volume dictionary has not been initialised. This method needs to be called from an existing volume.")
 
     def DeleteRule(self, policy, ip):
-        ''' Deletes a certain indexed rule in a policy and re-orders remaining rules'''
+        ''' Deletes a certain indexed rule in a policy and re-orders remaining rules.'''
         PolicyRulesNetApp.logger.debug("begin")
         rules = {}
         index = self.GetRule(policy, ip)

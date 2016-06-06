@@ -9,6 +9,4 @@
 # or submit itself to any jurisdiction.
 
 
-
-
 '''Storage API'''

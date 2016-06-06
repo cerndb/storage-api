@@ -8,5 +8,9 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
+from storage.vendors.BasicStorage import BasicStorage
+from storage.vendors.Cephops import Cephops
+
+
 class Cephprov(Cephops, BasicStorage):
     pass

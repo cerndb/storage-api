@@ -8,7 +8,6 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
-
 import sys
 import logging
 from storage.config import CONFIG
@@ -16,12 +15,12 @@ from storage.vendors.BasicStorage import BasicStorage
 from storage.vendors.NetAppops import NetAppops
 from storage.vendors.StorageException import StorageException
 from storage.vendors.PolicyRulesNetApp import PolicyRulesNetApp
-
-sys.path.append("/opt/netapp-manageability-sdk-5.4P1/lib/python/NetApp")
-from NaServer import *
+sys.path.append("/opt/netapp-manageability-sdk-5.4P1/lib/python/NetApp")  # noqa
+from NaServer import *                                                    # noqa
 
 
 class NetAppprov(NetAppops, BasicStorage):
+    '''This class handles creation of file system in a NetApp storage. It handles lifecycle of a file system.'''
     def __init__(self, clustername, volname, initial_size, final_size, increment, vserver, firewall_name, junction_path,
                  type, firewall_ip=0, snaps=0, business=0):
         # At this point we dont know if the volume exists, create a potentially fake name
@@ -62,6 +61,10 @@ class NetAppprov(NetAppops, BasicStorage):
 
     @staticmethod
     def ExistingVol(serverpath):
+        '''In case the volume exists and it's just required to initialise the class.
+        Parameter:
+            - serverpath e.g. dbnasc501-c:/ORA/dbs00/MYVOL
+        '''
         comodin = NetAppops(serverpath)
         try:
             comodin.GetInfoPath()
@@ -74,7 +77,7 @@ class NetAppprov(NetAppops, BasicStorage):
             return None
 
     def __FindAggregate(self):
-        '''Retrieve the aggregate that has available size'''
+        '''Retrieve the aggregate that has most available size. This is a private method.'''
         NetAppprov.logger.debug("Begin")
         candidate = {}
         if CONFIG[self.business][self.vserver]["nodes"]:
@@ -99,7 +102,7 @@ class NetAppprov(NetAppops, BasicStorage):
         return sorted_candidate[0]
 
     def __AggregateFreeSize(self, node):
-        ''' It gets back all aggregates belonging to a node (controller) and their available size. Value in bytes. '''
+        ''' It gets back all aggregates belonging to a node (controller) and their available size. Value in bytes. This is a private method. '''
         NetAppprov.logger.debug("Begin")
 
         api1 = NaElement("aggr-get-iter")
@@ -149,7 +152,7 @@ class NetAppprov(NetAppops, BasicStorage):
         return result
 
     def CreateVolume(self):
-        '''Basic volume creation'''
+        '''Basic volume creation. It provisions a volume. It handles snapshot deletion policy, access policies, autosize.'''
         NetAppprov.logger.debug("begin")
         try:
             volume = self.GetInfoPath()
@@ -234,7 +237,7 @@ class NetAppprov(NetAppops, BasicStorage):
         return 0
 
     def SetAutoSize(self, maxsize, increment):
-        '''All values provided on GB'''
+        '''All values provided on GB.'''
         NetAppprov.logger.debug("begin")
         if self.admin_vserver is None:
             self.admin_vserver = super(NetAppprov, self).CreateServer(self.business, self.vserver)

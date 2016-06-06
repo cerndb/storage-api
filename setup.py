@@ -15,7 +15,7 @@ Storage REST API server setup file
 from setuptools import setup, find_packages
 
 setup(name='storage.api',
-      version='0.1.5',
+      version='0.1.6',
       description='DB Storage REST API',
       author='CERN',
       author_email='rgaspar@cern.ch',

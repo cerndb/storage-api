@@ -4,11 +4,8 @@ python:
 addons:
   apt:
     packages:
-    - httpd
-    - httpd-tools
-    - httpd-devel
+    - apache2
+    - apache2-dev
 script:
     - pip install -r requirements.pip
-    - pip install mod_wsgi-httpd
-    - APXS=~/virtualenv/python3.5/bin/mod_wsgi-apxs pip install mod_wsgi
     - python setup.py install

@@ -11,7 +11,7 @@ The actual solution presents a RESTful API developed using Flask and Python3. Us
 
 The Storage-api uses the flask-sso module developed by [Invenio](https://github.com/inveniosoftware/flask-sso). Authorisation is based on CERN e-groups (Active Directory distribution lists) and it's implemented on the endpoint using a decorator. Authentication together with some basic access control is based on [Shibboleth](https://shibboleth.net/). The use of Shibboleth determined  the choice of an http server to Apache. An again the use of Apache somehow made natural to use mod_wsgi as WSGI platform to run python code.   
 
-The API is deployed via an rpm and it runs in its own virtual environment. Further customization is done vie Puppet. 
+The API is deployed via an rpm and it runs in its own virtual environment. Further customization is done via Puppet. 
 Configuration files are expected to be found under /etc/storage. Three files should be placed there:
 
 * logging.conf: configuration of the python logging module. Files are expected to be found under /var/log/storage

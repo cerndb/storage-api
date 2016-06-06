@@ -14,11 +14,12 @@ import logging
 from storage.config import CONFIG
 from storage.vendors.BasicStorage import BasicStorage
 from storage.vendors.StorageException import StorageException
-sys.path.append("/opt/netapp-manageability-sdk-5.4P1/lib/python/NetApp")
-from NaServer import *
+sys.path.append("/opt/netapp-manageability-sdk-5.4P1/lib/python/NetApp")  # noqa
+from NaServer import *                                                    # noqa
 
 
 class NetAppops(BasicStorage):
+    """This class provides basic functionality to operate with snapshots. It handles conenction to the storage system.""" 
     def __init__(self, serverpath):
         BasicStorage.__init__(self, serverpath)
         if __name__ == '__main__':
@@ -33,6 +34,12 @@ class NetAppops(BasicStorage):
         NetAppops.logger.debug("End")
 
     def CreateServer(self, clustername, vserver=0):
+        '''Initialise a NetApp server object.
+        The method will use a vserver o a cluster wide connection, depending on the parameters provided. 
+        Parameters:
+            -clustername: e.g. dbnasc
+            -vserver: e.g. vs2sx50
+        '''
         # Find controller and controller's path
         NetAppops.logger.debug("Begin")
 
@@ -92,6 +99,7 @@ class NetAppops(BasicStorage):
         return s
 
     def GetVserver(self):
+        '''Retrieves on which vserver we are running the connection to the NetApp system.'''
         NetAppops.logger.debug("begin")
         if self.server_zapi is None:
             if len(self.volume) == 0 or 'vserver' not in self.volume.keys():
@@ -100,7 +108,12 @@ class NetAppops(BasicStorage):
         NetAppops.logger.debug("end")
 
     def GetInfoPath(self, admin=1):
-        '''It's supposed to just retrieved one volume.'''
+        '''It's supposed to just retrieved one volume. Just one volume should be possible with a given junction-path in a given globalname space.
+        Returns:
+            - a dictionary object with information about the volume.		
+
+
+        '''
 
         NetAppops.logger.debug("begin")
         s = self.CreateServer(self.clustertoconnect[0])
@@ -211,7 +224,7 @@ class NetAppops(BasicStorage):
         return self.volume
 
     def GetInfoVolandAggr(self):
-        ''' '''
+        '''It complements GetInfoPath. It provides information about the aggregate too. It works therefore with a clusterwide connection.'''
         NetAppops.logger.debug("begin")
         if not self.volume:
             self.GetInfoPath()
@@ -301,7 +314,7 @@ class NetAppops(BasicStorage):
         return snaps
 
     def CreateSnapshot(self, name=0):
-        '''It creates a snapshot with the name provided, if any'''
+        '''It creates a snapshot with the name provided, if any, otherwise a default name e.g. snapscript... is provided.'''
         NetAppops.logger.debug("begin")
         if name == 0:
             name = 'snapscript_{}'.format(time.strftime("%d%m%Y_%H%M%S", time.gmtime()))
@@ -335,7 +348,7 @@ class NetAppops(BasicStorage):
         return 0
 
     def CloneSnapshot(self, snapshot=0, junction_path=0):
-        '''Create a clone. License is requrired.'''
+        '''Create a clone. License is required on the NetApp system.'''
         NetAppops.logger.debug("begin")
         appendstr = '_{}'.format(time.strftime("%d%m%Y_%H%M%S", time.gmtime()))
         if 'name' not in self.volume:
@@ -368,7 +381,7 @@ class NetAppops(BasicStorage):
         return junction_path
 
     def DeleteSnapshot(self, name):
-        '''It deletes an snapshot on our instance volume'''
+        '''It deletes a given snapshot on our instance volume.'''
         NetAppops.logger.debug("begin")
         if name is None:
             NetAppops.logger.error("an snapshot needs to be provided")
