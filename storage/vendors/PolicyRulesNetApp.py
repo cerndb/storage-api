@@ -144,7 +144,7 @@ class PolicyRulesNetApp(NetAppops, BasicStorage):
                 "volume dictionary has not been initialised. This method needs to be called from an existing volume.")
 
     def GetRuleAll(self, policy):
-         '''List all rules on a given policy.'''
+        '''List all rules on a given policy.'''
         PolicyRulesNetApp.logger.debug("begin")
         tag = "more"
         allrules = {}

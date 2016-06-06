@@ -19,7 +19,7 @@ from NaServer import *                                                    # noqa
 
 
 class NetAppops(BasicStorage):
-    """This class provides basic functionality to operate with snapshots. It handles conenction to the storage system.""" 
+    """This class provides basic functionality to operate with snapshots. It handles conenction to the storage system."""
     def __init__(self, serverpath):
         BasicStorage.__init__(self, serverpath)
         if __name__ == '__main__':
@@ -35,7 +35,7 @@ class NetAppops(BasicStorage):
 
     def CreateServer(self, clustername, vserver=0):
         '''Initialise a NetApp server object.
-        The method will use a vserver o a cluster wide connection, depending on the parameters provided. 
+        The method will use a vserver o a cluster wide connection, depending on the parameters provided.
         Parameters:
             -clustername: e.g. dbnasc
             -vserver: e.g. vs2sx50
@@ -110,8 +110,7 @@ class NetAppops(BasicStorage):
     def GetInfoPath(self, admin=1):
         '''It's supposed to just retrieved one volume. Just one volume should be possible with a given junction-path in a given globalname space.
         Returns:
-            - a dictionary object with information about the volume.		
-
+            - a dictionary object with information about the volume.
 
         '''
 

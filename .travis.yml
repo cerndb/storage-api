@@ -6,6 +6,12 @@ addons:
     packages:
     - apache2
     - apache2-dev
-script:
+install:
     - pip install -r requirements.pip
+    - pip install flake8
+    - pip install mod_wsgi-httpd
+    - APXS=~/virtualenv/python3.5/bin/mod_wsgi-apxs pip install mod_wsgi
     - python setup.py install
+before_script:
+    - flake8 ./storage/api
+    - flake8 ./storage/vendors
