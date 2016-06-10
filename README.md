@@ -4,7 +4,7 @@
 
 ## Aim of the project
 
-IT DB Storage team is facing the need to work with different storage providers in order to deliver different storage solutions that should adapt to the different projects needs. So far, a library and a set of scripts has been developed to interact mainly with NetApp storage. 
+IT DB Storage team is facing the need to work with different storage providers in order to deliver different storage solutions that should adapt to different projects needs. So far, a library and a set of scripts has been developed to interact mainly with NetApp storage. 
 The actual solution presents a RESTful API developed using Flask and Python3. Using the power of Python and its natural Object Oriented approach, storage api pretends to cover all possible use cases e.g. NetApp, Ceph,.. and different scenarios: operations and provisioning. 
 
 ## Components
@@ -31,4 +31,38 @@ virtualenv v1
 source .v1/bin/activate
 pip3 install -r requirements.txt
 python3 setup.py install
-``` 
+```
+
+## Example
+
+In a CERN openstack workstation, our storage-api implementation is running on a server under storage-api:5002, it's shown here how to invoke the storage-api different endpoint from the command line using curl:
+
+```
+# Get the SSO cookie
+cern-get-sso-cookie --krb -u https://storage-api.cern.ch:5002/login -o storage.api
+
+# Create an snapshot called mysnap01 (in base64 'bXlzbmFwMDE=') for dbnasc501-c:/ORA/dbs00/VOLDEMO -> in base64 -> 'ZGJuYXNjNTAxLWM6L09SQS9kYnMwMC9WT0xERU1P'
+
+curl  -i https://storage-api.cern.ch:5002/storage/api/v1.0/paths/ZGJuYXNjNTAxLWM6L09SQS9kYnMwMC9WT0xERU1P -X POST  -d "snapname=bXlzbmFwMDE=" --cookie storage.api
+
+# Create a clone from mysnap01
+
+curl  -i https://storage-api.cern.ch:5002/storage/api/v1.0/paths/ZGJuYXNjNTAxLWM6L09SQS9kYnMwMC9WT0xERU1P -X POST  -d "snapname=bXlzbmFwMDE=" -d "clone=1" --cookie storage.api
+
+# Retrieve all snapshots from dbnasc501-c:/ORA/dbs00/VOLDEMO (no authentication required)
+
+curl  -i https://storage-api.cern.ch:5002/storage/api/v1.0/paths/ZGJuYXNjNTAxLWM6L09SQS9kYnMwMC9WT0xERU1P -X GET
+
+# Retrieve all export rules that apply to dbnasc501:/ORA/dbs00/VOLDEMO file system
+
+curl -i https://storage-api.cern.ch:5002/storage/api/v1.0/exports/ZGJuYXNjNTAxLWM6L09SQS9kYnMwMC9WT0xERU1P -X GET
+
+# Add a new IP (128.142.243.76 in base64 'MTI4LjE0Mi4yNDMuNzY=') to the export-police applied to dbnasc501:/ORA/dbs00/VOLDEMO file system
+
+curl -i https://storage-api.cern.ch:5002/storage/api/v1.0/exports/ZGJuYXNjNTAxLWM6L09SQS9kYnMwMC9WT0xERU1P -X PUT -d "addrule=MTI4LjE0Mi4yNDMuNzY=" --cookie storage.api
+
+# Destroy a clone: dbnasc501-c:/ORA/dbs00/VOLDEMO_05062016_151131
+
+curl -i https://storage-api.cern.ch:5002/storage/api/v1.0/volumes/ZGJuYXNjNTAxLWM6L09SQS9kYnMwMC9WT0xERU1PXzA1MDYyMDE2XzE1MTEzMQ== -X DELETE -d "clone=1" --cookie storage.api
+
+ 
