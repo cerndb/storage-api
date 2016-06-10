@@ -35,7 +35,7 @@ python3 setup.py install
 
 ## Example
 
-In a CERN openstack workstation, our storage-api implementation is running on a server under storage-api:5002, it's shown here how to invoke the storage-api different endpoint from the command line using curl:
+In a CERN openstack workstation, our storage-api implementation is running on a server under storage-api:5002, it's shown here how to invoke the storage-api different endpoints from the command line using curl:
 
 ```
 # Get the SSO cookie
@@ -53,7 +53,7 @@ curl  -i https://storage-api.cern.ch:5002/storage/api/v1.0/paths/ZGJuYXNjNTAxLWM
 
 curl  -i https://storage-api.cern.ch:5002/storage/api/v1.0/paths/ZGJuYXNjNTAxLWM6L09SQS9kYnMwMC9WT0xERU1P -X GET
 
-# Retrieve all export rules that apply to dbnasc501:/ORA/dbs00/VOLDEMO file system
+# Retrieve all export rules that apply to dbnasc501-c:/ORA/dbs00/VOLDEMO file system
 
 curl -i https://storage-api.cern.ch:5002/storage/api/v1.0/exports/ZGJuYXNjNTAxLWM6L09SQS9kYnMwMC9WT0xERU1P -X GET
 
@@ -64,5 +64,4 @@ curl -i https://storage-api.cern.ch:5002/storage/api/v1.0/exports/ZGJuYXNjNTAxLW
 # Destroy a clone: dbnasc501-c:/ORA/dbs00/VOLDEMO_05062016_151131
 
 curl -i https://storage-api.cern.ch:5002/storage/api/v1.0/volumes/ZGJuYXNjNTAxLWM6L09SQS9kYnMwMC9WT0xERU1PXzA1MDYyMDE2XzE1MTEzMQ== -X DELETE -d "clone=1" --cookie storage.api
-
 ``` 
