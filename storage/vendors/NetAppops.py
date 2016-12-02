@@ -8,14 +8,16 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
-import sys
 import time
 import logging
 from storage.config import CONFIG
 from storage.vendors.BasicStorage import BasicStorage
 from storage.vendors.StorageException import StorageException
-sys.path.append("/opt/netapp-manageability-sdk-5.4P1/lib/python/NetApp")  # noqa
-from NaServer import *                                                    # noqa
+
+from unittest.mock import MagicMock
+
+NaServer = MagicMock()
+NaElement = MagicMock()
 
 
 class NetAppops(BasicStorage):

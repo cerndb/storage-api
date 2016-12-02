@@ -9,12 +9,14 @@
 # or submit itself to any jurisdiction.
 
 import logging
-import sys
 from storage.vendors.BasicStorage import BasicStorage
 from storage.vendors.StorageException import StorageException
 from storage.vendors.NetAppops import NetAppops
-sys.path.append("/opt/netapp-manageability-sdk-5.4P1/lib/python/NetApp")  # noqa
-from NaServer import *                                                    # noqa
+
+from unittest.mock import MagicMock
+
+NaServer = MagicMock()
+NaElement = MagicMock()
 
 
 class PolicyRulesNetApp(NetAppops, BasicStorage):

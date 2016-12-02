@@ -11,9 +11,9 @@
 from flask import Flask, session,  redirect
 from flask_sso import SSO
 from flask.ext.restful import Api
-from storage.api.PathREST import PathREST
-from storage.api.VolumeREST import VolumeREST
-from storage.api.RulesREST import RulesREST
+from storage.api.resources.PathREST import PathREST
+from storage.api.resources.VolumeREST import VolumeREST
+from storage.api.resources.RulesREST import RulesREST
 import os
 from datetime import datetime
 
