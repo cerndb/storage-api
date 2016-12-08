@@ -13,9 +13,10 @@ Storage REST API server setup file
 """
 
 from setuptools import setup, find_packages
+import apis
 
-setup(name='storage.api',
-      version='0.1.6',
+setup(name='storage-api',
+      version=apis.__version__,
       description='DB Storage REST API',
       author='CERN',
       author_email='rgaspar@cern.ch',
@@ -24,11 +25,11 @@ setup(name='storage.api',
       maintainer_email='rgaspar@cern.ch',
       url='https://github.com/cerndb/storage-api',
       packages=find_packages(),
-      scripts=[],
+      scripts=['app.py'],
       test_suite="",
       requires=[
 		'ConfigParser',
-		'flask.ext.restful',
+		'flask_restplus',
 		'flask',
 		'flask_sso',
           ],
