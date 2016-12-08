@@ -33,6 +33,13 @@ pip3 install -r requirements.txt
 python3 setup.py install
 ```
 
+You can run the API in the Flask debug server without SSO like this:
+
+```
+$ export FLASK_APP=storage.api.handlers.app
+$ export FLASK_DEBUG=1
+$ flask run
+```
 ## Example
 
 In a CERN openstack workstation, our storage-api implementation is running on a server under storage-api:5002, it's shown here how to invoke the storage-api different endpoints from the command line using curl:
