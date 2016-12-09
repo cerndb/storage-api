@@ -13,12 +13,21 @@ from flask_restplus import Api
 from .ceph import api as ceph
 from .netapp import api as netapp
 
+sso_authorisation = {
+    'type': 'shibboleth',
+    'flow': 'accessCode',
+    'tokenUrl': 'https://borkbork/login'
+}
+
+
 __version__ = '1.0.0'
 
 api = Api(
     title='CERN Unified Storage API',
     version=__version__,
-    description='A unified storage API for all data-storage back-ends.'
+    description='A unified storage API for all data-storage back-ends.',
+    authorizations={'sso': sso_authorisation},
+    validate=True,
 )
 
 api.add_namespace(ceph)

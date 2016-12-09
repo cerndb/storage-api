@@ -11,55 +11,60 @@
 This module covers the API for the NetApp filers.
 """
 
-from flask_restplus import Namespace, Resource, fields
-
-api = Namespace('netapp', description='Operations on NetApp filers')
-
-volume = api.model('Volume', {
-    'name': fields.String,
-    'autosize_enabled': fields.Boolean,
-    'size_used': fields.Integer,
-    'autosize_increment': fields.Integer,
-    'state': fields.String,
-    'size_total': fields.Integer,
-    'max_autosize': fields.Integer,
-    'filer_address': fields.String,
-    'junction_path': fields.String,
-    })
+g='from_snapshot')})
 
 
 @api.route('/volumes/')
 class AllVolumes(Resource):
-
+    @api.doc(description="Get a list of all volumes",
+             id='get_volumes')
     @api.marshal_with(volume, as_list=True)
     def get(self):
         return []
 
 
-@api.route('/volumes/<string:volume_name>')
+@api.route('/volumes/<path:volume_name>')
+@api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 class Volume(Resource):
 
-    @api.marshal_with(volume)
+    @api.marshal_with(volume, description="The volume named volume_name")
+    @api.doc(description="Get a specific volume by name")
+    @api.response(404, description="No such volume exists")
     def get(self, volume_name):
         return {}
 
+    @api.doc(body=optional_from_snapshot)
+    @api.expect(optional_from_snapshot, validate=True)
     def put(self, volume_name):
-        return {}
+        return marshal(apis.api.payload, optional_from_snapshot)
 
+    @api.doc(description=("Restrict the volume named *volume_name*"
+                          "but do not actually delete it"),
+             security='sso')
+    @api.response(204, description="Successfully restricted",
+                  model=None)
+    @api.response(403, description="Unauthorised",
+                  model=None)
     def delete(self, volume_name):
         return {}
 
+    @api.doc(description="Partially update volume_name",
+             security='sso')
+    @api.response(403, description="Unauthorised",
+                  model=None)
     def patch(self, volume_name):
         return {}
 
 
-@api.route('/volumes/<string:volume_name>/snapshots')
+@api.route('/volumes/<path:volume_name>/snapshots')
+@api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 class AllSnapshots(Resource):
-    def get(self):
-        pass
+    def get(self, volume_name):
+        return volume_name
 
 
-@api.route('/volumes/<string:volume_name>/snapshots/<string:snapshot_name>')
+@api.route('/volumes/<path:volume_name>/snapshots/<string:snapshot_name>')
+@api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 class Snapshots(Resource):
     def get(self):
         pass
@@ -71,37 +76,63 @@ class Snapshots(Resource):
         pass
 
 
-@api.route('/volumes/<string:volume_name>/locks')
+@api.route('/volumes/<path:volume_name>/locks')
+@api.param('volume_name', VOLUME_NAME_DESCRIPTION)
+@api.doc(description="Get the full set of locks")
 class AllLocks(Resource):
+    @api.marshal_with(lock_model, as_list=True,
+                      description="The list of lock-holders for the volume")
     def get(self):
         pass
 
 
-@api.route('/volumes/<string:volume_name>/locks/<string:host>')
+@api.route('/volumes/<path:volume_name>/locks/<string:host>')
+@api.param('volume_name', VOLUME_NAME_DESCRIPTION)
+@api.param('host', "the host holding the lock in question")
 class Locks(Resource):
-    def get(self, lock_host):
-        pass
-
+    @api.doc(description="Lock the volume with host holding the lock",
+             security='sso')
+    @api.response(201, "A new lock was added")
     def put(self, lock_host):
         pass
 
+    @api.doc(description="Force the lock for the host",
+             security="sso")
+    @api.response(403, description="Unauthorized")
+    @api.response(204, description="Lock successfully forced")
     def delete(self, lock_host):
         pass
 
 
-@api.route('/volumes/<string:volume_name>/access')
+@api.route('/volumes/<path:volume_name>/access')
+@api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 class AllAccess(Resource):
+    @api.marshal_with(access_model,
+                      description="The current ACL for the given volume",
+                      as_list=True)
+    @api.doc(description="Get the full ACL for the volume")
     def get(self):
         pass
 
 
-@api.route('/volumes/<string:volume_name>/access/<string:rule>')
+@api.route('/volumes/<path:volume_name>/access/<string:rule>')
+@api.param('volume_name', VOLUME_NAME_DESCRIPTION)
+@api.param('rule', "The rule to operate on. Must match a rule in the ACL exactly (literally)")
 class Access(Resource):
+
+    @api.doc(description="Get the access status of a given rule")
+    @api.response(404, description="No such rule exists")
+    @api.marshal_with(access_rule_model, description="The status of rule")
     def get(self):
         pass
 
+    @api.doc(description="Grant hosts matching a given pattern access to the given volume")
+    @api.response(201, description="A new access rule was added")
     def put(self):
         pass
 
+    @api.doc(description=("Revoke the access for a given rule in the ACL."))
+    @api.response(204, description="Successfully revoked the access for the given rule")
+    @api.response(404, description="No such rule exists")
     def delete(self):
         pass
