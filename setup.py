@@ -28,9 +28,8 @@ setup(name='storage-api',
       scripts=['app.py'],
       test_suite="",
       requires=[
-		'ConfigParser',
-		'flask_restplus',
-		'flask',
-		'flask_sso',
-          ],
-     )
+          'ConfigParser',
+          'flask_restplus',
+          'flask',
+          'flask_sso',
+      ])
