@@ -11,7 +11,60 @@
 This module covers the API for the NetApp filers.
 """
 
-g='from_snapshot')})
+from flask_restplus import Namespace, Resource, fields, marshal
+
+import apis
+
+VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
+                           "Must not contain leading /")
+
+api = Namespace('netapp',
+                description='Operations on NetApp filers')
+
+volume = api.model('Volume', {
+    'name': fields.String(min_length=1,
+                          description=VOLUME_NAME_DESCRIPTION,
+                          example="foo/bar/baz",
+                          required=True),
+    'autosize_enabled': fields.Boolean(required=True,
+                                       attribute='autosizeEnabled'),
+    'size_used': fields.Integer(required=True,
+                                attribute='sizeUsed'),
+    'autosize_increment': fields.Integer(required=True,
+                                         attribute="autosizeIncrement"),
+    'state': fields.String(min_length=1, required=True),
+    'size_total': fields.Integer(required=True,
+                                 attribute="sizeTotal"),
+    'max_autosize': fields.Integer(required=True,
+                                   attribute="maxAutosize"),
+    'filer_address': fields.String(min_length=1, required=True,
+                                   attribute="filerAddress"),
+    'junction_path': fields.String(min_length=1, required=True,
+                                   attribute="junctionPath"),
+    })
+
+lock_model = api.model('Lock', {
+    'host': fields.String(min_length=1, required=True,
+                          example="dbthing.cern.ch")
+})
+
+access_model = api.model('Access', {
+    'policy_name': fields.String(min_length=1,
+                                 attribute="policyName"),
+    'rules': fields.List(fields.String())
+    })
+
+access_rule_model = api.model('AccessRuleModel',
+                              {'ruleState': fields.Boolean(description="The state of the given rule: true = accept, false otherwise",
+                                                           required=True)})
+
+
+optional_from_snapshot = api.model('OptionalFromSnapshot',
+                                   {'from_snapshot':
+                                    fields.String(min_length=1,
+                                                  required=False,
+                                                  description="The snapshot name to create/restore to",
+                                                  attribute='from_snapshot')})
 
 
 @api.route('/volumes/')
