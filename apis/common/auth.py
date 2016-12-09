@@ -27,7 +27,7 @@ def in_group(group_name, session=flask.session, group_key='group'):
     def group_decorator(func):
         def group_wrapper(*args, **kwargs):
             try:
-                if session['user'][group_key].split(';'):
+                if session['user'][group_key]:
                     return func(*args, **kwargs)
                 else:
                     raise KeyError
