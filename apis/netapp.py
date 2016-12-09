@@ -10,14 +10,12 @@
 """
 This module covers the API for the NetApp filers.
 """
-
-from flask_restplus import Namespace, Resource, fields, marshal
-
 import apis
+
+from flask_restplus import Namespace, Resource, fields, marshal, abort
 
 VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
                            "Must not contain leading /")
-
 api = Namespace('netapp',
                 description='Operations on NetApp filers')
 
@@ -25,22 +23,23 @@ volume = api.model('Volume', {
     'name': fields.String(min_length=1,
                           description=VOLUME_NAME_DESCRIPTION,
                           example="foo/bar/baz",
-                          required=True),
-    'autosize_enabled': fields.Boolean(required=True,
-                                       attribute='autosizeEnabled'),
-    'size_used': fields.Integer(required=True,
-                                attribute='sizeUsed'),
-    'autosize_increment': fields.Integer(required=True,
-                                         attribute="autosizeIncrement"),
-    'state': fields.String(min_length=1, required=True),
-    'size_total': fields.Integer(required=True,
-                                 attribute="sizeTotal"),
-    'max_autosize': fields.Integer(required=True,
-                                   attribute="maxAutosize"),
-    'filer_address': fields.String(min_length=1, required=True,
+                          ),
+    'autosize_enabled': fields.Boolean(attribute='autosizeEnabled'),
+    'size_used': fields.Integer(attribute='sizeUsed'),
+    'autosize_increment': fields.Integer(attribute="autosizeIncrement"),
+    'state': fields.String(min_length=1, ),
+    'size_total': fields.Integer(attribute="sizeTotal"),
+    'max_autosize': fields.Integer(attribute="maxAutosize"),
+    'filer_address': fields.String(min_length=1,
                                    attribute="filerAddress"),
-    'junction_path': fields.String(min_length=1, required=True,
+    'junction_path': fields.String(min_length=1,
                                    attribute="junctionPath"),
+    })
+
+volume_writable_model = api.model('VolumeWritable', {
+    'autosize_enabled': fields.Boolean(attribute='autosizeEnabled'),
+    'autosize_increment': fields.Integer(attribute="autosizeIncrement"),
+    'max_autosize': fields.Integer(attribute="maxAutosize"),
     })
 
 lock_model = api.model('Lock', {
@@ -55,16 +54,27 @@ access_model = api.model('Access', {
     })
 
 access_rule_model = api.model('AccessRuleModel',
-                              {'ruleState': fields.Boolean(description="The state of the given rule: true = accept, false otherwise",
-                                                           required=True)})
+                              {'rule_state':
+                               fields.Boolean(
+                                   description=(
+                                       "The state of the given rule: "
+                                       "true = accept, false otherwise"),
+                                   required=True)})
 
 
-optional_from_snapshot = api.model('OptionalFromSnapshot',
-                                   {'from_snapshot':
-                                    fields.String(min_length=1,
-                                                  required=False,
-                                                  description="The snapshot name to create/restore to",
-                                                  attribute='from_snapshot')})
+optional_from_snapshot = api.model(
+    'OptionalFromSnapshot',
+    {
+        'autosize_enabled': fields.Boolean(attribute='autosizeEnabled'),
+        'autosize_increment': fields.Integer(attribute="autosizeIncrement"),
+        'max_autosize': fields.Integer(attribute="maxAutosize"),
+        'from_snapshot':
+        fields.String(
+            min_length=1,
+            required=False,
+            description=("The snapshot name "
+                         "to create/restore to"),
+            attribute='fromSnapshot')})
 
 
 @api.route('/volumes/')
@@ -73,7 +83,7 @@ class AllVolumes(Resource):
              id='get_volumes')
     @api.marshal_with(volume, as_list=True)
     def get(self):
-        return []
+        abort(500, "Would return a list of all volumes")
 
 
 @api.route('/volumes/<path:volume_name>')
@@ -84,29 +94,32 @@ class Volume(Resource):
     @api.doc(description="Get a specific volume by name")
     @api.response(404, description="No such volume exists")
     def get(self, volume_name):
-        return {}
+        abort(500, "Would return a volume")
 
     @api.doc(body=optional_from_snapshot)
     @api.expect(optional_from_snapshot, validate=True)
     def put(self, volume_name):
-        return marshal(apis.api.payload, optional_from_snapshot)
+        return
 
     @api.doc(description=("Restrict the volume named *volume_name*"
-                          "but do not actually delete it"),
+                          " but do not actually delete it"),
              security='sso')
     @api.response(204, description="Successfully restricted",
                   model=None)
     @api.response(403, description="Unauthorised",
                   model=None)
     def delete(self, volume_name):
-        return {}
+        abort(500, "Would restrict '{}'".format(volume_name))
 
     @api.doc(description="Partially update volume_name",
              security='sso')
     @api.response(403, description="Unauthorised",
                   model=None)
+    @api.expect(volume_writable_model, validate=True)
     def patch(self, volume_name):
-        return {}
+        data = marshal(apis.api.payload, volume_writable_model)
+        abort(500, ("Would update with values '{}'"
+                    .format(dict(data))))
 
 
 @api.route('/volumes/<path:volume_name>/snapshots')
