@@ -59,9 +59,10 @@ access_rule_model = api.model('AccessRuleModel',
                                    required=True)})
 
 snapshot_model = api.model('Snapshot', {
-        'autosize_enabled': fields.Boolean(attribute='autosizeEnabled'),
-        'autosize_increment': fields.Integer(attribute="autosizeIncrement"),
-        'max_autosize': fields.Integer(attribute="maxAutosize"),
+    'name': fields.Boolean(),
+    'autosize_enabled': fields.Boolean(attribute='autosizeEnabled'),
+    'autosize_increment': fields.Integer(attribute="autosizeIncrement"),
+    'max_autosize': fields.Integer(attribute="maxAutosize"),
     })
 
 optional_from_snapshot = api.inherit(
@@ -76,11 +77,10 @@ optional_from_snapshot = api.inherit(
                          "to create/restore to"),
             attribute='fromSnapshot')})
 
-
-snapshot_parser = api.parser()
-snapshot_parser.add_argument('purge_old_if_needed', type=bool, location='query',
-                             help=("If `true`, purge the oldest snapshot"
-                                   " iff necessary to create a new one."))
+snapshot_put_model = api.model('SnapshotPut', {
+    'purge_old_if_needed': fields.Boolean(
+        description=("If `true`, purge the oldest snapshot iff necessary "
+                     " to create a new one"))})
 
 
 @api.route('/volumes/')
@@ -150,7 +150,7 @@ class Snapshots(Resource):
                                     "Try `purge_old_if_needed=true`."))
     @api.response(403, description="Insufficient rights/not logged in")
     @api.response(201, description="Successfully created a snapshot")
-    @api.expect(snapshot_parser)
+    @api.expect(snapshot_put_model)
     @api.doc(description=("Create a new snapshot of *volume_name*"
                           " under *snapshot_name*"))
     def put(self):
