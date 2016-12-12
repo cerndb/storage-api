@@ -19,27 +19,24 @@ VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
 api = Namespace('netapp',
                 description='Operations on NetApp filers')
 
-volume = api.model('Volume', {
-    'name': fields.String(min_length=1,
-                          description=VOLUME_NAME_DESCRIPTION,
-                          example="foo/bar/baz",
-                          ),
-    'autosize_enabled': fields.Boolean(attribute='autosizeEnabled'),
-    'size_used': fields.Integer(attribute='sizeUsed'),
-    'autosize_increment': fields.Integer(attribute="autosizeIncrement"),
-    'state': fields.String(min_length=1, ),
-    'size_total': fields.Integer(attribute="sizeTotal"),
-    'max_autosize': fields.Integer(attribute="maxAutosize"),
-    'filer_address': fields.String(min_length=1,
-                                   attribute="filerAddress"),
-    'junction_path': fields.String(min_length=1,
-                                   attribute="junctionPath"),
-    })
-
 volume_writable_model = api.model('VolumeWritable', {
     'autosize_enabled': fields.Boolean(attribute='autosizeEnabled'),
     'autosize_increment': fields.Integer(attribute="autosizeIncrement"),
     'max_autosize': fields.Integer(attribute="maxAutosize"),
+    })
+
+volume = api.inherit('Volume', volume_writable_model, {
+    'name': fields.String(min_length=1,
+                          description=VOLUME_NAME_DESCRIPTION,
+                          example="foo/bar/baz",
+                          ),
+    'size_used': fields.Integer(attribute='sizeUsed'),
+    'state': fields.String(min_length=1, ),
+    'size_total': fields.Integer(attribute="sizeTotal"),
+    'filer_address': fields.String(min_length=1,
+                                   attribute="filerAddress"),
+    'junction_path': fields.String(min_length=1,
+                                   attribute="junctionPath"),
     })
 
 lock_model = api.model('Lock', {
@@ -61,13 +58,16 @@ access_rule_model = api.model('AccessRuleModel',
                                        "true = accept, false otherwise"),
                                    required=True)})
 
-
-optional_from_snapshot = api.model(
-    'OptionalFromSnapshot',
-    {
+snapshot_model = api.model('Snapshot', {
         'autosize_enabled': fields.Boolean(attribute='autosizeEnabled'),
         'autosize_increment': fields.Integer(attribute="autosizeIncrement"),
         'max_autosize': fields.Integer(attribute="maxAutosize"),
+    })
+
+optional_from_snapshot = api.inherit(
+    'OptionalFromSnapshot',
+    snapshot_model,
+    {
         'from_snapshot':
         fields.String(
             min_length=1,
@@ -75,6 +75,12 @@ optional_from_snapshot = api.model(
             description=("The snapshot name "
                          "to create/restore to"),
             attribute='fromSnapshot')})
+
+
+snapshot_parser = api.parser()
+snapshot_parser.add_argument('purge_old_if_needed', type=bool, location='query',
+                             help=("If `true`, purge the oldest snapshot"
+                                   " iff necessary to create a new one."))
 
 
 @api.route('/volumes/')
@@ -125,6 +131,8 @@ class Volume(Resource):
 @api.route('/volumes/<path:volume_name>/snapshots')
 @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 class AllSnapshots(Resource):
+    @api.marshal_with(snapshot_model, description="All snapshots for the volume",
+                      as_list=True)
     def get(self, volume_name):
         return volume_name
 
@@ -132,9 +140,19 @@ class AllSnapshots(Resource):
 @api.route('/volumes/<path:volume_name>/snapshots/<string:snapshot_name>')
 @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 class Snapshots(Resource):
+
+    @api.doc(description="Get the current information for a given snapshot")
+    @api.marshal_with(snapshot_model)
     def get(self):
         pass
 
+    @api.response(409, description=("Too many snapshots, cannot create another. "
+                                    "Try `purge_old_if_needed=true`."))
+    @api.response(403, description="Insufficient rights/not logged in")
+    @api.response(201, description="Successfully created a snapshot")
+    @api.expect(snapshot_parser)
+    @api.doc(description=("Create a new snapshot of *volume_name*"
+                          " under *snapshot_name*"))
     def put(self):
         pass
 
