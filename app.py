@@ -7,11 +7,12 @@
 # In applying this license, CERN does not waive the privileges and immunities
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
+from apis import api
+import extensions
 
 import os
 
 from flask import Flask, session, redirect, abort
-from apis import api
 from flask_sso import SSO
 
 app = Flask(__name__)
@@ -31,6 +32,8 @@ app.config.setdefault('SSO_LOGIN_URL', '/login')
 
 sso = SSO(app=app)
 app.secret_key = os.urandom(24)
+
+extensions.DummyStorage().init_app(app)
 
 
 @sso.login_handler

@@ -13,6 +13,35 @@ This module covers the API for the NetApp filers.
 import apis
 
 from flask_restplus import Namespace, Resource, fields, marshal, abort
+from flask import current_app
+
+_BACKEND_NAME = 'DummyStorage'
+
+
+def dict_without(d, *keys):
+    d2 = d.copy()
+    for key in keys:
+        d2.pop(key)
+
+    return d2
+
+
+def with_backend(func):
+    """
+    A decorator to pass a keyword argument with the current backend into
+    a function, typically a get/set/put function.
+
+    Example:
+    ```
+    @with_backend
+    get(self, name, backend):
+      return backend.volumes
+    ```
+    """
+    def func_wrapper(*args, **kwargs):
+        return func(*args, backend=current_app.extensions[_BACKEND_NAME], **kwargs)
+    return func_wrapper
+
 
 VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
                            "Must not contain leading /")
@@ -20,9 +49,9 @@ api = Namespace('netapp',
                 description='Operations on NetApp filers')
 
 volume_writable_model = api.model('VolumeWritable', {
-    'autosize_enabled': fields.Boolean(attribute='autosizeEnabled'),
-    'autosize_increment': fields.Integer(attribute="autosizeIncrement"),
-    'max_autosize': fields.Integer(attribute="maxAutosize"),
+    'autosize_enabled': fields.Boolean(),
+    'autosize_increment': fields.Integer(),
+    'max_autosize': fields.Integer(),
     })
 
 volume = api.inherit('Volume', volume_writable_model, {
@@ -30,13 +59,11 @@ volume = api.inherit('Volume', volume_writable_model, {
                           description=VOLUME_NAME_DESCRIPTION,
                           example="foo/bar/baz",
                           ),
-    'size_used': fields.Integer(attribute='sizeUsed'),
+    'size_used': fields.Integer(),
     'state': fields.String(min_length=1, ),
-    'size_total': fields.Integer(attribute="sizeTotal"),
-    'filer_address': fields.String(min_length=1,
-                                   attribute="filerAddress"),
-    'junction_path': fields.String(min_length=1,
-                                   attribute="junctionPath"),
+    'size_total': fields.Integer(),
+    'filer_address': fields.String(min_length=1),
+    'junction_path': fields.String(min_length=1),
     })
 
 lock_model = api.model('Lock', {
@@ -45,8 +72,7 @@ lock_model = api.model('Lock', {
 })
 
 access_model = api.model('Access', {
-    'policy_name': fields.String(min_length=1,
-                                 attribute="policyName"),
+    'policy_name': fields.String(min_length=1),
     'rules': fields.List(fields.String())
     })
 
@@ -60,9 +86,9 @@ access_rule_model = api.model('AccessRuleModel',
 
 snapshot_model = api.model('Snapshot', {
     'name': fields.Boolean(),
-    'autosize_enabled': fields.Boolean(attribute='autosizeEnabled'),
-    'autosize_increment': fields.Integer(attribute="autosizeIncrement"),
-    'max_autosize': fields.Integer(attribute="maxAutosize"),
+    'autosize_enabled': fields.Boolean(),
+    'autosize_increment': fields.Integer(),
+    'max_autosize': fields.Integer(),
     })
 
 optional_from_snapshot = api.inherit(
@@ -71,11 +97,13 @@ optional_from_snapshot = api.inherit(
     {
         'from_snapshot':
         fields.String(
-            min_length=1,
             required=False,
-            description=("The snapshot name "
-                         "to create/restore to"),
-            attribute='fromSnapshot')})
+            description=("The snapshot name to create from/restore")),
+        'from_volume':
+        fields.String(required=False,
+                      description=("When cloning a volume, use this volume"
+                                   " as basis for the snapshot to start"
+                                   " from"))})
 
 snapshot_put_model = api.model('SnapshotPut', {
     'purge_old_if_needed': fields.Boolean(
@@ -88,8 +116,9 @@ class AllVolumes(Resource):
     @api.doc(description="Get a list of all volumes",
              id='get_volumes')
     @api.marshal_with(volume, as_list=True)
-    def get(self):
-        abort(500, "Would return a list of all volumes")
+    @with_backend
+    def get(self, backend):
+        return backend.volumes
 
 
 @api.route('/volumes/<path:volume_name>')
@@ -102,10 +131,29 @@ class Volume(Resource):
     def get(self, volume_name):
         abort(500, "Would return a volume")
 
-    @api.doc(body=optional_from_snapshot)
+    @api.doc(body=optional_from_snapshot,
+             description=("Create a new volume with the given details. "
+                          " If `from_snapshot` is a snapshot and `volume_name`"
+                          " already refers to an existing volume, roll back "
+                          "that volume to that snapshot. If `from_snapshot` "
+                          "is a snapshot, `from_volume` is an existing volume "
+                          "and `volume_name` doesn't already exist, create a "
+                          "clone of `from_volume` named `volume_name`, in the "
+                          "state at `from_snapshot`."))
     @api.expect(optional_from_snapshot, validate=True)
-    def put(self, volume_name):
-        return
+    @with_backend
+    def put(self, volume_name, backend):
+        data = marshal(apis.api.payload, optional_from_snapshot)
+
+        if data['from_volume'] and data['from_snapshot']:
+            backend.clone_volume(volume_name, data['from_volume'], data['from_snapshot'])
+
+        elif data['from_snapshot']:
+            backend.rollback_volume(volume_name, data['from_snapshot'])
+        else:
+            backend.create_volume(volume_name, **dict_without(dict(data), 'from_snapshot',
+                                                          'from_volume',
+                                                          'name'))
 
     @api.doc(description=("Restrict the volume named *volume_name*"
                           " but do not actually delete it"),
@@ -114,8 +162,9 @@ class Volume(Resource):
                   model=None)
     @api.response(403, description="Unauthorised",
                   model=None)
-    def delete(self, volume_name):
-        abort(500, "Would restrict '{}'".format(volume_name))
+    @with_backend
+    def delete(self, volume_name, backend):
+        backend.restrict_volume(volume_name)
 
     @api.doc(description="Partially update volume_name",
              security='sso')
@@ -133,8 +182,9 @@ class Volume(Resource):
 class AllSnapshots(Resource):
     @api.marshal_with(snapshot_model, description="All snapshots for the volume",
                       as_list=True)
-    def get(self, volume_name):
-        return volume_name
+    @with_backend
+    def get(self, volume_name, backend):
+        return backend.get_snapshots(volume_name)
 
 
 @api.route('/volumes/<path:volume_name>/snapshots/<string:snapshot_name>')
@@ -143,8 +193,9 @@ class Snapshots(Resource):
 
     @api.doc(description="Get the current information for a given snapshot")
     @api.marshal_with(snapshot_model)
-    def get(self):
-        pass
+    @with_backend
+    def get(volume_name, snapshot_name, backend):
+        return backend.get_snapshot(volume_name, snapshot_name)
 
     @api.response(409, description=("Too many snapshots, cannot create another. "
                                     "Try `purge_old_if_needed=true`."))
