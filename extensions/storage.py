@@ -28,6 +28,11 @@ class StorageBackend(metaclass=ABCMeta):
 
     @abstractmethod
     def get_volume(self, name):
+        """
+        Return a specific volume.
+
+        Raises KeyError if no volume named name exists.
+        """
         return NotImplemented
 
     @abstractmethod
@@ -108,7 +113,6 @@ class DummyStorage(StorageBackend):
 
     @property
     def volumes(self):
-        print(self.vols)
         return list(self.vols.values())
 
     def get_volume(self, path):

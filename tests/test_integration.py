@@ -57,6 +57,22 @@ def test_list_no_volumes(client):
     assert response == []
 
 
+@pytest.mark.parametrize('volume_name', ["samevolume"] * 4)
+def test_put_new_volume_idempotent(client, volume_name):
+    resource = '/netapp/volumes/{}'.format(volume_name)
+    put_code, put_response = _put(client, resource, data={})
+
+    assert put_code == 200
+    assert not put_response
+
+    get_code, stored_resource = _get(client, resource)
+    assert get_code == 200
+    assert 'errors' not in stored_resource
+    assert stored_resource['name'] == volume_name
+
+    assert len(_get(client, '/netapp/volumes')[1]) == 1
+
+
 @pytest.mark.parametrize('volume_name', ["firstvolume", "secondvolume"])
 def test_put_new_volume(client, volume_name):
     resource = '/netapp/volumes/{}'.format(volume_name)
