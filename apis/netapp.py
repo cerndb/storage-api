@@ -85,7 +85,7 @@ access_rule_model = api.model('AccessRuleModel',
                                    required=True)})
 
 snapshot_model = api.model('Snapshot', {
-    'name': fields.Boolean(),
+    'name': fields.String(),
     'autosize_enabled': fields.Boolean(),
     'autosize_increment': fields.Integer(),
     'max_autosize': fields.Integer(),
