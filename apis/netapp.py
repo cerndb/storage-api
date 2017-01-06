@@ -151,9 +151,10 @@ class Volume(Resource):
         elif data['from_snapshot']:
             backend.rollback_volume(volume_name, data['from_snapshot'])
         else:
-            backend.create_volume(volume_name, **dict_without(dict(data), 'from_snapshot',
-                                                          'from_volume',
-                                                          'name'))
+            backend.create_volume(volume_name, **dict_without(dict(data),
+                                                              'from_snapshot',
+                                                              'from_volume',
+                                                              'name'))
 
     @api.doc(description=("Restrict the volume named *volume_name*"
                           " but do not actually delete it"),
