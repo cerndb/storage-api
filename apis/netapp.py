@@ -128,8 +128,12 @@ class Volume(Resource):
     @api.marshal_with(volume, description="The volume named volume_name")
     @api.doc(description="Get a specific volume by name")
     @api.response(404, description="No such volume exists")
-    def get(self, volume_name):
-        abort(500, "Would return a volume")
+    @with_backend
+    def get(self, volume_name, backend):
+        try:
+            return backend.get_volume(volume_name)
+        except KeyError:
+            abort(404, "No such volume: '{}'".format(volume_name))
 
     @api.doc(body=optional_from_snapshot,
              description=("Create a new volume with the given details. "

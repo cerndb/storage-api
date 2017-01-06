@@ -112,7 +112,7 @@ class DummyStorage(StorageBackend):
         return list(self.vols.values())
 
     def get_volume(self, path):
-        return self.vols.get(path, None)
+        return self.vols[path]
 
     def restrict_volume(self, path):
         self.vols[path]['state'] = 'restricted'

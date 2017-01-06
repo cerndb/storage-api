@@ -31,7 +31,9 @@ def _get(client, path, **params):
 
 def _put(client, resource, data):
     """
-    Perform a PUT request to a client with the provided data
+    Perform a PUT request to a client with the provided data.
+
+    Returns a tuple of the response code and its decoded contents.
     """
     return _decode_response(
         client.put(resource,
@@ -56,7 +58,7 @@ def test_list_no_volumes(client):
 
 
 @pytest.mark.parametrize('volume_name', ["firstvolume", "secondvolume"])
-def test_put_volume(client, volume_name):
+def test_put_new_volume(client, volume_name):
     resource = '/netapp/volumes/{}'.format(volume_name)
     put_code, put_response = _put(client, resource, data={})
 
@@ -69,3 +71,15 @@ def test_put_volume(client, volume_name):
     assert stored_resource['name'] == volume_name
 
     assert len(_get(client, '/netapp/volumes')[1]) >= 1
+
+
+def test_get_nonexistent_volume(client):
+    resource = '/netapp/volumes/shouldnotexist'
+
+    get_code, get_response = _get(client, resource)
+
+    print(get_response)
+
+    assert get_code == 404
+
+    assert 'message' in get_response
