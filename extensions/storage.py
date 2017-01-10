@@ -20,7 +20,7 @@ class StorageBackend(metaclass=ABCMeta):
     @abstractmethod
     def volumes():
         """
-        Return all properties of the storage backend.
+        Return all volumes of the storage backend.
 
         Read-only property.
         """
@@ -119,7 +119,7 @@ class DummyStorage(StorageBackend):
         return self.vols[path]
 
     def restrict_volume(self, path):
-        self.vols[path]['state'] = 'restricted'
+        self.vols.pop(path)
 
     def create_volume(self, name, **kwargs):
         data = {'name': name,

@@ -29,7 +29,6 @@ def dict_without(d, *keys):
     return d2
 
 
-
 def init_namespace(api, backend_name):
     def backend():
         return current_app.extensions[backend_name]
@@ -104,7 +103,6 @@ def init_namespace(api, backend_name):
         def get(self):
             return backend().volumes
 
-
     @api.route('/volumes/<path:volume_name>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
     class Volume(Resource):
@@ -138,9 +136,9 @@ def init_namespace(api, backend_name):
                 backend().rollback_volume(volume_name, data['from_snapshot'])
             else:
                 backend().create_volume(volume_name, **dict_without(dict(data),
-                                                                  'from_snapshot',
-                                                                  'from_volume',
-                                                                  'name'))
+                                                                    'from_snapshot',
+                                                                    'from_volume',
+                                                                    'name'))
 
         @api.doc(description=("Restrict the volume named *volume_name*"
                               " but do not actually delete it"),
@@ -151,6 +149,7 @@ def init_namespace(api, backend_name):
                       model=None)
         def delete(self, volume_name):
             backend().restrict_volume(volume_name)
+            return '', 204
 
         @api.doc(description="Partially update volume_name",
                  security='sso')
@@ -162,7 +161,6 @@ def init_namespace(api, backend_name):
             abort(500, ("Would update with values '{}'"
                         .format(dict(data))))
 
-
     @api.route('/volumes/<path:volume_name>/snapshots')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
     class AllSnapshots(Resource):
@@ -170,7 +168,6 @@ def init_namespace(api, backend_name):
                           as_list=True)
         def get(self, volume_name):
             return backend().get_snapshots(volume_name)
-
 
     @api.route('/volumes/<path:volume_name>/snapshots/<string:snapshot_name>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
@@ -194,7 +191,6 @@ def init_namespace(api, backend_name):
         def delete(self):
             pass
 
-
     @api.route('/volumes/<path:volume_name>/locks')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
     @api.doc(description="Get the full set of locks")
@@ -203,7 +199,6 @@ def init_namespace(api, backend_name):
                           description="The list of lock-holders for the volume")
         def get(self):
             pass
-
 
     @api.route('/volumes/<path:volume_name>/locks/<string:host>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
@@ -222,7 +217,6 @@ def init_namespace(api, backend_name):
         def delete(self, lock_host):
             pass
 
-
     @api.route('/volumes/<path:volume_name>/access')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
     class AllAccess(Resource):
@@ -232,7 +226,6 @@ def init_namespace(api, backend_name):
         @api.doc(description="Get the full ACL for the volume")
         def get(self):
             pass
-
 
     @api.route('/volumes/<path:volume_name>/access/<string:rule>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
