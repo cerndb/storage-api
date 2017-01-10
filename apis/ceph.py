@@ -7,8 +7,9 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
+import apis.common
 
 from flask_restplus import Namespace
 
-
 api = Namespace('ceph', description='Operations on Ceph')
+apis.common.init_namespace(api, backend_name="DummyStorage")
