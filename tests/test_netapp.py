@@ -15,7 +15,8 @@ def _decode_response(result):
 
     Returns a tuple of the response code and its decoded contents.
     """
-    return result.status_code, json.loads(result.get_data(as_text=True))
+    data = result.get_data(as_text=True)
+    return result.status_code, json.loads(data) if data else None
 
 
 def _get(client, path, **params):
@@ -39,6 +40,17 @@ def _put(client, resource, data):
         client.put(resource,
                    follow_redirects=True,
                    data=json.dumps(data),
+                   headers=_DEFAULT_HEADERS))
+
+def _delete(client, resource):
+    """
+    Perform a DELETE request to a client with the provided data.
+
+    Returns a tuple of the response code and its decoded contents.
+    """
+    return _decode_response(
+        client.delete(resource,
+                   follow_redirects=True,
                    headers=_DEFAULT_HEADERS))
 
 
@@ -99,3 +111,17 @@ def test_get_nonexistent_volume(client):
     assert get_code == 404
 
     assert 'message' in get_response
+
+
+def test_create_delete_volume(client):
+    resource = '/netapp/volumes/myvolume'
+
+    _put(client, resource, data={})
+
+    code, response = _delete(client, resource)
+
+    assert code == 204
+
+    get_code, _get_response = _get(client, resource)
+
+    assert get_code == 404
