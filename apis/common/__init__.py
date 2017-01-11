@@ -158,8 +158,11 @@ def init_namespace(api, backend_name):
                       model=None)
         @in_group(ADMIN_GROUP)
         def delete(self, volume_name):
-            backend().restrict_volume(volume_name)
-            return '', 204
+            try:
+                backend().restrict_volume(volume_name)
+                return '', 204
+            except KeyError:
+                abort(code=404, message="No such volume")
 
         @api.doc(description="Partially update volume_name",
                  security='sso')
@@ -196,8 +199,11 @@ def init_namespace(api, backend_name):
         @api.expect(snapshot_put_model)
         @api.doc(description=("Create a new snapshot of *volume_name*"
                               " under *snapshot_name*"))
-        def put(self):
-            pass
+        def put(self, volume_name, snapshot_name):
+            current_app.logger.info("Creating snapshot {} for volume {}"
+                                    .format(snapshot_name, volume_name))
+            backend().create_snapshot(volume_name, snapshot_name)
+            return '', 201
 
         def delete(self):
             pass

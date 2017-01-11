@@ -4,6 +4,7 @@ import apis.common
 import json
 from urllib.parse import urlencode
 from contextlib import contextmanager
+import uuid
 
 import pytest
 
@@ -182,3 +183,39 @@ def test_create_wrong_group(client, namespace):
     assert put_code == 403
     get_code, _get_response = _get(client, resource)
     assert get_code == 404
+
+
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_delete_nonexistent_volume(client, namespace):
+    resource = '/{}/volumes/{}_{}'.format(namespace, uuid.uuid1(), namespace)
+
+    with user_set(client):
+        delete_code, _result = _delete(client, resource)
+    assert delete_code == 404
+
+
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_create_snapshot_from_volume(client, namespace):
+    volume = '/{}/volumes/{}_{}'.format(namespace, uuid.uuid1(), namespace)
+
+    with user_set(client):
+        _put_code, _put_result = _put(client, volume,
+                                      data={'max_autosize': 42,
+                                            'autosize_increment': 12})
+
+    snapshot_name = "{}_{}".format(uuid.uuid1(), namespace)
+    snapshot = '{}/{}'.format(volume, snapshot_name)
+
+    with user_set(client):
+        snapshot_put_code, _snapshot_put_result = _put(client, snapshot, data={})
+
+    #assert snapshot_put_code == 201
+
+    get_code, get_result = _get(client, snapshot)
+    assert get_code == 200
+    assert get_result['name'] == snapshot_name
+
+    snapshots_get_code, get_results = _get(client, '{}/snapshots'.format(volume))
+    assert snapshots_get_code == 200
+
+    assert any(map(lambda x: x['name'] == snapshot_name, get_results))

@@ -41,6 +41,10 @@ class StorageBackend(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
+    def create_snapshot(self, volume_name, snapshot_name):
+        return NotImplemented
+
+    @abstractmethod
     def get_snapshots(self, volume_name):
         return NotImplemented
 
@@ -58,6 +62,9 @@ class StorageBackend(metaclass=ABCMeta):
 
     @abstractmethod
     def restrict_volume(self, volume_name):
+        """
+        Raises KeyError if volume_name is not present.
+        """
         return NotImplemented
 
     @property
@@ -125,7 +132,7 @@ class DummyStorage(StorageBackend):
     def create_volume(self, name, **kwargs):
         data = {'name': name,
                 'locks': [],
-                'snapshots': [],
+                'snapshots': {},
                 **kwargs}
         self.vols[name] = data
         current_app.logger.info("Current volume data is: {}"
@@ -155,11 +162,14 @@ class DummyStorage(StorageBackend):
         if name in self.vols:
             raise ValueError("Name already in use!")
 
-    def get_snapshot():
-        pass
+    def create_snapshot(self, volume_name, snapshot_name):
+        self.vols[volume_name]['snapshots'][snapshot_name] = "Hello"
 
-    def get_snapshots():
-        pass
+    def get_snapshot(self, volume_name, snapshot_name):
+        return self.vols[volume_name]['snapshots'][snapshot_name]
+
+    def get_snapshots(self, volume_name):
+        return list(self.vols[volume_name]['snapshots'].values())
 
     def rollback_volume():
         pass
