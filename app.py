@@ -40,7 +40,7 @@ extensions.DummyStorage().init_app(app)
 @sso.login_handler
 def login(user_info):
     session['user'] = user_info
-    session['user']["group"] = set(user_info["group"].split(';'))
+    session['user']["group"] = user_info["group"].split(';')
     return redirect('/')
 
 
@@ -50,7 +50,7 @@ def error_callback(user_info):
         return abort(403)
     else:
         session['user'] = user_info
-        session['user']['group'] = set([apis.common.ADMIN_GROUP])
+        session['user']['group'] = [apis.common.ADMIN_GROUP]
         print(user_info)
         return redirect('/')
 
