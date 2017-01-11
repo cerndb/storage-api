@@ -11,7 +11,7 @@
 import flask
 
 
-def in_group(group_name, session=flask.session, group_key='group'):
+def in_group(group_name, session=flask.g, group_key='group'):
     """
     Decorator: call flask.abort(403) if user is not in the specified
     group, or if the session is unauthenticated.
@@ -27,11 +27,11 @@ def in_group(group_name, session=flask.session, group_key='group'):
     def group_decorator(func):
         def group_wrapper(*args, **kwargs):
             try:
-                if session['user'][group_key]:
+                if group_name in session.user[group_key]:
                     return func(*args, **kwargs)
                 else:
                     raise KeyError
-            except KeyError:
+            except (KeyError, AttributeError):
                 flask.abort(403)
         return group_wrapper
     return group_decorator

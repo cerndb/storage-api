@@ -9,6 +9,7 @@
 # or submit itself to any jurisdiction.
 
 import apis
+from .auth import in_group
 
 from flask_restplus import Resource, fields, marshal, abort
 from flask import current_app
@@ -16,6 +17,7 @@ from flask import current_app
 
 VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
                            "Must not contain leading /")
+ADMIN_GROUP = 'admin-group'
 
 
 def dict_without(d, *keys):
@@ -131,6 +133,7 @@ def init_namespace(api, backend_name):
                               "clone of `from_volume` named `volume_name`, in the "
                               "state at `from_snapshot`."))
         @api.expect(optional_from_snapshot, validate=True)
+        @in_group(ADMIN_GROUP)
         def put(self, volume_name):
             data = marshal(apis.api.payload, optional_from_snapshot)
 
@@ -152,6 +155,7 @@ def init_namespace(api, backend_name):
                       model=None)
         @api.response(403, description="Unauthorised",
                       model=None)
+        @in_group(ADMIN_GROUP)
         def delete(self, volume_name):
             backend().restrict_volume(volume_name)
             return '', 204
@@ -161,6 +165,7 @@ def init_namespace(api, backend_name):
         @api.response(403, description="Unauthorised",
                       model=None)
         @api.expect(volume_writable_model, validate=True)
+        @in_group(ADMIN_GROUP)
         def patch(self, volume_name):
             data = marshal(apis.api.payload, volume_writable_model)
             abort(500, ("Would update with values '{}'"

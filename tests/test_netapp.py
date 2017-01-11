@@ -1,11 +1,27 @@
 import app
-import pytest
+import apis.common
+import extensions
+
 import json
 from urllib.parse import urlencode
+from contextlib import contextmanager
+
+import pytest
+
+from flask import appcontext_pushed, g
 
 
 _DEFAULT_HEADERS = {'Content-Type': 'application/json',
                     'Accept': 'application/json'}
+
+
+@contextmanager
+def user_set(user={'group': [apis.common.ADMIN_GROUP]}):
+    def handler(sender, **kwargs):
+        g.user = user
+
+    with appcontext_pushed.connected_to(handler, app.app):
+        yield
 
 
 def _decode_response(result):
@@ -61,7 +77,9 @@ def client(request):
     Fixture to set up a Flask test client
     """
     app.app.testing = True
-    return app.app.test_client()
+
+    with app.app.test_client() as client:
+        yield client
 
 
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
@@ -75,7 +93,8 @@ def test_list_no_volumes(client, namespace):
                          zip(["samevolume"] * 4, ["ceph", "netapp"]))
 def test_put_new_volume_idempotent(client, volume_name, namespace):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
-    put_code, put_response = _put(client, resource, data={})
+    with user_set():
+        put_code, put_response = _put(client, resource, data={})
 
     assert put_code == 200
     assert not put_response
@@ -92,7 +111,9 @@ def test_put_new_volume_idempotent(client, volume_name, namespace):
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 def test_put_new_volume(client, volume_name, namespace):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
-    put_code, put_response = _put(client, resource, data={})
+
+    with user_set():
+        put_code, put_response = _put(client, resource, data={})
 
     assert put_code == 200
     assert not put_response
@@ -122,12 +143,43 @@ def test_get_nonexistent_volume(client, namespace):
 def test_create_delete_volume(client, namespace):
     resource = '/{}/volumes/myvolume'.format(namespace)
 
-    _put(client, resource, data={})
-
-    code, response = _delete(client, resource)
+    with user_set():
+        _put(client, resource, data={})
+        code, response = _delete(client, resource)
 
     assert code == 204
 
     get_code, _get_response = _get(client, resource)
 
+    assert get_code == 404
+
+
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_create_delete_volume_unauthorised(client, namespace):
+    resource = '/{}/volumes/myvolume{}'.format(namespace, namespace)
+
+    put_code, _result = _put(client, resource, data={})
+    assert put_code == 403
+
+    get_code, _get_response = _get(client, resource)
+    assert get_code == 404
+
+    with user_set():
+        put_code, _put_result = _put(client, resource, data={})
+
+    # delete_code, _result = _delete(client, resource, data={})
+    # assert delete_code == 403
+    final_get_code, _get_response = _get(client, resource)
+    assert final_get_code == 200
+
+
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_create_wrong_group(client, namespace):
+    resource = '/{}/volumes/wrong_group{}'.format(namespace, namespace)
+
+    with user_set(user={'group': ['completely-unauthorised-group']}):
+        put_code, _put_result = _put(client, resource, data={})
+
+    assert put_code == 403
+    get_code, _get_response = _get(client, resource)
     assert get_code == 404
