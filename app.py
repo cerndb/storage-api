@@ -8,11 +8,12 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 from apis import api
+import apis
 import extensions
 
 import os
 
-from flask import Flask, session, redirect, abort
+from flask import Flask, redirect, abort, session
 from flask_sso import SSO
 
 app = Flask(__name__)
@@ -38,8 +39,8 @@ extensions.DummyStorage().init_app(app)
 
 @sso.login_handler
 def login(user_info):
-    session["user"] = user_info
-    session["user"]["group"] = set(user_info["group"].split(';'))
+    session['user'] = user_info
+    session['user']["group"] = set(user_info["group"].split(';'))
     return redirect('/')
 
 
@@ -48,6 +49,8 @@ def error_callback(user_info):
     if not app.debug:
         return abort(403)
     else:
+        session['user'] = user_info
+        session['user']['group'] = set([apis.common.ADMIN_GROUP])
         print(user_info)
         return redirect('/')
 
