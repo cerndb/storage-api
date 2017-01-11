@@ -12,7 +12,7 @@ This is a generalised back-end for storage systems.
 """
 from abc import ABCMeta, abstractmethod
 
-from flask import current_app
+#from flask import current_app
 
 
 class StorageBackend(metaclass=ABCMeta):
@@ -135,8 +135,8 @@ class DummyStorage(StorageBackend):
                 'snapshots': {},
                 **kwargs}
         self.vols[name] = data
-        current_app.logger.info("Current volume data is: {}"
-                                .format(str(self.vols)))
+#        current_app.logger.info("Current volume data is: {}"
+#                                .format(str(self.vols)))
 
     @property
     def locks(self):
@@ -163,7 +163,7 @@ class DummyStorage(StorageBackend):
             raise ValueError("Name already in use!")
 
     def create_snapshot(self, volume_name, snapshot_name):
-        self.vols[volume_name]['snapshots'][snapshot_name] = "Hello"
+        self.vols[volume_name]['snapshots'][snapshot_name] = {'name': snapshot_name}
 
     def get_snapshot(self, volume_name, snapshot_name):
         return self.vols[volume_name]['snapshots'][snapshot_name]
@@ -171,7 +171,7 @@ class DummyStorage(StorageBackend):
     def get_snapshots(self, volume_name):
         return list(self.vols[volume_name]['snapshots'].values())
 
-    def rollback_volume():
+    def rollback_volume(self, volume_name, restore_snapshot_name):
         pass
 
 

@@ -203,7 +203,7 @@ def test_create_snapshot_from_volume(client, namespace):
                                       data={'max_autosize': 42,
                                             'autosize_increment': 12})
 
-    snapshot_name = "{}_{}".format(uuid.uuid1(), namespace)
+    snapshot_name = "{}_{}".format("snapshot-name", namespace)
     snapshot = '{}/{}'.format(volume, snapshot_name)
 
     with user_set(client):
