@@ -31,6 +31,11 @@ def dict_without(d, *keys):
 
 def init_namespace(api, backend_name):
     def backend():
+        """
+        Return the actual backend object as given by backend_name. Has
+        to be a function due to the app context not being available
+        until later.
+        """
         return current_app.extensions[backend_name]
 
     volume_writable_model = api.model('VolumeWritable', {

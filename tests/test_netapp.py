@@ -42,6 +42,7 @@ def _put(client, resource, data):
                    data=json.dumps(data),
                    headers=_DEFAULT_HEADERS))
 
+
 def _delete(client, resource):
     """
     Perform a DELETE request to a client with the provided data.
@@ -50,8 +51,8 @@ def _delete(client, resource):
     """
     return _decode_response(
         client.delete(resource,
-                   follow_redirects=True,
-                   headers=_DEFAULT_HEADERS))
+                      follow_redirects=True,
+                      headers=_DEFAULT_HEADERS))
 
 
 @pytest.fixture(scope="function")
@@ -63,15 +64,17 @@ def client(request):
     return app.app.test_client()
 
 
-def test_list_no_volumes(client):
-    code, response = _get(client, '/netapp/volumes')
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_list_no_volumes(client, namespace):
+    code, response = _get(client, "/{}/volumes".format(namespace))
     assert code == 200
     assert response == []
 
 
-@pytest.mark.parametrize('volume_name', ["samevolume"] * 4)
-def test_put_new_volume_idempotent(client, volume_name):
-    resource = '/netapp/volumes/{}'.format(volume_name)
+@pytest.mark.parametrize('volume_name,namespace',
+                         zip(["samevolume"] * 4, ["ceph", "netapp"]))
+def test_put_new_volume_idempotent(client, volume_name, namespace):
+    resource = '/{}/volumes/{}'.format(namespace, volume_name)
     put_code, put_response = _put(client, resource, data={})
 
     assert put_code == 200
@@ -82,12 +85,13 @@ def test_put_new_volume_idempotent(client, volume_name):
     assert 'errors' not in stored_resource
     assert stored_resource['name'] == volume_name
 
-    assert len(_get(client, '/netapp/volumes')[1]) == 1
+    assert len(_get(client, '/{}/volumes'.format(namespace))[1]) == 1
 
 
 @pytest.mark.parametrize('volume_name', ["firstvolume", "secondvolume"])
-def test_put_new_volume(client, volume_name):
-    resource = '/netapp/volumes/{}'.format(volume_name)
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_put_new_volume(client, volume_name, namespace):
+    resource = '/{}/volumes/{}'.format(namespace, volume_name)
     put_code, put_response = _put(client, resource, data={})
 
     assert put_code == 200
@@ -98,11 +102,12 @@ def test_put_new_volume(client, volume_name):
     assert 'errors' not in stored_resource
     assert stored_resource['name'] == volume_name
 
-    assert len(_get(client, '/netapp/volumes')[1]) >= 1
+    assert len(_get(client, '/{}/volumes'.format(namespace))[1]) >= 1
 
 
-def test_get_nonexistent_volume(client):
-    resource = '/netapp/volumes/shouldnotexist'
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_get_nonexistent_volume(client, namespace):
+    resource = '/{}/volumes/shouldnotexist'.format(namespace)
 
     get_code, get_response = _get(client, resource)
 
@@ -113,8 +118,9 @@ def test_get_nonexistent_volume(client):
     assert 'message' in get_response
 
 
-def test_create_delete_volume(client):
-    resource = '/netapp/volumes/myvolume'
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_create_delete_volume(client, namespace):
+    resource = '/{}/volumes/myvolume'.format(namespace)
 
     _put(client, resource, data={})
 

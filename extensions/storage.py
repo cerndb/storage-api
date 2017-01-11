@@ -108,8 +108,8 @@ class StorageBackend(metaclass=ABCMeta):
 class DummyStorage(StorageBackend):
 
     vols = {}
-    locks = []
-    rules = []
+    locks_store = []
+    rules_store = []
 
     @property
     def volumes(self):
@@ -130,7 +130,7 @@ class DummyStorage(StorageBackend):
 
     @property
     def locks(self):
-        return self.locks
+        return self.locks_store
 
     def add_lock():
         pass
