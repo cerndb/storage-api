@@ -12,8 +12,10 @@ import apis
 import extensions
 
 import os
+import logging
 
-from flask import Flask, redirect, abort, session
+import flask
+from flask import Flask
 from flask_sso import SSO
 
 app = Flask(__name__)
@@ -36,29 +38,42 @@ app.secret_key = os.urandom(24)
 
 extensions.DummyStorage().init_app(app)
 
+app.logger.setLevel(logging.INFO)
+
 
 @sso.login_handler
 def login(user_info):
-    session['user'] = user_info
-    session['user']["group"] = user_info["group"].split(';')
-    return redirect('/')
+    flask.session['user'] = user_info
+    groups = user_info["group"].split(';')
+    app.logger.info("Shibboleth reported the following groups: {}"
+                    .format(", ".join(groups)))
+    flask.session['user']["group"] = groups
+    return flask.redirect('/')
 
 
 @sso.login_error_handler
 def error_callback(user_info):
     if not app.debug:
-        return abort(403)
+        return flask.abort(403)
     else:
-        session['user'] = user_info
-        session['user']['group'] = [apis.common.ADMIN_GROUP]
-        print(user_info)
-        return redirect('/')
+        app.logger.warning("Failed login, but authenticating anyway as"
+                           " we are in dev mode")
+        flask.session['user'] = user_info
+        flask.session['user']['group'] = [apis.common.ADMIN_GROUP]
+        app.logger.info("User data is: {}".format(str(flask.session['user'])))
+        return flask.redirect('/')
 
 
 @app.route('/logout')
 def logout():
-    session.pop('user')
-    return redirect('/')
+    app.logger.info("Current session data: {}".format(str(flask.session)))
+    if 'user' in flask.session:
+        app.logger.info("Logging out user")
+        flask.session.pop('user')
+    else:
+        app.logger.warning("No user logged in!")
+
+    return flask.redirect('/')
 
 
 if __name__ == '__main__':

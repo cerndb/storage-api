@@ -12,7 +12,7 @@ import apis
 from .auth import in_group
 
 from flask_restplus import Resource, fields, marshal, abort
-from flask import current_app
+from flask import current_app, session
 
 
 VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
@@ -118,6 +118,7 @@ def init_namespace(api, backend_name):
         @api.doc(description="Get a specific volume by name")
         @api.response(404, description="No such volume exists")
         def get(self, volume_name):
+            current_app.logger.info("Session is: {}".format(str(session)))
             try:
                 return backend().get_volume(volume_name)
             except KeyError:

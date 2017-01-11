@@ -10,8 +10,9 @@
 """
 This is a generalised back-end for storage systems.
 """
-
 from abc import ABCMeta, abstractmethod
+
+from flask import current_app
 
 
 class StorageBackend(metaclass=ABCMeta):
@@ -127,6 +128,8 @@ class DummyStorage(StorageBackend):
                 'snapshots': [],
                 **kwargs}
         self.vols[name] = data
+        current_app.logger.info("Current volume data is: {}"
+                                .format(str(self.vols)))
 
     @property
     def locks(self):
