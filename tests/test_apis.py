@@ -9,8 +9,10 @@ import uuid
 import logging
 
 import pytest
-from hypothesis import given, example
-from hypothesis.strategies import characters, text, composite
+from hypothesis import given, example, assume
+from hypothesis.strategies import (characters, text, lists,
+                                   composite, integers,
+                                   booleans, sampled_from)
 
 
 _DEFAULT_HEADERS = {'Content-Type': 'application/json',
@@ -42,6 +44,23 @@ def slash_names(draw):
     left = draw(name_strings())
     right = draw(name_strings())
     return "{}/{}".format(left, right)
+
+
+@composite
+def patch_arguments(draw):
+    keys = draw(lists(elements=sampled_from(["autosize_enabled",
+                                             "autosize_increment",
+                                             "max_autosize"])))
+
+    d = dict()
+
+    for key in keys:
+        if key == "autosize_enabled":
+            d[key] = draw(booleans())
+        else:
+            d[key] = draw(integers(min_value=0))
+
+    return d
 
 
 @contextmanager
@@ -79,7 +98,7 @@ def _get(client, path, **params):
                                        headers=_DEFAULT_HEADERS))
 
 
-def _put(client, resource, data):
+def _put(client, resource, data={}):
     """
     Perform a PUT request to a client with the provided data.
 
@@ -106,6 +125,21 @@ def _delete(client, resource):
         client.delete(resource,
                       follow_redirects=True,
                       headers=_DEFAULT_HEADERS))
+
+
+def _patch(client, resource, data):
+    """
+    Perform a PATCH request to a client with the provided data.
+
+    Returns a tuple of the response code and its decoded contents.
+    """
+    log.info("DELETE:ing {}".format(resource))
+
+    return _decode_response(
+        client.patch(resource,
+                     data=data,
+                     follow_redirects=True,
+                     headers=_DEFAULT_HEADERS))
 
 
 @pytest.fixture(scope="function")
@@ -336,3 +370,21 @@ def test_clone_from_snapshot_source_does_not_exist(client, namespace):
     assert put_code == 404
     assert 'message' in put_result
     assert 'does not exist' in put_result['message']
+
+
+@given(volume_name=name_strings(), patch_args=patch_arguments())
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_patch_volume(client, namespace, volume_name, patch_args):
+    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+
+    with user_set(client):
+        put_code, put_result = _put(client, volume)
+
+        patch_code, _patch_result = _patch(client, volume, data=patch_args)
+
+    assert patch_code == 200
+
+    _get_code, get_result = _get(volume)
+
+    for key, value in patch_args:
+        assert get_result[key] == value
