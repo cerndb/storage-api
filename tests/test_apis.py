@@ -201,7 +201,7 @@ def test_create_wrong_group(client, namespace):
 
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 def test_delete_nonexistent_volume(client, namespace):
-    resource = '/{}/volumes/{}_{}'.format(namespace, uuid.uuid1(), namespace)
+    resource = '/{}/volumes/{}'.format(namespace, uuid.uuid1())
 
     with user_set(client):
         delete_code, _result = _delete(client, resource)
@@ -210,14 +210,14 @@ def test_delete_nonexistent_volume(client, namespace):
 
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 def test_create_snapshot_from_volume(client, namespace):
-    volume = '/{}/volumes/{}_{}'.format(namespace, uuid.uuid1(), namespace)
+    volume = '/{}/volumes/{}'.format(namespace, uuid.uuid1())
 
     with user_set(client):
         _put_code, _put_result = _put(client, volume,
                                       data={'max_autosize': 42,
                                             'autosize_increment': 12})
 
-    snapshot_name = "{}_{}".format("shotsnap", namespace)
+    snapshot_name = "{}".format("shotsnap", namespace)
     snapshot = '{}/snapshots/{}'.format(volume, snapshot_name)
 
     with user_set(client):
@@ -233,3 +233,4 @@ def test_create_snapshot_from_volume(client, namespace):
     assert snapshots_get_code == 200
 
     assert any(map(lambda x: x['name'] == snapshot_name, get_results))
+    assert len(get_results) == 1
