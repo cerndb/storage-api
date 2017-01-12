@@ -9,6 +9,11 @@
 
 """
 This is a generalised back-end for storage systems.
+
+In general, methods are expected to raise KeyErrors on 404-type errors
+(e.g. something not found), and ValueErrors on invalid input. In both
+cases, reasonable descriptions of what went wrong should be included,
+and -- if possible -- suggestions on how to fix the situation.
 """
 from abc import ABCMeta, abstractmethod
 import logging

@@ -9,6 +9,8 @@ import uuid
 import logging
 
 import pytest
+from hypothesis import given, example
+from hypothesis.strategies import characters, text, composite
 
 
 _DEFAULT_HEADERS = {'Content-Type': 'application/json',
@@ -16,6 +18,30 @@ _DEFAULT_HEADERS = {'Content-Type': 'application/json',
 
 
 log = logging.getLogger(__name__)
+
+
+def name_strings():
+    """
+    A Hypothesis strategy to generate reasonable name strings
+    """
+    def sane_first_character(s):
+        c = s[0]
+        return c not in ['/']
+
+    return text(alphabet=characters(blacklist_characters=['\n', '#', '?'],
+                                    max_codepoint=1000),
+                min_size=1).filter(sane_first_character)
+
+
+@composite
+def slash_names(draw):
+    """
+    A Compound Hypothesis strategy to generate names containing a / (not
+    as the first character).
+    """
+    left = draw(name_strings())
+    right = draw(name_strings())
+    return "{}/{}".format(left, right)
 
 
 @contextmanager
@@ -121,9 +147,11 @@ def test_put_new_volume_idempotent(client, volume_name, namespace):
     assert len(_get(client, '/{}/volumes'.format(namespace))[1]) == 1
 
 
-@pytest.mark.parametrize('volume_name', ["firstvolume", "secondvolume"])
+@given(volume_name=name_strings())
+@example(volume_name="foo/bar")
+@example(volume_name="foo\\bar")
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-def test_put_new_volume(client, volume_name, namespace):
+def test_put_new_volume(client, namespace, volume_name):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
 
     with user_set(client):
@@ -137,19 +165,16 @@ def test_put_new_volume(client, volume_name, namespace):
     assert 'errors' not in stored_resource
     assert stored_resource['name'] == volume_name
 
-    assert len(_get(client, '/{}/volumes'.format(namespace))[1]) == 1
 
-
+@given(volume_name=name_strings())
+@example(volume_name="foo/bar")
+@example(volume_name="foo\\bar")
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-def test_get_nonexistent_volume(client, namespace):
-    resource = '/{}/volumes/shouldnotexist'.format(namespace)
+def test_get_nonexistent_volume(client, namespace, volume_name):
+    resource = '/{}/volumes/{}'.format(namespace, volume_name)
 
     get_code, get_response = _get(client, resource)
-
-    print(get_response)
-
     assert get_code == 404
-
     assert 'message' in get_response
 
 
@@ -199,9 +224,12 @@ def test_create_wrong_group(client, namespace):
     assert get_code == 404
 
 
+@given(volume_name=name_strings())
+@example(volume_name="foo/bar")
+@example(volume_name="foo\\bar")
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-def test_delete_nonexistent_volume(client, namespace):
-    resource = '/{}/volumes/{}'.format(namespace, uuid.uuid1())
+def test_delete_nonexistent_volume(client, namespace, volume_name):
+    resource = '/{}/volumes/{}'.format(namespace, volume_name)
 
     with user_set(client):
         delete_code, _result = _delete(client, resource)
