@@ -137,7 +137,7 @@ def test_put_new_volume(client, volume_name, namespace):
     assert 'errors' not in stored_resource
     assert stored_resource['name'] == volume_name
 
-    assert len(_get(client, '/{}/volumes'.format(namespace))[1]) >= 1
+    assert len(_get(client, '/{}/volumes'.format(namespace))[1]) == 1
 
 
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
@@ -170,7 +170,7 @@ def test_create_delete_volume(client, namespace):
 
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 def test_create_delete_volume_unauthorised(client, namespace):
-    resource = '/{}/volumes/myvolume{}'.format(namespace, namespace)
+    resource = '/{}/volumes/myvolume'.format(namespace)
 
     put_code, _result = _put(client, resource, data={})
     assert put_code == 403
@@ -189,7 +189,7 @@ def test_create_delete_volume_unauthorised(client, namespace):
 
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 def test_create_wrong_group(client, namespace):
-    resource = '/{}/volumes/wrong_group{}'.format(namespace, namespace)
+    resource = '/{}/volumes/wrong_group'.format(namespace)
 
     with user_set(client, user={'group': ['completely-unauthorised-group']}):
         put_code, _put_result = _put(client, resource, data={})
@@ -234,3 +234,8 @@ def test_create_snapshot_from_volume(client, namespace):
 
     assert any(map(lambda x: x['name'] == snapshot_name, get_results))
     assert len(get_results) == 1
+
+
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_rollback_from_snapshot(client, namespace):
+    volume = '/{}/volumes/{}'.format(namespace, uuid.uuid1())

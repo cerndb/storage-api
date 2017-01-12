@@ -107,6 +107,14 @@ def init_namespace(api, backend_name):
             description=("If `true`, purge the oldest snapshot iff necessary "
                          " to create a new one"))})
 
+    @api.errorhandler
+    def default_error_handler(error):
+        return {'message': str(error)}, getattr(error, 'code', 500)
+
+    @api.errorhandler(KeyError)
+    def key_error_handler(error):
+        return {'message': str(error)}, 404
+
     @api.route('/volumes/')
     class AllVolumes(Resource):
         @api.doc(description="Get a list of all volumes",
@@ -125,10 +133,7 @@ def init_namespace(api, backend_name):
         def get(self, volume_name):
             assert "/snapshots" not in volume_name
             log.info("GET for {}".format(volume_name))
-            try:
-                return backend().get_volume(volume_name)
-            except KeyError:
-                abort(404, "No such volume: '{}'".format(volume_name))
+            return backend().get_volume(volume_name)
 
         @api.doc(body=optional_from_snapshot,
                  description=("Create a new volume with the given details. "
@@ -166,11 +171,8 @@ def init_namespace(api, backend_name):
         @in_group(ADMIN_GROUP)
         def delete(self, volume_name):
             assert "/snapshots" not in volume_name
-            try:
-                backend().restrict_volume(volume_name)
-                return '', 204
-            except KeyError:
-                abort(code=404, message="No such volume")
+            backend().restrict_volume(volume_name)
+            return '', 204
 
         @api.doc(description="Partially update volume_name",
                  security='sso')
