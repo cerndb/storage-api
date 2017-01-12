@@ -12,9 +12,10 @@ import apis
 from .auth import in_group
 
 import logging
+import traceback
 
 from flask_restplus import Resource, fields, marshal, abort
-from flask import current_app, session
+from flask import current_app
 
 
 VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
@@ -109,11 +110,24 @@ def init_namespace(api, backend_name):
 
     @api.errorhandler
     def default_error_handler(error):
+        log.warning(traceback.format_exc())
         return {'message': str(error)}, getattr(error, 'code', 500)
 
     @api.errorhandler(KeyError)
     def key_error_handler(error):
+        """
+        Key Errors represent something being abscent in the back-end.
+        """
+        log.warning(traceback.format_exc())
         return {'message': str(error)}, 404
+
+    @api.errorhandler(ValueError)
+    def value_error_handler(error):
+        """
+        ValueErrors represent invalid input.
+        """
+        log.warning(traceback.format_exc())
+        return {'message': str(error)}, 400
 
     @api.route('/volumes/')
     class AllVolumes(Resource):
@@ -152,6 +166,7 @@ def init_namespace(api, backend_name):
 
             if data['from_volume'] and data['from_snapshot']:
                 backend().clone_volume(volume_name, data['from_volume'], data['from_snapshot'])
+                return '', 201
 
             elif data['from_snapshot']:
                 backend().rollback_volume(volume_name, data['from_snapshot'])

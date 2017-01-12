@@ -172,6 +172,12 @@ class DummyStorage(StorageBackend):
         if name in self.vols:
             raise ValueError("Name already in use!")
 
+        try:
+            self.vols[name] = self.vols[from_volume_name]
+        except KeyError:
+            raise KeyError("Target volume '{}' does not exist"
+                           .format(from_volume_name))
+
     def create_snapshot(self, volume_name, snapshot_name):
         log.info("Creating snapshot {}:{}".format(volume_name, snapshot_name))
         self.vols[volume_name]['snapshots'][snapshot_name] = {'name': snapshot_name}

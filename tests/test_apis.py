@@ -239,3 +239,72 @@ def test_create_snapshot_from_volume(client, namespace):
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 def test_rollback_from_snapshot(client, namespace):
     volume = '/{}/volumes/{}'.format(namespace, uuid.uuid1())
+
+    snapshot_name = "snapshot"
+    snapshot_resource = "{}/snapshots/{}".format(volume, snapshot_name)
+
+    with user_set(client):
+        _put(client, volume, data={})
+        _put(client, snapshot_resource, data={})
+        put_code, put_result = _put(client,
+                                    volume,
+                                    data={'from_snapshot': snapshot_name})
+
+    assert put_code == 200
+    # No way of verifying that the volume was actually restored.
+
+
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_clone_from_snapshot(client, namespace):
+    master_name = str(uuid.uuid1())
+    volume = '/{}/volumes/{}'.format(namespace, master_name)
+    clone_volume = '{}/volumes/{}'.format(namespace, "clone")
+
+    snapshot_name = "snapshot"
+    snapshot_resource = "{}/snapshots/{}".format(volume, snapshot_name)
+
+    with user_set(client):
+        _put(client, volume, data={})
+        _put(client, snapshot_resource, data={})
+        put_code, put_result = _put(client,
+                                    clone_volume,
+                                    data={'from_snapshot': snapshot_name,
+                                          'from_volume': master_name})
+
+    assert put_code == 201
+    assert _get(client, clone_volume) == _get(client, volume)
+
+
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_clone_from_snapshot_name_collission(client, namespace):
+    volume_name = str(uuid.uuid1())
+    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+
+    snapshot_name = "snapshot"
+    snapshot_resource = "{}/snapshots/{}".format(volume, snapshot_name)
+
+    with user_set(client):
+        _put(client, volume, data={})
+        _put(client, snapshot_resource, data={})
+        put_code, put_result = _put(client,
+                                    volume,
+                                    data={'from_snapshot': snapshot_name,
+                                          'from_volume': volume_name})
+    assert put_code == 400
+    assert 'message' in put_result
+    assert 'in use' in put_result['message']
+
+
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_clone_from_snapshot_source_does_not_exist(client, namespace):
+    volume_name = str(uuid.uuid1())
+    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+
+    with user_set(client):
+        put_code, put_result = _put(client,
+                                    volume,
+                                    data={'from_snapshot': 'no-snapshot',
+                                          'from_volume': volume_name})
+    assert put_code == 404
+    assert 'message' in put_result
+    assert 'does not exist' in put_result['message']
