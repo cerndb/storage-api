@@ -11,6 +11,8 @@
 import apis
 from .auth import in_group
 
+import logging
+
 from flask_restplus import Resource, fields, marshal, abort
 from flask import current_app, session
 
@@ -18,6 +20,9 @@ from flask import current_app, session
 VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
                            "Must not contain leading /")
 ADMIN_GROUP = 'admin-group'
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def dict_without(d, *keys):
@@ -118,7 +123,8 @@ def init_namespace(api, backend_name):
         @api.doc(description="Get a specific volume by name")
         @api.response(404, description="No such volume exists")
         def get(self, volume_name):
-            current_app.logger.info("Session is: {}".format(str(session)))
+            assert "/snapshots" not in volume_name
+            log.info("GET for {}".format(volume_name))
             try:
                 return backend().get_volume(volume_name)
             except KeyError:
@@ -136,6 +142,7 @@ def init_namespace(api, backend_name):
         @api.expect(optional_from_snapshot, validate=True)
         @in_group(ADMIN_GROUP)
         def put(self, volume_name):
+            assert "/snapshots" not in volume_name
             data = marshal(apis.api.payload, optional_from_snapshot)
 
             if data['from_volume'] and data['from_snapshot']:
@@ -158,6 +165,7 @@ def init_namespace(api, backend_name):
                       model=None)
         @in_group(ADMIN_GROUP)
         def delete(self, volume_name):
+            assert "/snapshots" not in volume_name
             try:
                 backend().restrict_volume(volume_name)
                 return '', 204
@@ -171,6 +179,7 @@ def init_namespace(api, backend_name):
         @api.expect(volume_writable_model, validate=True)
         @in_group(ADMIN_GROUP)
         def patch(self, volume_name):
+            assert "/snapshots" not in volume_name
             data = marshal(apis.api.payload, volume_writable_model)
             abort(500, ("Would update with values '{}'"
                         .format(dict(data))))
@@ -181,6 +190,7 @@ def init_namespace(api, backend_name):
         @api.marshal_with(snapshot_model, description="All snapshots for the volume",
                           as_list=True)
         def get(self, volume_name):
+            assert "/snapshots" not in volume_name
             return backend().get_snapshots(volume_name)
 
     @api.route('/volumes/<path:volume_name>/snapshots/<string:snapshot_name>')
@@ -189,7 +199,7 @@ def init_namespace(api, backend_name):
 
         @api.doc(description="Get the current information for a given snapshot")
         @api.marshal_with(snapshot_model)
-        def get(volume_name, snapshot_name):
+        def get(self, volume_name, snapshot_name):
             return backend().get_snapshot(volume_name, snapshot_name)
 
         @api.response(409, description=("Too many snapshots, cannot create another. "
@@ -200,8 +210,8 @@ def init_namespace(api, backend_name):
         @api.doc(description=("Create a new snapshot of *volume_name*"
                               " under *snapshot_name*"))
         def put(self, volume_name, snapshot_name):
-            current_app.logger.info("Creating snapshot {} for volume {}"
-                                    .format(snapshot_name, volume_name))
+            log.info("Creating snapshot {} for volume {}"
+                     .format(snapshot_name, volume_name))
             backend().create_snapshot(volume_name, snapshot_name)
             return '', 201
 

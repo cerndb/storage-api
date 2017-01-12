@@ -13,6 +13,10 @@ from flask_restplus import Api
 from .ceph import api as ceph
 from .netapp import api as netapp
 
+import logging
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+
 sso_authorisation = {
     'type': 'shibboleth',
     'flow': 'accessCode',

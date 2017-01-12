@@ -11,6 +11,9 @@
 This is a generalised back-end for storage systems.
 """
 from abc import ABCMeta, abstractmethod
+import logging
+
+log = logging.getLogger(__name__)
 
 #from flask import current_app
 
@@ -115,28 +118,32 @@ class StorageBackend(metaclass=ABCMeta):
 
 class DummyStorage(StorageBackend):
 
-    vols = {}
-    locks_store = []
-    rules_store = []
+    def __init__(self):
+        self.vols = {}
+        self.locks_store = []
+        self.rules_store = []
 
     @property
     def volumes(self):
         return list(self.vols.values())
 
     def get_volume(self, path):
+        log.info("Trying to get volume {}".format(path))
         return self.vols[path]
 
     def restrict_volume(self, path):
+        log.info("Restricting volume {}".format(path))
         self.vols.pop(path)
 
     def create_volume(self, name, **kwargs):
+        log.info("Adding new volume '{}': {}"
+                 .format(name, str(kwargs)))
+
         data = {'name': name,
                 'locks': [],
                 'snapshots': {},
                 **kwargs}
         self.vols[name] = data
-#        current_app.logger.info("Current volume data is: {}"
-#                                .format(str(self.vols)))
 
     @property
     def locks(self):
@@ -159,19 +166,27 @@ class DummyStorage(StorageBackend):
         pass
 
     def clone_volume(self, name, from_volume_name, from_snapshot_name):
+        log.info("Cloning volume {target} from {source}:{snapshot}"
+                 .format(target=name, source=from_volume_name,
+                         snapshot=from_snapshot_name))
         if name in self.vols:
             raise ValueError("Name already in use!")
 
     def create_snapshot(self, volume_name, snapshot_name):
+        log.info("Creating snapshot {}:{}".format(volume_name, snapshot_name))
         self.vols[volume_name]['snapshots'][snapshot_name] = {'name': snapshot_name}
 
     def get_snapshot(self, volume_name, snapshot_name):
+        log.info("Fetching snapshot {}:{}".format(volume_name, snapshot_name))
         return self.vols[volume_name]['snapshots'][snapshot_name]
 
     def get_snapshots(self, volume_name):
+        log.info("Getting snapshots for {}".format(volume_name))
         return list(self.vols[volume_name]['snapshots'].values())
 
     def rollback_volume(self, volume_name, restore_snapshot_name):
+        log.info("Restoring {} to {}"
+                 .format(volume_name, restore_snapshot_name))
         pass
 
 

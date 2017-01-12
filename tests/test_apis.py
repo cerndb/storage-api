@@ -1,16 +1,21 @@
 import app
 import apis.common
+import extensions
 
 import json
 from urllib.parse import urlencode
 from contextlib import contextmanager
 import uuid
+import logging
 
 import pytest
 
 
 _DEFAULT_HEADERS = {'Content-Type': 'application/json',
                     'Accept': 'application/json'}
+
+
+log = logging.getLogger(__name__)
 
 
 @contextmanager
@@ -42,6 +47,8 @@ def _get(client, path, **params):
     Returns a tuple of the response code and its decoded contents.
     """
     url = "{}?{}".format(path, urlencode(params)) if params else path
+    log.info("GET:ing {}".format(url))
+
     return _decode_response(client.get(url, follow_redirects=True,
                                        headers=_DEFAULT_HEADERS))
 
@@ -52,6 +59,8 @@ def _put(client, resource, data):
 
     Returns a tuple of the response code and its decoded contents.
     """
+    log.info("PUT:ing {} to {}".format(str(data), resource))
+
     return _decode_response(
         client.put(resource,
                    follow_redirects=True,
@@ -65,6 +74,8 @@ def _delete(client, resource):
 
     Returns a tuple of the response code and its decoded contents.
     """
+    log.info("DELETE:ing {}".format(resource))
+
     return _decode_response(
         client.delete(resource,
                       follow_redirects=True,
@@ -80,6 +91,9 @@ def client(request):
 
     with app.app.test_client() as client:
         yield client
+
+    log.info("App teardown initiated: re-initialising dummy backend")
+    extensions.DummyStorage().init_app(app.app)
 
 
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
@@ -203,13 +217,13 @@ def test_create_snapshot_from_volume(client, namespace):
                                       data={'max_autosize': 42,
                                             'autosize_increment': 12})
 
-    snapshot_name = "{}_{}".format("snapshot-name", namespace)
-    snapshot = '{}/{}'.format(volume, snapshot_name)
+    snapshot_name = "{}_{}".format("shotsnap", namespace)
+    snapshot = '{}/snapshots/{}'.format(volume, snapshot_name)
 
     with user_set(client):
         snapshot_put_code, _snapshot_put_result = _put(client, snapshot, data={})
 
-    #assert snapshot_put_code == 201
+    assert snapshot_put_code == 201
 
     get_code, get_result = _get(client, snapshot)
     assert get_code == 200

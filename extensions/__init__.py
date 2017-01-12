@@ -8,3 +8,7 @@
 # or submit itself to any jurisdiction.
 
 from .storage import DummyStorage
+
+import logging
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
