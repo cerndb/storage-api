@@ -9,7 +9,7 @@ import uuid
 import logging
 
 import pytest
-from hypothesis import given, example, assume
+from hypothesis import given, example
 from hypothesis.strategies import (characters, text, lists,
                                    composite, integers,
                                    booleans, sampled_from)
@@ -133,7 +133,7 @@ def _patch(client, resource, data):
 
     Returns a tuple of the response code and its decoded contents.
     """
-    log.info("DELETE:ing {}".format(resource))
+    log.info("PATCH:ing {} with {}".format(resource, str(data)))
 
     return _decode_response(
         client.patch(resource,
@@ -148,11 +148,21 @@ def client(request):
     Fixture to set up a Flask test client
     """
     app.app.testing = True
+    extensions.DummyStorage().init_app(app.app)
+
+    backends = extensions.storage.StorageBackend.__subclasses__()
+
+    for name, be in app.app.extensions.items():
+        if be.__class__ in backends:
+            # Re-wire all storage types to use the dummy back-end
+            log.debug("Set storage back-end {} to use DummyStorage"
+                      .format(name))
+            app.app.extensions[name] = app.app.extensions['DummyStorage']
 
     with app.app.test_client() as client:
         yield client
 
-    log.info("App teardown initiated: re-initialising dummy backend")
+    log.debug("App teardown initiated: re-initialising dummy backend")
     extensions.DummyStorage().init_app(app.app)
 
 
@@ -183,6 +193,7 @@ def test_put_new_volume_idempotent(client, volume_name, namespace):
 
 @given(volume_name=name_strings())
 @example(volume_name="foo/bar")
+@example(volume_name="/foo/bar")
 @example(volume_name="foo\\bar")
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 def test_put_new_volume(client, namespace, volume_name):

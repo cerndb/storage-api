@@ -148,7 +148,10 @@ class DummyStorage(StorageBackend):
         log.info("Updating volume {} with data {}"
                  .format(volume_name, data))
         for key in data:
-            self.vols[volume_name][key] = data[key]
+            try:
+                self.vols[volume_name][key] = data[key]
+            except KeyError as e:
+                raise KeyError("No such volume: {}".format(volume_name))
 
     def create_volume(self, name, **kwargs):
         log.info("Adding new volume '{}': {}"

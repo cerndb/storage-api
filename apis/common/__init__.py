@@ -17,7 +17,6 @@ import traceback
 from flask_restplus import Resource, fields, marshal, abort
 from flask import current_app
 
-
 VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
                            "Must not contain leading /")
 ADMIN_GROUP = 'admin-group'
@@ -35,6 +34,14 @@ def dict_without(d, *keys):
         d2.pop(key)
 
     return d2
+
+
+def filter_none(d):
+    """
+    Remove items in d that are None.
+    """
+
+    return dict_without(d, *filter(lambda k: d[k] is None, d.keys()))
 
 
 def init_namespace(api, backend_name):
@@ -197,7 +204,8 @@ def init_namespace(api, backend_name):
         @in_group(ADMIN_GROUP)
         def patch(self, volume_name):
             assert "/snapshots" not in volume_name
-            data = marshal(apis.api.payload, volume_writable_model)
+            data = filter_none(marshal(apis.api.payload, volume_writable_model))
+            log.info("PATCH with payload {}".format(str(data)))
             if data:
                 backend().patch_volume(volume_name, data)
             else:

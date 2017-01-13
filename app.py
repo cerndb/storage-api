@@ -19,6 +19,9 @@ from flask import Flask
 from flask_sso import SSO
 
 app = Flask(__name__)
+
+logging.basicConfig(level=logging.DEBUG)
+
 api.init_app(app)
 
 SSO_ATTRIBUTE_MAP = {
@@ -37,8 +40,6 @@ sso = SSO(app=app)
 app.secret_key = os.urandom(24)
 
 extensions.DummyStorage().init_app(app)
-
-app.logger.setLevel(logging.INFO)
 
 
 @sso.login_handler
