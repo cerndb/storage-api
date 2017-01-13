@@ -135,12 +135,14 @@ def _patch(client, resource, data):
 
     Returns a tuple of the response code and its decoded contents.
     """
-    log.info("PATCH:ing {} with {}".format(resource, str(data)))
+    encoded_data = json.dumps(data)
+
+    log.info("PATCH:ing {} with {}".format(resource, encoded_data))
 
     return _decode_response(
         client.patch(resource,
-                     data=data,
                      follow_redirects=True,
+                     data=encoded_data,
                      headers=_DEFAULT_HEADERS))
 
 
@@ -386,7 +388,6 @@ def test_clone_from_snapshot_source_does_not_exist(client, namespace):
 
 @given(volume_name=name_strings(), patch_args=patch_arguments())
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-@pytest.mark.skip(reason="no way of currently testing this")
 def test_patch_volume(client, namespace, volume_name, patch_args):
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
 
@@ -402,5 +403,5 @@ def test_patch_volume(client, namespace, volume_name, patch_args):
 
     _get_code, get_result = _get(client, volume)
 
-    for key, value in patch_args:
+    for key, value in patch_args.items():
         assert get_result[key] == value
