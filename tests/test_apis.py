@@ -30,7 +30,9 @@ def name_strings():
         c = s[0]
         return c not in ['/']
 
-    return text(alphabet=characters(blacklist_characters=['\n', '#', '?'],
+    bad_chars = ['\n', '#', '?', '%']
+
+    return text(alphabet=characters(blacklist_characters=bad_chars,
                                     max_codepoint=1000),
                 min_size=1).filter(sane_first_character)
 
@@ -193,7 +195,6 @@ def test_put_new_volume_idempotent(client, volume_name, namespace):
 
 @given(volume_name=name_strings())
 @example(volume_name="foo/bar")
-@example(volume_name="/foo/bar")
 @example(volume_name="foo\\bar")
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 def test_put_new_volume(client, namespace, volume_name):
@@ -215,6 +216,7 @@ def test_put_new_volume(client, namespace, volume_name):
 @example(volume_name="foo/bar")
 @example(volume_name="foo\\bar")
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+@pytest.mark.slow
 def test_get_nonexistent_volume(client, namespace, volume_name):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
 
@@ -273,6 +275,7 @@ def test_create_wrong_group(client, namespace):
 @example(volume_name="foo/bar")
 @example(volume_name="foo\\bar")
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+@pytest.mark.slow
 def test_delete_nonexistent_volume(client, namespace, volume_name):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
 

@@ -12,5 +12,5 @@ devserver:
 
 
 test: $(SOURCES)
-	pytest -v
+	pytest -vvv --runslow
 .PHONY: test
