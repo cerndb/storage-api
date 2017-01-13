@@ -12,5 +12,5 @@ devserver:
 
 
 test: $(SOURCES)
-	pytest -vvv --runslow
+	pytest -vvv --runslow --hypothesis-profile=ci
 .PHONY: test

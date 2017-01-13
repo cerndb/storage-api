@@ -216,7 +216,6 @@ def test_put_new_volume(client, namespace, volume_name):
 @example(volume_name="foo/bar")
 @example(volume_name="foo\\bar")
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-@pytest.mark.slow
 def test_get_nonexistent_volume(client, namespace, volume_name):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
 
@@ -275,7 +274,6 @@ def test_create_wrong_group(client, namespace):
 @example(volume_name="foo/bar")
 @example(volume_name="foo\\bar")
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-@pytest.mark.slow
 def test_delete_nonexistent_volume(client, namespace, volume_name):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
 
@@ -388,6 +386,7 @@ def test_clone_from_snapshot_source_does_not_exist(client, namespace):
 
 @given(volume_name=name_strings(), patch_args=patch_arguments())
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+@pytest.mark.skip(reason="no way of currently testing this")
 def test_patch_volume(client, namespace, volume_name, patch_args):
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
 
