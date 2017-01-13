@@ -69,6 +69,10 @@ class StorageBackend(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
+    def patch_volume(self, volume_name, data):
+        return NotImplemented
+
+    @abstractmethod
     def restrict_volume(self, volume_name):
         """
         Raises KeyError if volume_name is not present.
@@ -139,6 +143,12 @@ class DummyStorage(StorageBackend):
     def restrict_volume(self, path):
         log.info("Restricting volume {}".format(path))
         self.vols.pop(path)
+
+    def patch_volume(self, volume_name, data):
+        log.info("Updating volume {} with data {}"
+                 .format(volume_name, data))
+        for key in data:
+            self.vols[volume_name][key] = data[key]
 
     def create_volume(self, name, **kwargs):
         log.info("Adding new volume '{}': {}"

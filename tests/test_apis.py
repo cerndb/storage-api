@@ -382,9 +382,12 @@ def test_patch_volume(client, namespace, volume_name, patch_args):
 
         patch_code, _patch_result = _patch(client, volume, data=patch_args)
 
-    assert patch_code == 200
+    if patch_args:
+        assert patch_code == 200
+    else:
+        assert patch_code == 400
 
-    _get_code, get_result = _get(volume)
+    _get_code, get_result = _get(client, volume)
 
     for key, value in patch_args:
         assert get_result[key] == value

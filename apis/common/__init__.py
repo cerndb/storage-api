@@ -198,8 +198,10 @@ def init_namespace(api, backend_name):
         def patch(self, volume_name):
             assert "/snapshots" not in volume_name
             data = marshal(apis.api.payload, volume_writable_model)
-            abort(500, ("Would update with values '{}'"
-                        .format(dict(data))))
+            if data:
+                backend().patch_volume(volume_name, data)
+            else:
+                raise ValueError("No PATCH data provided!")
 
     @api.route('/volumes/<path:volume_name>/snapshots')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
