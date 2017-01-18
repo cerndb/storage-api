@@ -31,6 +31,7 @@ html: swagger.json
 
 doc_deploy: swagger.json html
 	bash ./deploy.sh html
+.PHONY: doc_deploy
 
 clean:
 	rm -rf swagger.json html
