@@ -29,7 +29,7 @@ html: swagger.json
 	mkdir -p html
 	spectacle --target-dir html swagger.json
 
-doc_deploy: swagger.json
+doc_deploy: swagger.json html
 	bash ./deploy.sh html
 
 clean:
