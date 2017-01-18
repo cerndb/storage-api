@@ -12,6 +12,8 @@ install:
   - pip install mod_wsgi-httpd
   - APXS=~/virtualenv/python3.5/bin/mod_wsgi-apxs pip install mod_wsgi
   - python setup.py install
+  - npm install -g spectacle-docs
 script:
   - make lint
   - make test
+  - make html

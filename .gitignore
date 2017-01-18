@@ -6,3 +6,5 @@ dist/
 /.coverage
 /.cache
 .hypothesis/
+/swagger.json
+html
