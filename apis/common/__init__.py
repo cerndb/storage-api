@@ -14,7 +14,7 @@ from .auth import in_group
 import logging
 import traceback
 
-from flask_restplus import Resource, fields, marshal, abort
+from flask_restplus import Resource, fields, marshal
 from flask import current_app
 
 VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
