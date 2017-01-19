@@ -1,5 +1,6 @@
 [run]
 omit = */test/*, setup.py
+branch = True
 
 [report]
 exclude_lines =
