@@ -407,7 +407,7 @@ def test_patch_volume(client, namespace, volume_name, patch_args):
         assert get_result[key] == value
 
 
-@given(volume_name=name_strings(), patch_args=patch_arguments())
+@given(volume_name=name_strings())
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 def test_patch_nonexistent_volume(client, namespace, volume_name):
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
