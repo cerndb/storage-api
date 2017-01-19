@@ -131,8 +131,8 @@ class DummyStorage(StorageBackend):
 
     def __init__(self):
         self.vols = {}
-        self.locks_store = []
-        self.rules_store = []
+        self.locks_store = {}
+        self.rules_store = {}
 
     @property
     def volumes(self):
@@ -145,6 +145,8 @@ class DummyStorage(StorageBackend):
     def restrict_volume(self, path):
         log.info("Restricting volume {}".format(path))
         self.vols.pop(path)
+        self.locks_store.pop(path, None)
+        self.rules_store.pop(path, None)
 
     def patch_volume(self, volume_name, data):
         log.info("Updating volume {} with data {}"
@@ -164,18 +166,34 @@ class DummyStorage(StorageBackend):
                 'snapshots': {},
                 **kwargs}
         self.vols[name] = data
+        self.locks_store.pop(name, None)
+        self.rules_store.pop(name, None)
 
-    @property
-    def locks(self):
-        return self.locks_store
+    def locks(self, volume_name):
 
-    def add_lock():
-        pass
+        if volume_name not in self.locks_store:
+            if volume_name not in self.vols:
+                raise KeyError("No such volume: {}".format(volume_name))
+            else:
+                return []
+        else:
+            return [{'host': self.locks_store[volume_name]}]
 
-    def remove_lock():
-        pass
+    def add_lock(self, volume_name, host):
+        assert volume_name
+        assert host
 
-    @property
+        log.info("Host {} is locking {}".format(host, volume_name))
+        if volume_name in self.locks_store and self.locks_store[volume_name] != host:
+            raise ValueError("{} is already locked by {}!"
+                             .format(volume_name,
+                                     self.locks_store[volume_name]))
+
+        self.locks_store[volume_name] = host
+
+    def remove_lock(self, volume_name, host):
+        self.locks_store.pop(volume_name)
+
     def rules():
         pass
 

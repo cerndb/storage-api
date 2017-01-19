@@ -261,8 +261,8 @@ def init_namespace(api, backend_name):
     class AllLocks(Resource):
         @api.marshal_with(lock_model, as_list=True,
                           description="The list of lock-holders for the volume")
-        def get(self):
-            pass
+        def get(self, volume_name):
+            return backend().locks(volume_name)
 
     @api.route('/volumes/<path:volume_name>/locks/<string:host>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
@@ -271,15 +271,19 @@ def init_namespace(api, backend_name):
         @api.doc(description="Lock the volume with host holding the lock",
                  security='sso')
         @api.response(201, "A new lock was added")
-        def put(self, lock_host):
-            pass
+        @in_group(ADMIN_GROUP)
+        def put(self, volume_name, host):
+            backend().add_lock(volume_name, host)
+            return '', 201
 
         @api.doc(description="Force the lock for the host",
                  security="sso")
         @api.response(403, description="Unauthorized")
         @api.response(204, description="Lock successfully forced")
-        def delete(self, lock_host):
-            pass
+        @in_group(ADMIN_GROUP)
+        def delete(self, volume_name, host):
+            backend().remove_lock(volume_name, host)
+            return '', 204
 
     @api.route('/volumes/<path:volume_name>/access')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)

@@ -154,10 +154,10 @@ def client(request):
     app.app.testing = True
     extensions.DummyStorage().init_app(app.app)
 
-    backends = extensions.storage.StorageBackend.__subclasses__()
+    backend_classes = extensions.storage.StorageBackend.__subclasses__()
 
     for name, be in app.app.extensions.items():
-        if be.__class__ in backends:
+        if be.__class__ in backend_classes:
             # Re-wire all storage types to use the dummy back-end
             log.debug("Set storage back-end {} to use DummyStorage"
                       .format(name))
@@ -442,7 +442,8 @@ def test_delete_snapshot_nonexistent_snapshot_and_volume(client, namespace, volu
 
 @given(volume_name=name_strings())
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-def test_delete_snapshot(client, namespace, volume_name):
+@pytest.mark.parametrize('authorisation', ["authorised", "not_authorised"])
+def test_delete_snapshot(client, namespace, authorisation, volume_name):
     volume = '/{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
     snapshot = '{}/snapshots/my-snapshot'.format(volume, volume_name)
 
@@ -452,17 +453,140 @@ def test_delete_snapshot(client, namespace, volume_name):
         assert put_code == 201
         get_before, _ = _get(client, snapshot)
         assert get_before == 200
+
+    if authorisation == "authorised":
+        with user_set(client):
+            delete_code, _delete_result = _delete(client, snapshot)
+    else:
         delete_code, _delete_result = _delete(client, snapshot)
 
-    assert delete_code == 204
+    if authorisation == "authorised":
+        assert delete_code == 204
+    else:
+        assert delete_code == 403
+
     get_after, _ = _get(client, snapshot)
-    assert get_after == 404
+
+    if authorisation == "authorised":
+        assert get_after == 404
+    else:
+        assert get_after == 200
 
 
 @given(volume_name=name_strings())
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-def test_delete_snapshot_unauthorized(client, namespace, volume_name):
-    volume = '/{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
-    snapshot = '{}/snapshots/my-snapshot'.format(volume, volume_name)
-    delete_code, _delete_result = _delete(client, snapshot)
-    assert delete_code == 403
+def test_get_empty_locks(client, namespace, volume_name):
+    volume = '/{}/volumes/{}'.format(namespace, volume_name, namespace)
+    with user_set(client):
+        _put(client, volume)
+    get_code, get_result = _get(client, volume + '/locks')
+
+    assert get_code == 200
+    assert get_result == []
+
+
+@given(volume_name=name_strings())
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+@pytest.mark.parametrize('authorisation', ["authorised", "not_authorised"])
+def test_lock_volume(client, namespace, authorisation, volume_name):
+    host = "dbhost.cern.ch"
+    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    lock = '{}/locks/{}'.format(volume, host)
+    authorised = (authorisation == "authorised")
+
+    with user_set(client):
+        _put(client, volume)
+
+    if not authorised:
+        put_code, _ = _put(client, lock)
+        assert put_code == 403
+    else:
+        with user_set(client):
+            put_code, _ = _put(client, lock)
+            assert put_code == 201
+
+    get_code, get_result = _get(client, volume + '/locks')
+    assert get_code == 200
+
+    if authorised:
+        assert len(get_result) == 1
+        assert get_result[0]['host'] == host
+    else:
+        assert len(get_result) == 0
+
+
+@given(volume_name=name_strings())
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+@pytest.mark.parametrize('authorisation', ["authorised", "not_authorised"])
+def test_force_lock_on_volume(client, namespace, authorisation, volume_name):
+    host = "dbhost.cern.ch"
+    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    lock = '{}/locks/{}'.format(volume, host)
+
+    authorised = (authorisation == "authorised")
+
+    with user_set(client):
+        _put(client, volume)
+        put_code, _ = _put(client, lock)
+        assert put_code == 201
+
+    if not authorised:
+        delete_code, _ = _delete(client, lock)
+        assert delete_code == 403
+    else:
+        with user_set(client):
+            delete_code, _ = _delete(client, lock)
+            assert delete_code == 204
+
+    get_code, get_result = _get(client, volume + '/locks')
+    assert get_code == 200
+
+    if not authorised:
+        assert len(get_result) == 1
+        assert get_result[0]['host'] == host
+    else:
+        assert len(get_result) == 0
+
+
+@given(volume_name=name_strings())
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_lock_locked_volume(client, namespace, volume_name):
+    host1 = "dbhost1.cern.ch"
+    host2 = "dbhost2.cern.ch"
+    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    lock1 = '{}/locks/{}'.format(volume, host1)
+    lock2 = '{}/locks/{}'.format(volume, host2)
+
+    print(_get(client, volume + '/locks')[1])
+
+    with user_set(client):
+        _put(client, volume)
+        put_code, _ = _put(client, lock1)
+        assert put_code == 201
+
+        put2_code, _ = _put(client, lock2)
+        assert put2_code == 400
+
+        del_code, _ = _delete(client, lock2)
+        assert del_code == 204
+
+        put2_code_again, _ = _put(client, lock2)
+        assert put_code == 201
+
+
+@given(volume_name=name_strings())
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_lock_volume_idempotent(client, namespace, volume_name):
+    host = "dbhost1.cern.ch"
+    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    lock = '{}/locks/{}'.format(volume, host)
+
+    print(_get(client, volume + '/locks')[1])
+
+    with user_set(client):
+        _put(client, volume)
+        put_code, _ = _put(client, lock)
+        assert put_code == 201
+
+        put2_code, _ = _put(client, lock)
+        assert put2_code == 201
