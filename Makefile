@@ -1,7 +1,7 @@
 SOURCES := $(shell find apis app.py -name '*.py')
 
 lint: $(SOURCES)
-	flake8 app.py apis setup.py
+	flake8 app.py apis setup.py extensions
 
 .PHONY: lint
 

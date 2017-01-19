@@ -20,8 +20,6 @@ import logging
 
 log = logging.getLogger(__name__)
 
-#from flask import current_app
-
 
 class StorageBackend(metaclass=ABCMeta):
 

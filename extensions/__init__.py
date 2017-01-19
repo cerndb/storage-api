@@ -7,7 +7,7 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
-from .storage import DummyStorage
+from .storage import DummyStorage # noqa
 
 import logging
 
