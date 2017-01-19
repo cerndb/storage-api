@@ -37,15 +37,15 @@ def name_strings():
                 min_size=1).filter(sane_first_character)
 
 
-@composite
-def slash_names(draw):
-    """
-    A Compound Hypothesis strategy to generate names containing a / (not
-    as the first character).
-    """
-    left = draw(name_strings())
-    right = draw(name_strings())
-    return "{}/{}".format(left, right)
+# @composite
+# def slash_names(draw):
+#     """
+#     A Compound Hypothesis strategy to generate names containing a / (not
+#     as the first character).
+#     """
+#     left = draw(name_strings())
+#     right = draw(name_strings())
+#     return "{}/{}".format(left, right)
 
 
 @composite
