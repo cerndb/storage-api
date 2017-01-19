@@ -116,7 +116,7 @@ def init_namespace(api, backend_name):
                          " to create a new one"))})
 
     @api.errorhandler
-    def default_error_handler(error):
+    def default_error_handler(error):    # pragma: no cover
         log.warning(traceback.format_exc())
         return {'message': str(error)}, getattr(error, 'code', 500)
 
