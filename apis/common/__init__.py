@@ -242,8 +242,18 @@ def init_namespace(api, backend_name):
             backend().create_snapshot(volume_name, snapshot_name)
             return '', 201
 
-        def delete(self):
-            pass
+        @api.doc(description=("Delete the snapshot"),
+                 security='sso')
+        @api.response(204, description="Successfully deleted",
+                      model=None)
+        @api.response(403, description="Unauthorised",
+                      model=None)
+        @api.response(404, description="No such snapshot",
+                      model=None)
+        @in_group(ADMIN_GROUP)
+        def delete(self, volume_name, snapshot_name):
+            backend().delete_snapshot(volume_name, snapshot_name)
+            return '', 204
 
     @api.route('/volumes/<path:volume_name>/locks')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)

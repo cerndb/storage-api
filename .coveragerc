@@ -1,5 +1,5 @@
 [run]
-omit = */test/*, setup.py
+omit = */test/*, setup.py, conftest.py
 branch = True
 
 [report]

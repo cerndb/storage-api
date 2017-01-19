@@ -418,3 +418,51 @@ def test_patch_nonexistent_volume(client, namespace, volume_name):
                                            data={"autosize_enabled": True})
 
     assert patch_code == 404
+
+
+@given(volume_name=name_strings())
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_delete_snapshot_nonexistent_snapshot_and_volume(client, namespace, volume_name):
+    volume = '/{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
+    snapshot = '{}/snapshots/my-snapshot'.format(volume, volume_name)
+
+    with user_set(client):
+        delete_code, _delete_result = _delete(client, snapshot)
+
+    assert delete_code == 404
+
+    delete_code = None
+
+    with user_set(client):
+        _put(client, volume)
+        delete_code, _delete_result = _delete(client, snapshot)
+
+    assert delete_code == 404
+
+
+@given(volume_name=name_strings())
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_delete_snapshot(client, namespace, volume_name):
+    volume = '/{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
+    snapshot = '{}/snapshots/my-snapshot'.format(volume, volume_name)
+
+    with user_set(client):
+        _put(client, volume)
+        put_code, _ = _put(client, snapshot, data={})
+        assert put_code == 201
+        get_before, _ = _get(client, snapshot)
+        assert get_before == 200
+        delete_code, _delete_result = _delete(client, snapshot)
+
+    assert delete_code == 204
+    get_after, _ = _get(client, snapshot)
+    assert get_after == 404
+
+
+@given(volume_name=name_strings())
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+def test_delete_snapshot_unauthorized(client, namespace, volume_name):
+    volume = '/{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
+    snapshot = '{}/snapshots/my-snapshot'.format(volume, volume_name)
+    delete_code, _delete_result = _delete(client, snapshot)
+    assert delete_code == 403

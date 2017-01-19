@@ -51,6 +51,10 @@ class StorageBackend(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
+    def delete_snapshot(self, volume_name, snapshot_name):
+        return NotImplemented
+
+    @abstractmethod
     def get_snapshots(self, volume_name):
         return NotImplemented
 
@@ -116,7 +120,7 @@ class StorageBackend(metaclass=ABCMeta):
         ```
         """
 
-        if not hasattr(app, 'extensions'):
+        if not hasattr(app, 'extensions'):   # pragma: no coverage
             app.extensions = {}
 
         class_name = self.__class__.__name__
@@ -201,6 +205,10 @@ class DummyStorage(StorageBackend):
     def get_snapshot(self, volume_name, snapshot_name):
         log.info("Fetching snapshot {}:{}".format(volume_name, snapshot_name))
         return self.vols[volume_name]['snapshots'][snapshot_name]
+
+    def delete_snapshot(self, volume_name, snapshot_name):
+        log.info("Deleting {} on {}".format(snapshot_name, volume_name))
+        self.vols[volume_name]['snapshots'].pop(snapshot_name)
 
     def get_snapshots(self, volume_name):
         log.info("Getting snapshots for {}".format(volume_name))
