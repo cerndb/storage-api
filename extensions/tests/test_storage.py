@@ -49,3 +49,11 @@ def test_get_snapshots(storage):
 
     assert len(storage.get_snapshots(volume_name)) == 1
     assert storage.get_snapshot(volume_name, "snapshot-new")['name'] == "snapshot-new"
+
+
+@pytest.mark.parametrize("storage", [DummyStorage()])
+def test_add_policy(storage):
+    volume_name = uuid.uuid1()
+    storage.create_volume(name=volume_name)
+
+    storage.add_policy()

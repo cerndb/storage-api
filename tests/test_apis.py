@@ -581,8 +581,6 @@ def test_lock_volume_idempotent(client, namespace, volume_name):
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
     lock = '{}/locks/{}'.format(volume, host)
 
-    print(_get(client, volume + '/locks')[1])
-
     with user_set(client):
         _put(client, volume)
         put_code, _ = _put(client, lock)
@@ -590,3 +588,41 @@ def test_lock_volume_idempotent(client, namespace, volume_name):
 
         put2_code, _ = _put(client, lock)
         assert put2_code == 201
+
+
+@given(volume_name=name_strings())
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+@pytest.mark.parametrize('vol_exists', ["vol_present", "vol_absent"])
+@pytest.mark.parametrize('auth', ["authorised", "not_authorised"])
+def test_get_acl(client, namespace, auth, vol_exists, volume_name):
+    rule = "dbhost1.cern.ch"
+    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+
+    authorised = auth == "autorised"
+    volume_exists = vol_exists == "vol_present"
+
+    with user_set(client):
+        if volume_exists:
+            _put(client, volume)
+        else:
+            _delete(client, volume)
+
+    if authorised:
+        with user_set(client):
+            get_code, get_result = _get(client, volume + "/access")
+    else:
+        get_code, get_result = _get(client, volume + "/access")
+
+    # Assertions:
+    if not volume_exists:
+        # No volume => 404
+        assert get_code == 404
+    elif not authorised:
+        # Volume exists, user not authenticated => 403
+        assert get_code == 403
+    else:
+        # Exists and authorised => 200 OK + data
+        assert get_code == 200
+
+        # We have no access rules defined at this time
+        assert get_result == []

@@ -94,17 +94,20 @@ class StorageBackend(metaclass=ABCMeta):
     def remove_lock(self, host):
         return NotImplemented
 
-    @property
     @abstractmethod
-    def rules(self):
+    def policies(self, volume):
         return NotImplemented
 
     @abstractmethod
-    def add_rule(self, rule):
+    def add_policy(self, volume, policy_name, rules):
         return NotImplemented
 
     @abstractmethod
-    def remove_rule(self, rule):
+    def update_policy(self, volume, policy_name, rules):
+        return NotImplemented
+
+    @abstractmethod
+    def remove_policy(self, volume_name, policy_name):
         return NotImplemented
 
     def init_app(self, app):
@@ -194,14 +197,48 @@ class DummyStorage(StorageBackend):
     def remove_lock(self, volume_name, host):
         self.locks_store.pop(volume_name)
 
-    def rules():
-        pass
+    def policies(self, volume_name):
+        return list(self.rules_store[volume_name].values())
 
-    def add_rule():
-        pass
+    def add_policy(self, volume_name, policy_name, rules):
+        log.info("Adding policy {} with rules {} on volume {}"
+                 .format(policy_name, rules, volume_name))
 
-    def remove_rule():
-        pass
+        if not volume_name in self.rules_store:
+            log.info("Creating new rule set for policy {}".format(volume_name))
+            self.rules_store[volume_name] = dict()
+
+        if policy_name in self.rules_store[volume_name]:
+            raise ValueError("Policy {} already exists in {}"
+                             .format(policy_name, volume_name))
+
+        self.rules_store[volume_name][policy_name] = {
+            'policy_name': policy_name,
+            'rules': list(set(rules))}
+
+    def update_policy(self, volume_name, policy_name, rules):
+        log.info("Updating policy {} with rules {} on volume {}"
+                 .format(policy_name, rules, volume_name))
+
+        if volume_name not in self.rules_store:
+            raise KeyError("Cannot update policy {} on {}: does not exist!"
+                           .format(volume_name, policy_name))
+
+        if policy_name not in self.rules_store[volume_name]:
+            raise ValueError("Policy {} does not exist in {}"
+                             .format(policy_name, volume_name))
+
+        old_rules = set(self.rules_store[volume_name][policy_name]['rules'])
+
+        self.rules_store[volume_name][policy_name] = {
+            'policy_name': policy_name,
+            'rules': list(old_rules.update(set(rules)))}
+
+    def remove_policy(self, volume_name, policy_name):
+        log.info("Removing policy {} from volume {}"
+                 .format(policy_name, volume_name))
+
+        self.rules_store[volume_name].pop(policy_name, None)
 
     def clone_volume(self, name, from_volume_name, from_snapshot_name):
         log.info("Cloning volume {target} from {source}:{snapshot}"
