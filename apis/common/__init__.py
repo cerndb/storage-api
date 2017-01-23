@@ -257,10 +257,12 @@ def init_namespace(api, backend_name):
 
     @api.route('/volumes/<path:volume_name>/locks')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
-    @api.doc(description="Get the full set of locks")
+    @api.doc(description="Get the host locking the volume, if any")
     class AllLocks(Resource):
         @api.marshal_with(lock_model, as_list=True,
-                          description="The list of lock-holders for the volume")
+                          description=("An empty list (if no locks were"
+                                       " held) or a single dict describing the"
+                                       " host holding the lock"))
         def get(self, volume_name):
             return backend().locks(volume_name)
 
