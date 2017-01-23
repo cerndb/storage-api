@@ -289,32 +289,37 @@ def init_namespace(api, backend_name):
 
     @api.route('/volumes/<path:volume_name>/access')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
+    @in_group(ADMIN_GROUP)
     class AllAccess(Resource):
         @api.marshal_with(access_model,
                           description="The current ACL for the given volume",
                           as_list=True)
         @api.doc(description="Get the full ACL for the volume")
         def get(self):
-            pass
+            return backend().policies(volume_name)
 
     @api.route('/volumes/<path:volume_name>/access/<string:rule>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
-    @api.param('rule', "The rule to operate on. Must match a rule in the ACL exactly (literally)")
+    @api.param('policy', "The policy to operate on. Must match a rule in the ACL exactly (literally)")
     class Access(Resource):
 
-        @api.doc(description="Get the access status of a given rule")
-        @api.response(404, description="No such rule exists")
-        @api.marshal_with(access_rule_model, description="The status of rule")
-        def get(self):
-            pass
-
         @api.doc(description="Grant hosts matching a given pattern access to the given volume")
-        @api.response(201, description="A new access rule was added")
-        def put(self):
+        @api.response(201, description="A new access policy was added")
+        @in_group(ADMIN_GROUP)
+        def put(self, volume_name, policy):
             pass
 
-        @api.doc(description=("Revoke the access for a given rule in the ACL."))
+        @api.doc(description=("Revoke the access for a given policy in the ACL."))
         @api.response(204, description="Successfully revoked the access for the given rule")
-        @api.response(404, description="No such rule exists")
-        def delete(self):
+        @api.response(404, description="No such policy exists")
+        @in_group(ADMIN_GROUP)
+        def delete(self, volume_name, policy):
+            pass
+
+        @api.doc(description="Update a policy",
+                 security='sso')
+        @api.response(403, description="Unauthorised",
+                      model=None)
+        @in_group(ADMIN_GROUP)
+        def patch(self, volume_name, policy):
             pass

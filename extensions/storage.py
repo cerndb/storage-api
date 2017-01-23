@@ -204,7 +204,7 @@ class DummyStorage(StorageBackend):
         log.info("Adding policy {} with rules {} on volume {}"
                  .format(policy_name, rules, volume_name))
 
-        if not volume_name in self.rules_store:
+        if volume_name not in self.rules_store:
             log.info("Creating new rule set for policy {}".format(volume_name))
             self.rules_store[volume_name] = dict()
 
