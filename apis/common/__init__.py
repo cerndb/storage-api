@@ -10,6 +10,7 @@
 
 import apis
 from .auth import in_group
+from utils import dict_without, filter_none
 
 import logging
 import traceback
@@ -23,25 +24,6 @@ ADMIN_GROUP = 'admin-group'
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
-
-
-def dict_without(d, *keys):
-    """
-    Return a dictionary d, ensuring that keys are absent.
-    """
-    d2 = d.copy()
-    for key in keys:
-        d2.pop(key)
-
-    return d2
-
-
-def filter_none(d):
-    """
-    Remove items in d that are None.
-    """
-
-    return dict_without(d, *filter(lambda k: d[k] is None, d.keys()))
 
 
 def init_namespace(api, backend_name):
