@@ -289,12 +289,12 @@ def init_namespace(api, backend_name):
 
     @api.route('/volumes/<path:volume_name>/access')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
-    @in_group(ADMIN_GROUP)
     class AllAccess(Resource):
         @api.marshal_with(access_model,
                           description="The current ACL for the given volume",
                           as_list=True)
         @api.doc(description="Get the full ACL for the volume")
+        @in_group(ADMIN_GROUP)
         def get(self):
             return backend().policies(volume_name)
 
