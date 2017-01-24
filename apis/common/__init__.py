@@ -58,18 +58,13 @@ def init_namespace(api, backend_name):
                               example="dbthing.cern.ch")
     })
 
-    access_model = api.model('Access', {
-        'policy_name': fields.String(min_length=1),
-        'rules': fields.List(fields.String())
+    export_policy_model = api.model('Export Policy', {
+        'policy_name': fields.String(min_length=1,
+                                     example="allow_cluster_x"),
+        'rules': fields.List(fields.String(example=["10.10.10.1/24",
+                                                    "123.11.12.1"],
+                                           min_length=1))
         })
-
-    access_rule_model = api.model('AccessRuleModel',
-                                  {'rule_state':
-                                   fields.Boolean(
-                                       description=(
-                                           "The state of the given rule: "
-                                           "true = accept, false otherwise"),
-                                       required=True)})
 
     snapshot_model = api.model('Snapshot', {
         'name': fields.String(),
@@ -269,39 +264,62 @@ def init_namespace(api, backend_name):
             backend().remove_lock(volume_name, host)
             return '', 204
 
-    @api.route('/volumes/<path:volume_name>/access')
+    @api.route('/volumes/<path:volume_name>/export')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
-    class AllAccess(Resource):
-        @api.marshal_with(access_model,
+    class AllExports(Resource):
+        @api.marshal_with(export_policy_model,
                           description="The current ACL for the given volume",
                           as_list=True)
         @api.doc(description="Get the full ACL for the volume")
         @in_group(ADMIN_GROUP)
-        def get(self):
+        def get(self, volume_name):
             return backend().policies(volume_name)
 
-    @api.route('/volumes/<path:volume_name>/access/<string:rule>')
+    @api.route('/volumes/<path:volume_name>/export/<string:policy>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
-    @api.param('policy', "The policy to operate on. Must match a rule in the ACL exactly (literally)")
-    class Access(Resource):
+    @api.param('policy', "The policy to operate on")
+    class Export(Resource):
+
+        @api.marshal_with(export_policy_model,
+                          description="Get the rules of a specific policy")
+        @api.doc(description="Display the rules of a given policy")
+        @in_group(ADMIN_GROUP)
+        def get(self):
+            return backend().get_policy(volume_name, policy)
 
         @api.doc(description="Grant hosts matching a given pattern access to the given volume")
-        @api.response(201, description="A new access policy was added")
+        @api.response(201, description="The provided access rules were added")
         @in_group(ADMIN_GROUP)
         def put(self, volume_name, policy):
-            pass
+            # DATA = list of strings, potentially empty (no access)
+            rules = []
+            backend().add_policy(volume_name, policy, rules)
+            return '', 201
 
-        @api.doc(description=("Revoke the access for a given policy in the ACL."))
-        @api.response(204, description="Successfully revoked the access for the given rule")
+        @api.doc(description=("Delete the entire policy"))
+        @api.response(204, description="Successfully deleted the policy")
         @api.response(404, description="No such policy exists")
         @in_group(ADMIN_GROUP)
         def delete(self, volume_name, policy):
-            pass
+            backend().remove_policy(volume_name, policy)
+            return '', 204
 
-        @api.doc(description="Update a policy",
-                 security='sso')
-        @api.response(403, description="Unauthorised",
-                      model=None)
+    @api.route('/volumes/<path:volume_name>/export/<string:policy>/<path:rule>')
+    @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
+    @api.param('policy', "The policy to operate on")
+    class Export(Resource):
+
+        @api.doc(description="Grant hosts matching a given pattern access to the given volume")
+        @api.response(201, description="The provided access rule was added")
         @in_group(ADMIN_GROUP)
-        def patch(self, volume_name, policy):
-            pass
+        def put(self, volume_name, rule):
+            backend().policy_rule_present(volume_name, policy, rule)
+            return '', 201
+
+        @api.doc(description=("Delete rule from policy"))
+        @api.response(204, description="Successfully deleted the rule")
+        @api.response(404, description="No such policy, rule or volume exists")
+        @in_group(ADMIN_GROUP)
+        def delete(self, volume_name, policy, rule):
+            backend().policy_rule_absent(volume_name, policy, rule)
+            return '', 204

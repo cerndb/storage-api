@@ -589,16 +589,19 @@ def test_lock_volume_idempotent(client, namespace, volume_name):
         put2_code, _ = _put(client, lock)
         assert put2_code == 201
 
+    get_code, get_result = _get(client, volume + '/locks')
+    assert get_code == 200
+    assert get_result == [{'host': host}]
+
 
 @given(volume_name=name_strings())
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 @pytest.mark.parametrize('vol_exists', ["vol_present", "vol_absent"])
 @pytest.mark.parametrize('auth', ["authorised", "not_authorised"])
 def test_get_acl(client, namespace, auth, vol_exists, volume_name):
-    rule = "dbhost1.cern.ch"
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
 
-    authorised = auth == "autorised"
+    authorised = auth == "authorised"
     volume_exists = vol_exists == "vol_present"
 
     with user_set(client):
@@ -609,9 +612,9 @@ def test_get_acl(client, namespace, auth, vol_exists, volume_name):
 
     if authorised:
         with user_set(client):
-            get_code, get_result = _get(client, volume + "/access")
+            get_code, get_result = _get(client, volume + "/export")
     else:
-        get_code, get_result = _get(client, volume + "/access")
+        get_code, get_result = _get(client, volume + "/export")
 
     # Assertions:
     if not authorised:
@@ -625,3 +628,50 @@ def test_get_acl(client, namespace, auth, vol_exists, volume_name):
 
         # We have no access rules defined at this time
         assert get_result == []
+
+
+@pytest.mark.skip(reason="no way of currently testing this")
+@given(volume_name=name_strings(), policy_name=name_strings())
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+@pytest.mark.parametrize('vol_exists', ["vol_present", "vol_absent"])
+@pytest.mark.parametrize('auth', ["authorised", "not_authorised"])
+def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
+    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    policy = '{}/access/{}'.format(volume, policy_name)
+
+    authorised = auth == "authorised"
+    volume_exists = vol_exists == "vol_present"
+
+    rules = ["host1.db.cern.ch", "*db.cern.ch", "*foo.cern.ch"]
+
+    with user_set(client):
+        if volume_exists:
+            _put(client, volume)
+        else:
+            _delete(client, volume)
+
+    if authorised:
+        with user_set(client):
+            put_code, _put_result = _put(client, policy, data=rules)
+    else:
+        put_code, _put_result = _put(client, policy, data=rules)
+
+    with user_set(client):
+        get_code, get_result = _get(client, policy)
+        _, get_all = _get(client, volume + "/access")
+
+    # Assertions:
+    if not authorised:
+        assert put_code == 403
+    elif not volume_exists:
+        # No volume => 404
+        assert put_code == 404
+    else:
+        assert put_code == 201
+        assert get_code == 200
+
+        assert get_result
+        assert get_result['policy_name'] == policy_name
+        assert get_result['rules'] == rules
+        assert len(get_all) == 1
+        assert get_all[0] == get_result

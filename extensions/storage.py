@@ -173,7 +173,7 @@ class DummyStorage(StorageBackend):
                 **kwargs}
         self.vols[name] = data
         self.locks_store.pop(name, None)
-        self.rules_store.pop(name, None)
+        self.rules_store[name] = {}
 
     def locks(self, volume_name):
 
