@@ -35,6 +35,10 @@ def init_namespace(api, backend_name):
         """
         return current_app.extensions[backend_name]
 
+    policy_rule_list_field = fields.List(fields.String(
+        example="10.10.10.1/24",
+        min_length=1))
+
     volume_writable_model = api.model('VolumeWritable', {
         'autosize_enabled': fields.Boolean(),
         'autosize_increment': fields.Integer(),
@@ -61,9 +65,7 @@ def init_namespace(api, backend_name):
     export_policy_model = api.model('Export Policy', {
         'policy_name': fields.String(min_length=1,
                                      example="allow_cluster_x"),
-        'rules': fields.List(fields.String(example=["10.10.10.1/24",
-                                                    "123.11.12.1"],
-                                           min_length=1))
+        'rules': policy_rule_list_field
         })
 
     snapshot_model = api.model('Snapshot', {
@@ -91,6 +93,9 @@ def init_namespace(api, backend_name):
         'purge_old_if_needed': fields.Boolean(
             description=("If `true`, purge the oldest snapshot iff necessary "
                          " to create a new one"))})
+
+    policy_rule_write_model = api.model('PolicyRule',
+                                        {'rules': policy_rule_list_field})
 
     @api.errorhandler
     def default_error_handler(error):    # pragma: no cover
@@ -289,10 +294,11 @@ def init_namespace(api, backend_name):
 
         @api.doc(description="Grant hosts matching a given pattern access to the given volume")
         @api.response(201, description="The provided access rules were added")
+        @api.expect(policy_rule_write_model, validate=True)
         @in_group(ADMIN_GROUP)
         def put(self, volume_name, policy):
             # DATA = list of strings, potentially empty (no access)
-            rules = []
+            rules = marshal(apis.api.payload, policy_rule_write_model)['rules']
             backend().add_policy(volume_name, policy, rules)
             return '', 201
 

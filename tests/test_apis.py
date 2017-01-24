@@ -630,14 +630,13 @@ def test_get_acl(client, namespace, auth, vol_exists, volume_name):
         assert get_result == []
 
 
-@pytest.mark.skip(reason="no way of currently testing this")
 @given(volume_name=name_strings(), policy_name=name_strings())
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 @pytest.mark.parametrize('vol_exists', ["vol_present", "vol_absent"])
 @pytest.mark.parametrize('auth', ["authorised", "not_authorised"])
 def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
-    policy = '{}/access/{}'.format(volume, policy_name)
+    policy = '{}/export/{}'.format(volume, policy_name)
 
     authorised = auth == "authorised"
     volume_exists = vol_exists == "vol_present"
@@ -652,13 +651,13 @@ def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
 
     if authorised:
         with user_set(client):
-            put_code, _put_result = _put(client, policy, data=rules)
+            put_code, _put_result = _put(client, policy, data={'rules': rules})
     else:
-        put_code, _put_result = _put(client, policy, data=rules)
+        put_code, _put_result = _put(client, policy, data={'rules': rules})
 
     with user_set(client):
         get_code, get_result = _get(client, policy)
-        _, get_all = _get(client, volume + "/access")
+        _, get_all = _get(client, volume + "/export")
 
     # Assertions:
     if not authorised:
