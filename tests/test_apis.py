@@ -614,12 +614,11 @@ def test_get_acl(client, namespace, auth, vol_exists, volume_name):
         get_code, get_result = _get(client, volume + "/access")
 
     # Assertions:
-    if not volume_exists:
+    if not authorised:
+        assert get_code == 403
+    elif not volume_exists:
         # No volume => 404
         assert get_code == 404
-    elif not authorised:
-        # Volume exists, user not authenticated => 403
-        assert get_code == 403
     else:
         # Exists and authorised => 200 OK + data
         assert get_code == 200
