@@ -55,7 +55,7 @@ def test_get_snapshots(storage):
 def test_add_policy(storage):
     volume_name = uuid.uuid1()
     storage.create_volume(name=volume_name)
-    rules = ["host1.db.cern.ch", "*db.cern.ch"]
+    rules = ["host1.db.cern.ch", "*db.cern.ch", "*foo.cern.ch"]
 
     storage.add_policy(volume_name, "a policy", rules)
 

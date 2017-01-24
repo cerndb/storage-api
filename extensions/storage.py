@@ -15,6 +15,9 @@ In general, methods are expected to raise KeyErrors on 404-type errors
 cases, reasonable descriptions of what went wrong should be included,
 and -- if possible -- suggestions on how to fix the situation.
 """
+
+from utils import OrderedSet
+
 from abc import ABCMeta, abstractmethod
 import logging
 
@@ -214,7 +217,7 @@ class DummyStorage(StorageBackend):
 
         self.rules_store[volume_name][policy_name] = {
             'policy_name': policy_name,
-            'rules': list(set(rules))}
+            'rules': list(OrderedSet(rules))}
 
     def update_policy(self, volume_name, policy_name, rules):
         log.info("Updating policy {} with rules {} on volume {}"
@@ -228,11 +231,11 @@ class DummyStorage(StorageBackend):
             raise ValueError("Policy {} does not exist in {}"
                              .format(policy_name, volume_name))
 
-        old_rules = set(self.rules_store[volume_name][policy_name]['rules'])
+        old_rules = OrderedSet(self.rules_store[volume_name][policy_name]['rules'])
 
         self.rules_store[volume_name][policy_name] = {
             'policy_name': policy_name,
-            'rules': list(old_rules.update(set(rules)))}
+            'rules': list(old_rules.update(OrderedSet(rules)))}
 
     def remove_policy(self, volume_name, policy_name):
         log.info("Removing policy {} from volume {}"
