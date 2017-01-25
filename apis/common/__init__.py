@@ -289,7 +289,7 @@ def init_namespace(api, backend_name):
                           description="Get the rules of a specific policy")
         @api.doc(description="Display the rules of a given policy")
         @in_group(ADMIN_GROUP)
-        def get(self):
+        def get(self, volume_name, policy):
             return backend().get_policy(volume_name, policy)
 
         @api.doc(description="Grant hosts matching a given pattern access to the given volume")
@@ -313,12 +313,13 @@ def init_namespace(api, backend_name):
     @api.route('/volumes/<path:volume_name>/export/<string:policy>/<path:rule>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
     @api.param('policy', "The policy to operate on")
-    class Export(Resource):
+    @api.param('rule', "The policy rule to operate on")
+    class ExportRule(Resource):
 
         @api.doc(description="Grant hosts matching a given pattern access to the given volume")
         @api.response(201, description="The provided access rule was added")
         @in_group(ADMIN_GROUP)
-        def put(self, volume_name, rule):
+        def put(self, volume_name, policy, rule):
             backend().policy_rule_present(volume_name, policy, rule)
             return '', 201
 
