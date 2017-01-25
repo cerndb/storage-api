@@ -209,14 +209,6 @@ class DummyStorage(StorageBackend):
         if volume_name not in self.vols:
             raise KeyError("No such volume {}".format(volume_name))
 
-        if volume_name not in self.rules_store:
-            log.info("Creating new rule set for policy {}".format(volume_name))
-            self.rules_store[volume_name] = dict()
-
-        if policy_name in self.rules_store[volume_name]:
-            raise ValueError("Policy {} already exists in {}"
-                             .format(policy_name, volume_name))
-
         self.rules_store[volume_name][policy_name] = {
             'policy_name': policy_name,
             'rules': list(OrderedSet(rules))}

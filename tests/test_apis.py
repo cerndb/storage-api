@@ -795,3 +795,63 @@ def test_put_export_rule(client, namespace, auth, vol_exists, policy_status,
         assert all(filter(lambda c: c == 204, put_codes))
         assert get_code == 200
         assert get_result['rules'] == rules
+
+
+@given(volume_name=name_strings(), policy_name=policy_name_strings())
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+@pytest.mark.parametrize('vol_exists', ["vol_present", "vol_absent"])
+@pytest.mark.parametrize('policy_status', ["policy_present", "policy_absent"])
+@pytest.mark.parametrize('auth', ["authorised", "not_authorised"])
+def test_delete_export_rule(client, namespace, auth, vol_exists, policy_status,
+                            volume_name, policy_name):
+    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    policy = '{}/export/{}'.format(volume, policy_name)
+
+    authorised = auth == "authorised"
+    volume_exists = vol_exists == "vol_present"
+    policy_exists = policy_status == "policy_present"
+
+    rules = ["127.0.0.1", "10.10.10.1/24"]
+    delete_codes = []
+
+    if not volume_exists and policy_exists:
+        # This cannot ever happen
+        return
+
+    with user_set(client):
+        if volume_exists:
+            _put(client, volume)
+        else:
+            delete_code, _ = _delete(client, volume)
+            assert delete_code == 204 or delete_code == 404
+        if policy_exists:
+            _put(client, policy, data={'rules': rules})
+        else:
+            del_code, _ = _delete(client, policy)
+            assert del_code == 404 or del_code == 204
+
+    if authorised:
+        with user_set(client):
+            for rule in rules:
+                delete_code, _ = _delete(client, ("{}/{}"
+                                               .format(policy, rule)))
+                delete_codes.append(delete_code)
+    else:
+        for rule in rules:
+            delete_code, _ = _delete(client, ("{}/{}".format(policy, rule)))
+            delete_codes.append(delete_code)
+
+    with user_set(client):
+        get_code, get_result = _get(client, policy)
+
+    if not authorised:
+        assert all(filter(lambda c: c == 403, delete_codes))
+        if policy_exists:
+            # No changes recorded
+            assert get_result['rules'] == rules
+    elif not volume_exists or not policy_exists:
+        assert all(filter(lambda c: c == 404, delete_codes))
+    else:
+        assert all(filter(lambda c: c == 201, delete_codes))
+        assert get_code == 200
+        assert get_result['rules'] == []
