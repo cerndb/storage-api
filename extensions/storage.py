@@ -247,7 +247,7 @@ class DummyStorage(StorageBackend):
         log.info("Removing policy {} from volume {}"
                  .format(policy_name, volume_name))
 
-        self.rules_store[volume_name].pop(policy_name, None)
+        self.rules_store[volume_name].pop(policy_name)
 
     def clone_volume(self, name, from_volume_name, from_snapshot_name):
         log.info("Cloning volume {target} from {source}:{snapshot}"

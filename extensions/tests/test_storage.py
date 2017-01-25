@@ -96,3 +96,11 @@ def test_add_policy_no_volume_raises_key_error(storage):
     volume_name = uuid.uuid1()
     with pytest.raises(KeyError):
         storage.add_policy(volume_name, "a policy", rules=[])
+
+
+@pytest.mark.parametrize("storage", [DummyStorage()])
+def test_remove_policy_no_policy_raises_key_error(storage):
+    volume_name = uuid.uuid1()
+    storage.create_volume(volume_name)
+    with pytest.raises(KeyError):
+        storage.remove_policy(volume_name, "a policy")

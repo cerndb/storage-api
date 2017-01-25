@@ -681,3 +681,57 @@ def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
         assert get_result['rules'] == rules
         assert len(get_all) == 1
         assert get_all[0] == get_result
+
+
+@given(volume_name=name_strings(), policy_name=policy_name_strings())
+@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+@pytest.mark.parametrize('vol_exists', ["vol_present", "vol_absent"])
+@pytest.mark.parametrize('policy_status', ["policy_present", "policy_absent"])
+@pytest.mark.parametrize('auth', ["authorised", "not_authorised"])
+def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
+                    volume_name, policy_name):
+    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    policy = '{}/export/{}'.format(volume, policy_name)
+
+    authorised = auth == "authorised"
+    volume_exists = vol_exists == "vol_present"
+    policy_exists = policy_status == "policy_present"
+
+    rules = []
+
+    if not volume_exists and policy_exists:
+        # This cannot ever happen
+        return
+
+    with user_set(client):
+        if volume_exists:
+            _put(client, volume)
+        else:
+            delete_code, _ = _delete(client, volume)
+            assert delete_code == 204 or delete_code == 404
+        if policy_exists:
+            _put(client, policy, data={'rules': rules})
+        else:
+            del_code, _ = _delete(client, policy)
+            assert del_code == 404 or del_code == 204
+
+    if authorised:
+        with user_set(client):
+            del_code, _del_result = _delete(client, policy)
+    else:
+        del_code, _del_result = _delete(client, policy)
+
+    with user_set(client):
+        get_code, _get_result = _get(client, policy)
+        _, get_all = _get(client, volume + "/export")
+
+    if not authorised:
+        assert del_code == 403
+        if policy_exists:
+            assert get_code == 200
+    elif not volume_exists or not policy_exists:
+        assert del_code == 404
+    else:
+        assert del_code == 204
+        assert get_code == 404
+        assert get_all == []
