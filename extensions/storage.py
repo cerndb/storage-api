@@ -203,6 +203,9 @@ class DummyStorage(StorageBackend):
     def policies(self, volume_name):
         return list(self.rules_store[volume_name].values())
 
+    def get_policy(self, volume_name, policy_name):
+        return self.rules_store[volume_name][policy_name]
+
     def add_policy(self, volume_name, policy_name, rules):
         log.info("Adding policy {} with rules {} on volume {}"
                  .format(policy_name, rules, volume_name))
