@@ -106,10 +106,6 @@ class StorageBackend(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
-    def update_policy(self, volume, policy_name, rules):
-        return NotImplemented
-
-    @abstractmethod
     def remove_policy(self, volume_name, policy_name):
         return NotImplemented
 
@@ -225,24 +221,6 @@ class DummyStorage(StorageBackend):
             'policy_name': policy_name,
             'rules': list(OrderedSet(rules))}
 
-    def update_policy(self, volume_name, policy_name, rules):
-        log.info("Updating policy {} with rules {} on volume {}"
-                 .format(policy_name, rules, volume_name))
-
-        if volume_name not in self.rules_store:
-            raise KeyError("Cannot update policy {} on {}: does not exist!"
-                           .format(volume_name, policy_name))
-
-        if policy_name not in self.rules_store[volume_name]:
-            raise ValueError("Policy {} does not exist in {}"
-                             .format(policy_name, volume_name))
-
-        old_rules = OrderedSet(self.rules_store[volume_name][policy_name]['rules'])
-
-        self.rules_store[volume_name][policy_name] = {
-            'policy_name': policy_name,
-            'rules': list(old_rules.update(OrderedSet(rules)))}
-
     def remove_policy(self, volume_name, policy_name):
         log.info("Removing policy {} from volume {}"
                  .format(policy_name, volume_name))
@@ -282,6 +260,15 @@ class DummyStorage(StorageBackend):
         log.info("Restoring {} to {}"
                  .format(volume_name, restore_snapshot_name))
         pass
+
+    def policy_rule_present(self, volume_name, policy_name, rule):
+        if rule not in self.rules_store[volume_name][policy_name]['rules']:
+            self.rules_store[volume_name][policy_name]['rules'].append(rule)
+
+    def policy_rule_absent(self, volume_name, policy_name, rule):
+        stored_rules = self.rules_store[volume_name][policy_name]['rules']
+        self.rules_store[volume_name][policy_name]['rules'] = list(filter(
+            lambda x: x != rule, stored_rules))
 
 
 StorageBackend.register(DummyStorage)
