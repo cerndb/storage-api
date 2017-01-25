@@ -75,3 +75,24 @@ def test_delete_policy(storage):
     storage.add_policy(volume_name, "a policy", rules)
     storage.remove_policy(volume_name, "a policy")
     assert len(storage.policies(volume_name)) == 0
+
+
+@pytest.mark.parametrize("storage", [DummyStorage()])
+def test_delete_volume_policies_deleted_also(storage):
+    volume_name = uuid.uuid1()
+    storage.create_volume(name=volume_name)
+    rules = ["host1.db.cern.ch", "*db.cern.ch"]
+    policy_name = "a policy"
+
+    storage.add_policy(volume_name, policy_name, rules)
+    storage.restrict_volume(volume_name)
+
+    storage.create_volume(name=volume_name)
+    assert len(storage.policies(volume_name)) == 0
+
+
+@pytest.mark.parametrize("storage", [DummyStorage()])
+def test_add_policy_no_volume_raises_key_error(storage):
+    volume_name = uuid.uuid1()
+    with pytest.raises(KeyError):
+        storage.add_policy(volume_name, "a policy", rules=[])

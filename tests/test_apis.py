@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 from contextlib import contextmanager
 import uuid
 import logging
+from functools import partial
 
 import pytest
 from hypothesis import given, example
@@ -22,7 +23,7 @@ _DEFAULT_HEADERS = {'Content-Type': 'application/json',
 log = logging.getLogger(__name__)
 
 
-def name_strings():
+def nice_strings(bad_chars):
     """
     A Hypothesis strategy to generate reasonable name strings
     """
@@ -30,11 +31,13 @@ def name_strings():
         c = s[0]
         return c not in ['/']
 
-    bad_chars = ['\n', '#', '?', '%']
-
     return text(alphabet=characters(blacklist_characters=bad_chars,
                                     max_codepoint=1000),
                 min_size=1).filter(sane_first_character)
+
+
+name_strings = partial(nice_strings, bad_chars=['\n', '#', '?', '%'])
+policy_name_strings = partial(nice_strings, bad_chars=['\n', '/', '?', '#', '%'])
 
 
 # @composite
@@ -630,7 +633,7 @@ def test_get_acl(client, namespace, auth, vol_exists, volume_name):
         assert get_result == []
 
 
-@given(volume_name=name_strings(), policy_name=name_strings())
+@given(volume_name=name_strings(), policy_name=policy_name_strings())
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 @pytest.mark.parametrize('vol_exists', ["vol_present", "vol_absent"])
 @pytest.mark.parametrize('auth', ["authorised", "not_authorised"])
@@ -644,10 +647,14 @@ def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
     rules = ["host1.db.cern.ch", "*db.cern.ch", "*foo.cern.ch"]
 
     with user_set(client):
+        del_code, _ = _delete(client, policy)
+        assert del_code == 404 or del_code == 204
+
         if volume_exists:
             _put(client, volume)
         else:
-            _delete(client, volume)
+            delete_code, _ = _delete(client, volume)
+            assert delete_code == 204 or delete_code == 404
 
     if authorised:
         with user_set(client):
