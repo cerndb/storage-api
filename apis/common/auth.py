@@ -7,6 +7,7 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
+from functools import wraps
 
 from flask import session, current_app, abort
 
@@ -25,6 +26,7 @@ def in_group(group_name):
     """
 
     def group_decorator(func):
+        @wraps(func)
         def group_wrapper(*args, **kwargs):
             user = session.get('user', None)
             if not user:
