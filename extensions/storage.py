@@ -16,7 +16,7 @@ cases, reasonable descriptions of what went wrong should be included,
 and -- if possible -- suggestions on how to fix the situation.
 """
 
-from utils import OrderedSet
+from ordered_set import OrderedSet
 
 from abc import ABCMeta, abstractmethod
 import logging
