@@ -11,6 +11,9 @@ PAGES_REPO_DIR="deploy_repo"
 
 rm -rf $PAGES_REPO_DIR
 
+echo $TARGET
+ls $TARGET
+
 pwd
 
 # Pull requests and commits to other branches shouldn't try to deploy, just build to verify
