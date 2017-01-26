@@ -9,8 +9,8 @@ addons:
 
 before_install:
   - pip install coveralls
-  - openssl aes-256-cbc -K $encrypted_af2efcded6c5_key -iv $encrypted_af2efcded6c5_iv
-    -in deploy_github_netapp.enc -out deploy_github_netapp -d
+  - openssl aes-256-cbc -K $encrypted_af2efcded6c5_key -iv $encrypted_af2efcded6c5_iv -in deploy_github_netapp.enc -out deploy_github_netapp -d
+env:
   global:
     - ENCRYPTION_LABEL: "af2efcded6c5"
     - COMMIT_AUTHOR_EMAIL: "albin.stjerna@cern.ch"
