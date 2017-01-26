@@ -1,4 +1,8 @@
 language: python
+cache:
+  pip: true
+  directories:
+      - .hypothesis
 python:
     - 3.5
 addons:
@@ -10,9 +14,8 @@ addons:
 before_install:
   - pip install coveralls
 env:
-  global:
-    - ENCRYPTION_LABEL: "af2efcded6c5"
-    - COMMIT_AUTHOR_EMAIL: "albin.stjerna@cern.ch"
+  - ENCRYPTION_LABEL: "af2efcded6c5"
+  - COMMIT_AUTHOR_EMAIL: "albin.stjerna@cern.ch"
 install:
   - pip install -r requirements.txt
   - pip install flake8
