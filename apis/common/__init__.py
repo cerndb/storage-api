@@ -148,7 +148,7 @@ def init_namespace(api, backend_name):
                               "clone of `from_volume` named `volume_name`, in the "
                               "state at `from_snapshot`."))
         @api.expect(optional_from_snapshot, validate=True)
-        @in_group(ADMIN_GROUP)
+        @in_group(api, ADMIN_GROUP)
         def put(self, volume_name):
             assert "/snapshots" not in volume_name
             data = marshal(apis.api.payload, optional_from_snapshot)
@@ -170,9 +170,7 @@ def init_namespace(api, backend_name):
                  security='sso')
         @api.response(204, description="Successfully restricted",
                       model=None)
-        @api.response(403, description="Unauthorised",
-                      model=None)
-        @in_group(ADMIN_GROUP)
+        @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name):
             assert "/snapshots" not in volume_name
             backend().restrict_volume(volume_name)
@@ -180,10 +178,8 @@ def init_namespace(api, backend_name):
 
         @api.doc(description="Partially update volume_name",
                  security='sso')
-        @api.response(403, description="Unauthorised",
-                      model=None)
         @api.expect(volume_writable_model, validate=True)
-        @in_group(ADMIN_GROUP)
+        @in_group(api, ADMIN_GROUP)
         def patch(self, volume_name):
             assert "/snapshots" not in volume_name
             data = filter_none(marshal(apis.api.payload, volume_writable_model))
@@ -213,7 +209,6 @@ def init_namespace(api, backend_name):
 
         @api.response(409, description=("Too many snapshots, cannot create another. "
                                         "Try `purge_old_if_needed=true`."))
-        @api.response(403, description="Insufficient rights/not logged in")
         @api.response(201, description="Successfully created a snapshot")
         @api.expect(snapshot_put_model)
         @api.doc(description=("Create a new snapshot of *volume_name*"
@@ -228,11 +223,9 @@ def init_namespace(api, backend_name):
                  security='sso')
         @api.response(204, description="Successfully deleted",
                       model=None)
-        @api.response(403, description="Unauthorised",
-                      model=None)
         @api.response(404, description="No such snapshot",
                       model=None)
-        @in_group(ADMIN_GROUP)
+        @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name, snapshot_name):
             backend().delete_snapshot(volume_name, snapshot_name)
             return '', 204
@@ -255,16 +248,15 @@ def init_namespace(api, backend_name):
         @api.doc(description="Lock the volume with host holding the lock",
                  security='sso')
         @api.response(201, "A new lock was added")
-        @in_group(ADMIN_GROUP)
+        @in_group(api, ADMIN_GROUP)
         def put(self, volume_name, host):
             backend().add_lock(volume_name, host)
             return '', 201
 
         @api.doc(description="Force the lock for the host",
                  security="sso")
-        @api.response(403, description="Unauthorized")
         @api.response(204, description="Lock successfully forced")
-        @in_group(ADMIN_GROUP)
+        @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name, host):
             backend().remove_lock(volume_name, host)
             return '', 204
@@ -276,7 +268,7 @@ def init_namespace(api, backend_name):
                           description="The current ACL for the given volume",
                           as_list=True)
         @api.doc(description="Get the full ACL for the volume")
-        @in_group(ADMIN_GROUP)
+        @in_group(api, ADMIN_GROUP)
         def get(self, volume_name):
             return backend().policies(volume_name)
 
@@ -288,14 +280,14 @@ def init_namespace(api, backend_name):
         @api.marshal_with(export_policy_model,
                           description="Get the rules of a specific policy")
         @api.doc(description="Display the rules of a given policy")
-        @in_group(ADMIN_GROUP)
+        @in_group(api, ADMIN_GROUP)
         def get(self, volume_name, policy):
             return backend().get_policy(volume_name, policy)
 
         @api.doc(description="Grant hosts matching a given pattern access to the given volume")
         @api.response(201, description="The provided access rules were added")
         @api.expect(policy_rule_write_model, validate=True)
-        @in_group(ADMIN_GROUP)
+        @in_group(api, ADMIN_GROUP)
         def put(self, volume_name, policy):
             # DATA = list of strings, potentially empty (no access)
             rules = marshal(apis.api.payload, policy_rule_write_model)['rules']
@@ -305,7 +297,7 @@ def init_namespace(api, backend_name):
         @api.doc(description=("Delete the entire policy"))
         @api.response(204, description="Successfully deleted the policy")
         @api.response(404, description="No such policy exists")
-        @in_group(ADMIN_GROUP)
+        @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name, policy):
             backend().remove_policy(volume_name, policy)
             return '', 204
@@ -318,7 +310,7 @@ def init_namespace(api, backend_name):
 
         @api.doc(description="Grant hosts matching a given pattern access to the given volume")
         @api.response(201, description="The provided access rule was added")
-        @in_group(ADMIN_GROUP)
+        @in_group(api, ADMIN_GROUP)
         def put(self, volume_name, policy, rule):
             backend().policy_rule_present(volume_name, policy, rule)
             return '', 201
@@ -326,7 +318,7 @@ def init_namespace(api, backend_name):
         @api.doc(description=("Delete rule from policy"))
         @api.response(204, description="Successfully deleted the rule")
         @api.response(404, description="No such policy, rule or volume exists")
-        @in_group(ADMIN_GROUP)
+        @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name, policy, rule):
             backend().policy_rule_absent(volume_name, policy, rule)
             return '', 204
