@@ -11,10 +11,8 @@ PAGES_REPO_DIR="deploy_repo"
 
 rm -rf $PAGES_REPO_DIR
 
-echo $TARGET
-ls $TARGET
-
-pwd
+echo "Adding files from $TARGET:"
+ls -al $TARGET
 
 # Pull requests and commits to other branches shouldn't try to deploy, just build to verify
 if [ "$TRAVIS_PULL_REQUEST" != "false" -o "$TRAVIS_BRANCH" != "$SOURCE_BRANCH" ]; then
@@ -57,15 +55,17 @@ rm -rf ./**/*
 
 cp -r ../$TARGET/* .
 
+git add .
+git diff --staged --exit-code
+
 # If there are no changes to the compiled out (e.g. this is a README update) then just bail.
-if [ -z `git diff --exit-code` ]; then
+if [ $? -eq 0 ]; then
     echo "No changes to the output on this push; exiting."
     exit 0
 fi
 
 # Commit the "changes", i.e. the new version.
 # The delta will show diffs between new and old versions.
-git add .
 git commit -m "Deploy to GitHub Pages: ${SHA}"
 
 # Now that we're all set up, we can push.
