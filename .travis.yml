@@ -16,8 +16,9 @@ before_install:
   - nvm install stable
   - nvm use stable
 env:
-  - ENCRYPTION_LABEL: "af2efcded6c5"
-  - COMMIT_AUTHOR_EMAIL: "albin.stjerna@cern.ch"
+  global:
+    - ENCRYPTION_LABEL: "af2efcded6c5"
+    - COMMIT_AUTHOR_EMAIL: "albin.stjerna@cern.ch"
 install:
   - pip install -r requirements.txt
   - pip install flake8
