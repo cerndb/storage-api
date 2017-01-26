@@ -1,6 +1,7 @@
 # storage-api
 
 [![Build Status](https://travis-ci.org/cerndb/storage-api.svg?branch=master)](https://travis-ci.org/cerndb/storage-api)
+[![Coverage Status](https://coveralls.io/repos/github/cerndb/storage-api/badge.svg?branch=master)](https://coveralls.io/github/cerndb/storage-api?branch=master)
 
 ## Aim of the project
 

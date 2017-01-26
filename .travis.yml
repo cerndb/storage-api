@@ -16,4 +16,6 @@ install:
 script:
   - make lint
   - make test
-#  - make html
+after_success:
+  - coveralls
+  - make doc_deploy
