@@ -8,3 +8,4 @@ dist/
 .hypothesis/
 /swagger.json
 html
+/devserver.PID
