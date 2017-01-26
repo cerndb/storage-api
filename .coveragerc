@@ -1,0 +1,8 @@
+[run]
+omit = */test/*, setup.py, conftest.py
+branch = True
+
+[report]
+exclude_lines =
+        pragma: no cover
+        return NotImplemented

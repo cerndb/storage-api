@@ -1,0 +1,10 @@
+*.pyc
+build/
+dist/
+.ropeproject/
+.#*
+/.coverage
+/.cache
+.hypothesis/
+/swagger.json
+html

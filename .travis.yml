@@ -4,15 +4,25 @@ python:
 addons:
   apt:
     packages:
-    - apache2
-    - apache2-dev
+      - apache2
+      - apache2-dev
+
+before_install:
+  - pip install coveralls
+env:
+  global:
+    - ENCRYPTION_LABEL: "af2efcded6c5"
+    - COMMIT_AUTHOR_EMAIL: "albin.stjerna@cern.ch"
 install:
-    - pip install -r requirements.pip
-    - pip install flake8
-    - pip install mod_wsgi-httpd
-    - APXS=~/virtualenv/python3.5/bin/mod_wsgi-apxs pip install mod_wsgi
-    - python setup.py install
-before_script:
-    - flake8 ./storage/api
+  - pip install -r requirements.txt
+  - pip install flake8
+  - pip install mod_wsgi-httpd
+  - APXS=~/virtualenv/python3.5/bin/mod_wsgi-apxs pip install mod_wsgi
+  - python setup.py install
+  - npm install -g spectacle-docs
 script:
-    - flake8 ./storage/vendors
+  - make lint
+  - make test
+after_success:
+  - coveralls
+  - make doc_deploy
