@@ -79,63 +79,22 @@ def _decode_response(result):
     return result.status_code, json.loads(data) if data else None
 
 
-def _get(client, path, **params):
-    """
-    Perform a GET request to client with the provided parameters.
-
-    Returns a tuple of the response code and its decoded contents.
-    """
+def _open(client, path, method, data={}, **params):
     url = "{}?{}".format(path, urlencode(params)) if params else path
-    log.info("GET:ing {}".format(url))
 
-    return _decode_response(client.get(url, follow_redirects=True,
-                                       headers=_DEFAULT_HEADERS))
+    log.info("{}:ing to {} with data: {}".format(method, url, str(data)))
 
-
-def _put(client, resource, data={}):
-    """
-    Perform a PUT request to a client with the provided data.
-
-    Returns a tuple of the response code and its decoded contents.
-    """
-    log.info("PUT:ing {} to {}".format(str(data), resource))
-
-    return _decode_response(
-        client.put(resource,
-                   follow_redirects=True,
-                   data=json.dumps(data),
-                   headers=_DEFAULT_HEADERS))
+    return _decode_response(client.open(path=url,
+                                        method=method,
+                                        follow_redirects=True,
+                                        data=json.dumps(data),
+                                        headers=_DEFAULT_HEADERS))
 
 
-def _delete(client, resource):
-    """
-    Perform a DELETE request to a client with the provided data.
-
-    Returns a tuple of the response code and its decoded contents.
-    """
-    log.info("DELETE:ing {}".format(resource))
-
-    return _decode_response(
-        client.delete(resource,
-                      follow_redirects=True,
-                      headers=_DEFAULT_HEADERS))
-
-
-def _patch(client, resource, data):
-    """
-    Perform a PATCH request to a client with the provided data.
-
-    Returns a tuple of the response code and its decoded contents.
-    """
-    encoded_data = json.dumps(data)
-
-    log.info("PATCH:ing {} with {}".format(resource, encoded_data))
-
-    return _decode_response(
-        client.patch(resource,
-                     follow_redirects=True,
-                     data=encoded_data,
-                     headers=_DEFAULT_HEADERS))
+_get = partial(_open, method="GET")
+_put = partial(_open, method="PUT")
+_delete = partial(_open, method="DELETE")
+_patch = partial(_open, method="PATCH")
 
 
 @pytest.fixture(scope="function")
