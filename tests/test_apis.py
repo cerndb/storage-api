@@ -334,36 +334,30 @@ def test_clone_from_snapshot_source_does_not_exist(client, namespace):
 
 @given(volume_name=name_strings(), patch_args=patch_arguments())
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-def test_patch_volume(client, namespace, volume_name, patch_args):
+@pytest.mark.parametrize('vol_exists', ["vol_present", "vol_absent"])
+def test_patch_volume(client, namespace, vol_exists, volume_name, patch_args):
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    volume_exists = vol_exists == "vol_present"
 
     with user_set(client):
-        put_code, put_result = _put(client, volume)
+        if volume_exists:
+            put_code, put_result = _put(client, volume)
+        else:
+            _delete(client, volume)
 
         patch_code, _patch_result = _patch(client, volume, data=patch_args)
 
-    if patch_args:
-        assert patch_code == 200
-    else:
-        assert patch_code == 400
-
     _get_code, get_result = _get(client, volume)
 
-    for key, value in patch_args.items():
-        assert get_result[key] == value
-
-
-@given(volume_name=name_strings())
-@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-def test_patch_nonexistent_volume(client, namespace, volume_name):
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
-
-    with user_set(client):
-        patch_code, _patch_result = _patch(client,
-                                           volume,
-                                           data={"autosize_enabled": True})
-
-    assert patch_code == 404
+    if not volume_exists and patch_args:
+        assert patch_code == 404
+    else:
+        if patch_args:
+            assert patch_code == 200
+            for key, value in patch_args.items():
+                assert get_result[key] == value
+        else:
+            assert patch_code == 400
 
 
 @given(volume_name=name_strings())
