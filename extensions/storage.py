@@ -154,10 +154,7 @@ class DummyStorage(StorageBackend):
         log.info("Updating volume {} with data {}"
                  .format(volume_name, data))
         for key in data:
-            try:
-                self.vols[volume_name][key] = data[key]
-            except KeyError as e:
-                raise KeyError("No such volume: {}".format(volume_name))
+            self.vols[volume_name][key] = data[key]
 
     def create_volume(self, name, **kwargs):
         log.info("Adding new volume '{}': {}"
@@ -194,6 +191,7 @@ class DummyStorage(StorageBackend):
         self.locks_store[volume_name] = host
 
     def remove_lock(self, volume_name, host):
+        # fixme: verify that it's actually popping an existing lock!
         self.locks_store.pop(volume_name)
 
     def policies(self, volume_name):
@@ -226,11 +224,7 @@ class DummyStorage(StorageBackend):
         if name in self.vols:
             raise ValueError("Name already in use!")
 
-        try:
-            self.vols[name] = self.vols[from_volume_name]
-        except KeyError:
-            raise KeyError("Target volume '{}' does not exist"
-                           .format(from_volume_name))
+        self.vols[name] = self.vols[from_volume_name]
 
     def create_snapshot(self, volume_name, snapshot_name):
         log.info("Creating snapshot {}:{}".format(volume_name, snapshot_name))

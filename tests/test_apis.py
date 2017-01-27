@@ -329,7 +329,7 @@ def test_clone_from_snapshot_source_does_not_exist(client, namespace):
                                           'from_volume': volume_name})
     assert put_code == 404
     assert 'message' in put_result
-    assert 'does not exist' in put_result['message']
+    assert 'No such volume' in put_result['message']
 
 
 @given(volume_name=name_strings(), patch_args=patch_arguments())

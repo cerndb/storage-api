@@ -14,6 +14,8 @@ from utils import dict_without, filter_none
 
 import logging
 import traceback
+from contextlib import contextmanager
+from functools import partial
 
 from flask_restplus import Resource, fields, marshal
 from flask import current_app
@@ -24,6 +26,31 @@ ADMIN_GROUP = 'admin-group'
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
+
+
+def vol_404(volume_name):
+    return "No such volume: {}".format(volume_name)
+
+
+@contextmanager
+def exception_is_errorcode(api, exception, error_code, message=None):
+    """
+    Context to make sure all Exceptions of a given type calls an
+    api.abort with a suitable error and corresponding message.
+
+    If no message is passed, use str() on the exception.
+    """
+    try:
+        yield
+    except exception as e:
+        message = str(e) if message is None else message
+        api.abort(error_code, message)
+
+
+keyerror_is_404 = partial(exception_is_errorcode,
+                          exception=KeyError, error_code=404)
+valueerror_is_400 = partial(exception_is_errorcode,
+                            exception=ValueError, error_code=400)
 
 
 def init_namespace(api, backend_name):
@@ -102,22 +129,6 @@ def init_namespace(api, backend_name):
         log.warning(traceback.format_exc())
         return {'message': str(error)}, getattr(error, 'code', 500)
 
-    @api.errorhandler(KeyError)
-    def key_error_handler(error):
-        """
-        Key Errors represent something being abscent in the back-end.
-        """
-        log.warning(traceback.format_exc())
-        return {'message': str(error)}, 404
-
-    @api.errorhandler(ValueError)
-    def value_error_handler(error):
-        """
-        ValueErrors represent invalid input.
-        """
-        log.warning(traceback.format_exc())
-        return {'message': str(error)}, 400
-
     @api.route('/volumes/')
     class AllVolumes(Resource):
         @api.doc(description="Get a list of all volumes",
@@ -136,7 +147,8 @@ def init_namespace(api, backend_name):
         def get(self, volume_name):
             assert "/snapshots" not in volume_name
             log.info("GET for {}".format(volume_name))
-            return backend().get_volume(volume_name)
+            with keyerror_is_404(api, message=vol_404(volume_name)):
+                return backend().get_volume(volume_name)
 
         @api.doc(body=optional_from_snapshot,
                  description=("Create a new volume with the given details. "
@@ -154,16 +166,23 @@ def init_namespace(api, backend_name):
             data = marshal(apis.api.payload, optional_from_snapshot)
 
             if data['from_volume'] and data['from_snapshot']:
-                backend().clone_volume(volume_name, data['from_volume'], data['from_snapshot'])
+                with keyerror_is_404(api, message=vol_404(volume_name)),\
+                     valueerror_is_400(api):
+                    backend().clone_volume(volume_name, data['from_volume'],
+                                           data['from_snapshot'])
                 return '', 201
 
             elif data['from_snapshot']:
-                backend().rollback_volume(volume_name, data['from_snapshot'])
+
+                with keyerror_is_404(api, message=vol_404(volume_name)):
+                    backend().rollback_volume(volume_name,
+                                              data['from_snapshot'])
             else:
-                backend().create_volume(volume_name, **dict_without(dict(data),
-                                                                    'from_snapshot',
-                                                                    'from_volume',
-                                                                    'name'))
+                backend().create_volume(volume_name,
+                                        **dict_without(dict(data),
+                                                       'from_snapshot',
+                                                       'from_volume',
+                                                       'name'))
 
         @api.doc(description=("Restrict the volume named *volume_name*"
                               " but do not actually delete it"))
@@ -172,7 +191,8 @@ def init_namespace(api, backend_name):
         @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name):
             assert "/snapshots" not in volume_name
-            backend().restrict_volume(volume_name)
+            with keyerror_is_404(api, message=vol_404(volume_name)):
+                backend().restrict_volume(volume_name)
             return '', 204
 
         @api.doc(description="Partially update volume_name")
@@ -183,9 +203,10 @@ def init_namespace(api, backend_name):
             data = filter_none(marshal(apis.api.payload, volume_writable_model))
             log.info("PATCH with payload {}".format(str(data)))
             if data:
-                backend().patch_volume(volume_name, data)
+                with keyerror_is_404(api, message=vol_404(volume_name)):
+                    backend().patch_volume(volume_name, data)
             else:
-                raise ValueError("No PATCH data provided!")
+                raise api.abort(400, "No PATCH data provided!")
 
     @api.route('/volumes/<path:volume_name>/snapshots')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
@@ -203,7 +224,8 @@ def init_namespace(api, backend_name):
         @api.doc(description="Get the current information for a given snapshot")
         @api.marshal_with(snapshot_model)
         def get(self, volume_name, snapshot_name):
-            return backend().get_snapshot(volume_name, snapshot_name)
+            with keyerror_is_404(api):
+                return backend().get_snapshot(volume_name, snapshot_name)
 
         @api.response(409, description=("Too many snapshots, cannot create another. "
                                         "Try `purge_old_if_needed=true`."))
@@ -214,6 +236,7 @@ def init_namespace(api, backend_name):
         def put(self, volume_name, snapshot_name):
             log.info("Creating snapshot {} for volume {}"
                      .format(snapshot_name, volume_name))
+            # fixme: handle errors!
             backend().create_snapshot(volume_name, snapshot_name)
             return '', 201
 
@@ -224,7 +247,8 @@ def init_namespace(api, backend_name):
                       model=None)
         @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name, snapshot_name):
-            backend().delete_snapshot(volume_name, snapshot_name)
+            with keyerror_is_404(api, message=vol_404(volume_name)):
+                backend().delete_snapshot(volume_name, snapshot_name)
             return '', 204
 
     @api.route('/volumes/<path:volume_name>/locks')
@@ -246,14 +270,16 @@ def init_namespace(api, backend_name):
         @api.response(201, "A new lock was added")
         @in_group(api, ADMIN_GROUP)
         def put(self, volume_name, host):
-            backend().add_lock(volume_name, host)
+            with valueerror_is_400(api):
+                backend().add_lock(volume_name, host)
             return '', 201
 
         @api.doc(description="Force the lock for the host")
         @api.response(204, description="Lock successfully forced")
         @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name, host):
-            backend().remove_lock(volume_name, host)
+            with keyerror_is_404(api):
+                backend().remove_lock(volume_name, host)
             return '', 204
 
     @api.route('/volumes/<path:volume_name>/export')
@@ -265,7 +291,8 @@ def init_namespace(api, backend_name):
         @api.doc(description="Get the full ACL for the volume")
         @in_group(api, ADMIN_GROUP)
         def get(self, volume_name):
-            return backend().policies(volume_name)
+            with keyerror_is_404(api, message=vol_404(volume_name)):
+                return backend().policies(volume_name)
 
     @api.route('/volumes/<path:volume_name>/export/<string:policy>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
@@ -277,7 +304,8 @@ def init_namespace(api, backend_name):
         @api.doc(description="Display the rules of a given policy")
         @in_group(api, ADMIN_GROUP)
         def get(self, volume_name, policy):
-            return backend().get_policy(volume_name, policy)
+            with keyerror_is_404(api):
+                return backend().get_policy(volume_name, policy)
 
         @api.doc(description="Grant hosts matching a given pattern access to the given volume")
         @api.response(201, description="The provided access rules were added")
@@ -286,7 +314,8 @@ def init_namespace(api, backend_name):
         def put(self, volume_name, policy):
             # DATA = list of strings, potentially empty (no access)
             rules = marshal(apis.api.payload, policy_rule_write_model)['rules']
-            backend().add_policy(volume_name, policy, rules)
+            with keyerror_is_404(api, message=vol_404(volume_name)):
+                backend().add_policy(volume_name, policy, rules)
             return '', 201
 
         @api.doc(description=("Delete the entire policy"))
@@ -294,7 +323,8 @@ def init_namespace(api, backend_name):
         @api.response(404, description="No such policy exists")
         @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name, policy):
-            backend().remove_policy(volume_name, policy)
+            with keyerror_is_404(api):
+                backend().remove_policy(volume_name, policy)
             return '', 204
 
     @api.route('/volumes/<path:volume_name>/export/<string:policy>/<path:rule>')
