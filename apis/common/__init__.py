@@ -219,6 +219,7 @@ def init_namespace(api, backend_name):
 
     @api.route('/volumes/<path:volume_name>/snapshots/<string:snapshot_name>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
+    @api.param('snapshot_name', 'The snapshot name')
     class Snapshots(Resource):
 
         @api.doc(description="Get the current information for a given snapshot")
