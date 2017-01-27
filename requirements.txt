@@ -9,3 +9,4 @@ hypothesis==3.6.1
 hypothesis-pytest==0.19.0
 ordered-set==2.0.1
 Flask-Testing==0.6.1
+requests==2.13.0
