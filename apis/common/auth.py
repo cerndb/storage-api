@@ -11,14 +11,7 @@ from functools import wraps
 
 from flask import session, current_app
 
-sso_authorisation = {
-    'type': 'shibboleth',
-    'flow': 'accessCode',
-    'tokenUrl': '/login'
-}
-
-
-authorizations = {'sso': sso_authorisation}
+authorizations = {}
 
 
 def in_group(api, group_name):

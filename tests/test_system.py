@@ -3,6 +3,10 @@ import json
 import requests
 from flask_testing import LiveServerTestCase
 
+from jsonschema import RefResolver
+from swagger_spec_validator import validator20
+
+
 _DEFAULT_HEADERS = {'Content-Type': 'application/json',
                     'Accept': 'application/json'}
 
@@ -48,3 +52,11 @@ class LiveTests(LiveServerTestCase):
         assert r1.status_code == 200
         r = s.get(url + "/ceph/volumes/bork/locks")
         assert r.status_code == 200
+
+    def test_openapi_spec_validity(self):
+        url = self.get_server_url() + '/swagger.json'
+        r = self.login_session().get(url)
+        assert r.status_code == 200
+
+        parsed_spec = r.json()
+        assert isinstance(validator20.validate_spec(parsed_spec), RefResolver)

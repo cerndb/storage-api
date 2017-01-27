@@ -40,17 +40,6 @@ name_strings = partial(nice_strings, bad_chars=['\n', '#', '?', '%'])
 policy_name_strings = partial(nice_strings, bad_chars=['\n', '/', '?', '#', '%'])
 
 
-# @composite
-# def slash_names(draw):
-#     """
-#     A Compound Hypothesis strategy to generate names containing a / (not
-#     as the first character).
-#     """
-#     left = draw(name_strings())
-#     right = draw(name_strings())
-#     return "{}/{}".format(left, right)
-
-
 @composite
 def patch_arguments(draw):
     keys = draw(lists(elements=sampled_from(["autosize_enabled",
@@ -834,7 +823,7 @@ def test_delete_export_rule(client, namespace, auth, vol_exists, policy_status,
         with user_set(client):
             for rule in rules:
                 delete_code, _ = _delete(client, ("{}/{}"
-                                               .format(policy, rule)))
+                                                  .format(policy, rule)))
                 delete_codes.append(delete_code)
     else:
         for rule in rules:
