@@ -150,19 +150,29 @@ def test_put_new_volume_idempotent(client, volume_name, namespace):
 @example(volume_name="foo/bar")
 @example(volume_name="foo\\bar")
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-def test_put_new_volume(client, namespace, volume_name):
+@pytest.mark.parametrize('auth', ["authorised", "not_authorised"])
+def test_put_new_volume(client, namespace, auth, volume_name):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
+    authorised = auth == "authorised"
 
-    with user_set(client):
+    if authorised:
+        with user_set(client):
+            put_code, put_response = _put(client, resource, data={})
+    else:
         put_code, put_response = _put(client, resource, data={})
 
-    assert put_code == 200
-    assert not put_response
-
     get_code, stored_resource = _get(client, resource)
-    assert get_code == 200
-    assert 'errors' not in stored_resource
-    assert stored_resource['name'] == volume_name
+
+    if authorised:
+        assert put_code == 200
+        assert not put_response
+        assert get_code == 200
+        assert 'errors' not in stored_resource
+        assert stored_resource['name'] == volume_name
+    else:
+        assert put_code == 403
+        assert put_response
+        assert get_code == 404
 
 
 @given(volume_name=name_strings())
@@ -178,37 +188,34 @@ def test_get_nonexistent_volume(client, namespace, volume_name):
 
 
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-def test_create_delete_volume(client, namespace):
+@pytest.mark.parametrize('auth', ["authorised", "not_authorised"])
+@pytest.mark.parametrize('vol_exists', ["vol_present", "vol_absent"])
+def test_delete_volume(client, auth, vol_exists, namespace):
     resource = '/{}/volumes/myvolume'.format(namespace)
+    authorised = auth == "authorised"
+    volume_exists = vol_exists == "vol_present"
 
-    with user_set(client):
-        _put(client, resource, data={})
+    if volume_exists:
+        with user_set(client):
+            _put(client, resource, data={})
+
+    if authorised:
+        with user_set(client):
+            code, response = _delete(client, resource)
+    else:
         code, response = _delete(client, resource)
 
-    assert code == 204
-
     get_code, _get_response = _get(client, resource)
 
-    assert get_code == 404
-
-
-@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-def test_create_delete_volume_unauthorised(client, namespace):
-    resource = '/{}/volumes/myvolume'.format(namespace)
-
-    put_code, _result = _put(client, resource, data={})
-    assert put_code == 403
-
-    get_code, _get_response = _get(client, resource)
-    assert get_code == 404
-
-    with user_set(client):
-        put_code, _put_result = _put(client, resource, data={})
-
-    delete_code, _result = _delete(client, resource)
-    assert delete_code == 403
-    final_get_code, _get_response = _get(client, resource)
-    assert final_get_code == 200
+    if not authorised:
+        assert code == 403
+        if volume_exists:
+            assert get_code == 200
+    elif not volume_exists:
+        assert code == 404
+    else:
+        assert code == 204
+        assert get_code == 404
 
 
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
@@ -221,18 +228,6 @@ def test_create_wrong_group(client, namespace):
     assert put_code == 403
     get_code, _get_response = _get(client, resource)
     assert get_code == 404
-
-
-@given(volume_name=name_strings())
-@example(volume_name="foo/bar")
-@example(volume_name="foo\\bar")
-@pytest.mark.parametrize('namespace', ["ceph", "netapp"])
-def test_delete_nonexistent_volume(client, namespace, volume_name):
-    resource = '/{}/volumes/{}'.format(namespace, volume_name)
-
-    with user_set(client):
-        delete_code, _result = _delete(client, resource)
-    assert delete_code == 404
 
 
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
