@@ -11,6 +11,15 @@ from functools import wraps
 
 from flask import session, current_app
 
+sso_authorisation = {
+    'type': 'shibboleth',
+    'flow': 'accessCode',
+    'tokenUrl': '/login'
+}
+
+
+authorizations = {'sso': sso_authorisation}
+
 
 def in_group(api, group_name):
     """
@@ -30,6 +39,7 @@ def in_group(api, group_name):
         @api.response(403, description=("Current user is not logged in or not"
                                         " a member of the group '{}'")
                       .format(group_name), model=None)
+        @api.doc(security=[{'sso': ['read', 'write']}])
         def group_wrapper(*args, **kwargs):
             user = session.get('user', None)
             if not user:

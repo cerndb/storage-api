@@ -166,8 +166,7 @@ def init_namespace(api, backend_name):
                                                                     'name'))
 
         @api.doc(description=("Restrict the volume named *volume_name*"
-                              " but do not actually delete it"),
-                 security='sso')
+                              " but do not actually delete it"))
         @api.response(204, description="Successfully restricted",
                       model=None)
         @in_group(api, ADMIN_GROUP)
@@ -176,8 +175,7 @@ def init_namespace(api, backend_name):
             backend().restrict_volume(volume_name)
             return '', 204
 
-        @api.doc(description="Partially update volume_name",
-                 security='sso')
+        @api.doc(description="Partially update volume_name")
         @api.expect(volume_writable_model, validate=True)
         @in_group(api, ADMIN_GROUP)
         def patch(self, volume_name):
@@ -219,8 +217,7 @@ def init_namespace(api, backend_name):
             backend().create_snapshot(volume_name, snapshot_name)
             return '', 201
 
-        @api.doc(description=("Delete the snapshot"),
-                 security='sso')
+        @api.doc(description=("Delete the snapshot"))
         @api.response(204, description="Successfully deleted",
                       model=None)
         @api.response(404, description="No such snapshot",
@@ -245,16 +242,14 @@ def init_namespace(api, backend_name):
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
     @api.param('host', "the host holding the lock in question")
     class Locks(Resource):
-        @api.doc(description="Lock the volume with host holding the lock",
-                 security='sso')
+        @api.doc(description="Lock the volume with host holding the lock")
         @api.response(201, "A new lock was added")
         @in_group(api, ADMIN_GROUP)
         def put(self, volume_name, host):
             backend().add_lock(volume_name, host)
             return '', 201
 
-        @api.doc(description="Force the lock for the host",
-                 security="sso")
+        @api.doc(description="Force the lock for the host")
         @api.response(204, description="Lock successfully forced")
         @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name, host):
