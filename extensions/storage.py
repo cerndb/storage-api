@@ -20,8 +20,22 @@ from ordered_set import OrderedSet
 
 from abc import ABCMeta, abstractmethod
 import logging
+from contextlib import contextmanager
+from functools import partial
 
 log = logging.getLogger(__name__)
+
+
+def vol_404(volume_name):
+    return "No such volume: {}".format(volume_name)
+
+
+@contextmanager
+def annotate_exception(exception, annotation):
+    try:
+        yield
+    except exception:
+        raise exception(annotation)
 
 
 class StorageBackend(metaclass=ABCMeta):
@@ -142,11 +156,14 @@ class DummyStorage(StorageBackend):
 
     def get_volume(self, path):
         log.info("Trying to get volume {}".format(path))
-        return self.vols[path]
+
+        with annotate_exception(KeyError, vol_404(path)):
+            return self.vols[path]
 
     def restrict_volume(self, path):
         log.info("Restricting volume {}".format(path))
-        self.vols.pop(path)
+        with annotate_exception(KeyError, vol_404(path)):
+            self.vols.pop(path)
         self.locks_store.pop(path, None)
         self.rules_store.pop(path, None)
 
@@ -154,7 +171,8 @@ class DummyStorage(StorageBackend):
         log.info("Updating volume {} with data {}"
                  .format(volume_name, data))
         for key in data:
-            self.vols[volume_name][key] = data[key]
+            with annotate_exception(KeyError, vol_404(volume_name)):
+                self.vols[volume_name][key] = data[key]
 
     def create_volume(self, name, **kwargs):
         log.info("Adding new volume '{}': {}"
@@ -191,11 +209,13 @@ class DummyStorage(StorageBackend):
         self.locks_store[volume_name] = host
 
     def remove_lock(self, volume_name, host):
-        # fixme: verify that it's actually popping an existing lock!
-        self.locks_store.pop(volume_name)
+        with annotate_exception(KeyError, vol_404(volume_name)):
+            if host == self.locks_store[volume_name]:
+                self.locks_store.pop(volume_name)
 
     def policies(self, volume_name):
-        return list(self.rules_store[volume_name].values())
+        with annotate_exception(KeyError, vol_404(volume_name)):
+            return list(self.rules_store[volume_name].values())
 
     def get_policy(self, volume_name, policy_name):
         return self.rules_store[volume_name][policy_name]
@@ -224,11 +244,13 @@ class DummyStorage(StorageBackend):
         if name in self.vols:
             raise ValueError("Name already in use!")
 
-        self.vols[name] = self.vols[from_volume_name]
+        with annotate_exception(KeyError, vol_404(from_volume_name)):
+            self.vols[name] = self.vols[from_volume_name]
 
     def create_snapshot(self, volume_name, snapshot_name):
         log.info("Creating snapshot {}:{}".format(volume_name, snapshot_name))
-        self.vols[volume_name]['snapshots'][snapshot_name] = {'name': snapshot_name}
+        with annotate_exception(KeyError, vol_404(volume_name)):
+            self.vols[volume_name]['snapshots'][snapshot_name] = {'name': snapshot_name}
 
     def get_snapshot(self, volume_name, snapshot_name):
         log.info("Fetching snapshot {}:{}".format(volume_name, snapshot_name))
