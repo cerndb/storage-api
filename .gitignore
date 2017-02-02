@@ -9,4 +9,4 @@ dist/
 /swagger.json
 html
 /devserver.PID
-/storage-api-1.0.0.tar.gz
+/storage-api-*.tar.gz
