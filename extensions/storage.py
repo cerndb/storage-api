@@ -50,25 +50,30 @@ class StorageBackend(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
-    def get_volume(self, name):
+    def get_volume(self, volume_name):
         """
         Return a specific volume.
 
-        Raises KeyError if no volume named name exists.
+        Raises KeyError if no such volume exists.
         """
         return NotImplemented
 
     @abstractmethod
-    def restrict_volume(self, name):
+    def restrict_volume(self, volume_name):
         return NotImplemented
 
     @abstractmethod
-    def patch_volume(self, volume_name, data):
+    def patch_volume(self, volume_name, **data):
         return NotImplemented
 
     @abstractmethod
-    def create_volume(self, name, **kwargs):
-        # FIXME: clarify **kwargs
+    def create_volume(self, volume_name,
+                      autosize_enabled,
+                      autosize_increment,
+                      max_autosize,
+                      filer_address,
+                      junction_path,
+                      name, size_total, state):
         return NotImplemented
 
     @abstractmethod
@@ -162,20 +167,20 @@ class DummyStorage(StorageBackend):
     def volumes(self):
         return list(self.vols.values())
 
-    def get_volume(self, name):
-        log.info("Trying to get volume {}".format(name))
+    def get_volume(self, volume_name):
+        log.info("Trying to get volume {}".format(volume_name))
 
-        with annotate_exception(KeyError, vol_404(name)):
-            return self.vols[name]
+        with annotate_exception(KeyError, vol_404(volume_name)):
+            return self.vols[volume_name]
 
-    def restrict_volume(self, name):
-        log.info("Restricting volume {}".format(name))
-        with annotate_exception(KeyError, vol_404(name)):
-            self.vols.pop(name)
-        self.locks_store.pop(name, None)
-        self.rules_store.pop(name, None)
+    def restrict_volume(self, volume_name):
+        log.info("Restricting volume {}".format(volume_name))
+        with annotate_exception(KeyError, vol_404(volume_name)):
+            self.vols.pop(volume_name)
+        self.locks_store.pop(volume_name, None)
+        self.rules_store.pop(volume_name, None)
 
-    def patch_volume(self, volume_name, data):
+    def patch_volume(self, volume_name, **data):
         log.info("Updating volume {} with data {}"
                  .format(volume_name, data))
         for key in data:

@@ -199,7 +199,7 @@ def init_namespace(api, backend_name):
             log.info("PATCH with payload {}".format(str(data)))
             if data:
                 with keyerror_is_404(api):
-                    backend().patch_volume(volume_name, data)
+                    backend().patch_volume(volume_name, **data)
             else:
                 raise api.abort(400, "No PATCH data provided!")
 
