@@ -157,8 +157,7 @@ def init_namespace(api, backend_name):
                               "state at `from_snapshot`."))
         @api.expect(optional_from_snapshot, validate=True)
         @in_group(api, ADMIN_GROUP)
-        def put(self, volume_name):
-            # FIXME: doesn't make sense. Change to POST
+        def post(self, volume_name):
             assert "/snapshots" not in volume_name
             data = marshal(apis.api.payload, optional_from_snapshot)
 

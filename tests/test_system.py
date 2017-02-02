@@ -47,8 +47,8 @@ class LiveTests(LiveServerTestCase):
         url = self.get_server_url()
         s = self.login_session()
 
-        r1 = s.put(url + "/ceph/volumes/bork", data=json.dumps({}),
-                   headers=_DEFAULT_HEADERS)
+        r1 = s.post(url + "/ceph/volumes/bork", data=json.dumps({}),
+                    headers=_DEFAULT_HEADERS)
         assert r1.status_code == 200
         r = s.get(url + "/ceph/volumes/bork/locks")
         assert r.status_code == 200

@@ -93,6 +93,7 @@ def _open(client, path, method, data={}, **params):
 
 _get = partial(_open, method="GET")
 _put = partial(_open, method="PUT")
+_post = partial(_open, method="POST")
 _delete = partial(_open, method="DELETE")
 _patch = partial(_open, method="PATCH")
 
@@ -130,13 +131,13 @@ def test_list_no_volumes(client, namespace):
 
 @pytest.mark.parametrize('volume_name,namespace',
                          zip(["samevolume"] * 4, ["ceph", "netapp"]))
-def test_put_new_volume_idempotent(client, volume_name, namespace):
+def test_post_new_volume_idempotent(client, volume_name, namespace):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
     with user_set(client):
-        put_code, put_response = _put(client, resource, data={})
+        post_code, post_response = _post(client, resource, data={})
 
-    assert put_code == 200
-    assert not put_response
+    assert post_code == 200
+    assert not post_response
 
     get_code, stored_resource = _get(client, resource)
     assert get_code == 200
@@ -151,27 +152,27 @@ def test_put_new_volume_idempotent(client, volume_name, namespace):
 @example(volume_name="foo\\bar")
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
 @pytest.mark.parametrize('auth', ["authorised", "not_authorised"])
-def test_put_new_volume(client, namespace, auth, volume_name):
+def test_post_new_volume(client, namespace, auth, volume_name):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
     authorised = auth == "authorised"
 
     if authorised:
         with user_set(client):
-            put_code, put_response = _put(client, resource, data={})
+            post_code, post_response = _post(client, resource, data={})
     else:
-        put_code, put_response = _put(client, resource, data={})
+        post_code, post_response = _post(client, resource, data={})
 
     get_code, stored_resource = _get(client, resource)
 
     if authorised:
-        assert put_code == 200
-        assert not put_response
+        assert post_code == 200
+        assert not post_response
         assert get_code == 200
         assert 'errors' not in stored_resource
         assert stored_resource['name'] == volume_name
     else:
-        assert put_code == 403
-        assert put_response
+        assert post_code == 403
+        assert post_response
         assert get_code == 404
 
 
@@ -197,7 +198,7 @@ def test_delete_volume(client, auth, vol_exists, namespace):
 
     if volume_exists:
         with user_set(client):
-            _put(client, resource, data={})
+            _post(client, resource, data={})
 
     if authorised:
         with user_set(client):
@@ -223,9 +224,9 @@ def test_create_wrong_group(client, namespace):
     resource = '/{}/volumes/wrong_group'.format(namespace)
 
     with user_set(client, user={'group': ['completely-unauthorised-group']}):
-        put_code, _put_result = _put(client, resource, data={})
+        post_code, _post_result = _post(client, resource, data={})
 
-    assert put_code == 403
+    assert post_code == 403
     get_code, _get_response = _get(client, resource)
     assert get_code == 404
 
@@ -235,9 +236,9 @@ def test_create_snapshot_from_volume(client, namespace):
     volume = '/{}/volumes/{}'.format(namespace, uuid.uuid1())
 
     with user_set(client):
-        _put_code, _put_result = _put(client, volume,
-                                      data={'max_autosize': 42,
-                                            'autosize_increment': 12})
+        _post_code, _post_result = _post(client, volume,
+                                         data={'max_autosize': 42,
+                                               'autosize_increment': 12})
 
     snapshot_name = "{}".format("shotsnap", namespace)
     snapshot = '{}/snapshots/{}'.format(volume, snapshot_name)
@@ -266,13 +267,13 @@ def test_rollback_from_snapshot(client, namespace):
     snapshot_resource = "{}/snapshots/{}".format(volume, snapshot_name)
 
     with user_set(client):
-        _put(client, volume, data={})
+        _post(client, volume, data={})
         _put(client, snapshot_resource, data={})
-        put_code, put_result = _put(client,
-                                    volume,
-                                    data={'from_snapshot': snapshot_name})
+        post_code, post_result = _post(client, volume,
+                                       data={'from_snapshot':
+                                             snapshot_name})
 
-    assert put_code == 200
+    assert post_code == 200
     # No way of verifying that the volume was actually restored.
 
 
@@ -286,14 +287,14 @@ def test_clone_from_snapshot(client, namespace):
     snapshot_resource = "{}/snapshots/{}".format(volume, snapshot_name)
 
     with user_set(client):
-        _put(client, volume, data={})
+        _post(client, volume, data={})
         _put(client, snapshot_resource, data={})
-        put_code, put_result = _put(client,
-                                    clone_volume,
-                                    data={'from_snapshot': snapshot_name,
-                                          'from_volume': master_name})
+        post_code, post_result = _post(client,
+                                       clone_volume,
+                                       data={'from_snapshot': snapshot_name,
+                                             'from_volume': master_name})
 
-    assert put_code == 201
+    assert post_code == 201
     assert _get(client, clone_volume) == _get(client, volume)
 
 
@@ -306,15 +307,15 @@ def test_clone_from_snapshot_name_collission(client, namespace):
     snapshot_resource = "{}/snapshots/{}".format(volume, snapshot_name)
 
     with user_set(client):
-        _put(client, volume, data={})
+        _post(client, volume, data={})
         _put(client, snapshot_resource, data={})
-        put_code, put_result = _put(client,
+        post_code, post_result = _post(client,
                                     volume,
                                     data={'from_snapshot': snapshot_name,
                                           'from_volume': volume_name})
-    assert put_code == 400
-    assert 'message' in put_result
-    assert 'in use' in put_result['message']
+    assert post_code == 400
+    assert 'message' in post_result
+    assert 'in use' in post_result['message']
 
 
 @pytest.mark.parametrize('namespace', ["ceph", "netapp"])
@@ -323,13 +324,13 @@ def test_clone_from_snapshot_source_does_not_exist(client, namespace):
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
 
     with user_set(client):
-        put_code, put_result = _put(client,
-                                    volume,
-                                    data={'from_snapshot': 'no-snapshot',
-                                          'from_volume': volume_name})
-    assert put_code == 404
-    assert 'message' in put_result
-    assert 'No such volume' in put_result['message']
+        post_code, post_result = _post(client,
+                                       volume,
+                                       data={'from_snapshot': 'no-snapshot',
+                                             'from_volume': volume_name})
+    assert post_code == 404
+    assert 'message' in post_result
+    assert 'No such volume' in post_result['message']
 
 
 @given(volume_name=name_strings(), patch_args=patch_arguments())
@@ -341,7 +342,7 @@ def test_patch_volume(client, namespace, vol_exists, volume_name, patch_args):
 
     with user_set(client):
         if volume_exists:
-            put_code, put_result = _put(client, volume)
+            post_code, post_result = _post(client, volume)
         else:
             _delete(client, volume)
 
@@ -388,7 +389,7 @@ def test_delete_snapshot(client, namespace, authorisation, volume_name):
     snapshot = '{}/snapshots/my-snapshot'.format(volume, volume_name)
 
     with user_set(client):
-        _put(client, volume)
+        _post(client, volume)
         put_code, _ = _put(client, snapshot, data={})
         assert put_code == 201
         get_before, _ = _get(client, snapshot)
@@ -418,7 +419,7 @@ def test_delete_snapshot(client, namespace, authorisation, volume_name):
 def test_get_empty_locks(client, namespace, volume_name):
     volume = '/{}/volumes/{}'.format(namespace, volume_name, namespace)
     with user_set(client):
-        _put(client, volume)
+        _post(client, volume)
     get_code, get_result = _get(client, volume + '/locks')
 
     assert get_code == 200
@@ -435,7 +436,7 @@ def test_lock_volume(client, namespace, authorisation, volume_name):
     authorised = (authorisation == "authorised")
 
     with user_set(client):
-        _put(client, volume)
+        _post(client, volume)
 
     if not authorised:
         put_code, _ = _put(client, lock)
@@ -466,7 +467,7 @@ def test_force_lock_on_volume(client, namespace, authorisation, volume_name):
     authorised = (authorisation == "authorised")
 
     with user_set(client):
-        _put(client, volume)
+        _post(client, volume)
         put_code, _ = _put(client, lock)
         assert put_code == 201
 
@@ -497,10 +498,8 @@ def test_lock_locked_volume(client, namespace, volume_name):
     lock1 = '{}/locks/{}'.format(volume, host1)
     lock2 = '{}/locks/{}'.format(volume, host2)
 
-    print(_get(client, volume + '/locks')[1])
-
     with user_set(client):
-        _put(client, volume)
+        _post(client, volume)
         put_code, _ = _put(client, lock1)
         assert put_code == 201
 
@@ -522,7 +521,7 @@ def test_lock_volume_idempotent(client, namespace, volume_name):
     lock = '{}/locks/{}'.format(volume, host)
 
     with user_set(client):
-        _put(client, volume)
+        _post(client, volume)
         put_code, _ = _put(client, lock)
         assert put_code == 201
 
@@ -546,7 +545,7 @@ def test_get_acl(client, namespace, auth, vol_exists, volume_name):
 
     with user_set(client):
         if volume_exists:
-            _put(client, volume)
+            _post(client, volume)
         else:
             _delete(client, volume)
 
@@ -588,7 +587,7 @@ def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
         assert del_code == 404 or del_code == 204
 
         if volume_exists:
-            _put(client, volume)
+            _post(client, volume)
         else:
             delete_code, _ = _delete(client, volume)
             assert delete_code == 204 or delete_code == 404
@@ -642,7 +641,7 @@ def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
 
     with user_set(client):
         if volume_exists:
-            _put(client, volume)
+            _post(client, volume)
         else:
             delete_code, _ = _delete(client, volume)
             assert delete_code == 204 or delete_code == 404
@@ -697,7 +696,7 @@ def test_put_export_rule(client, namespace, auth, vol_exists, policy_status,
 
     with user_set(client):
         if volume_exists:
-            _put(client, volume)
+            _post(client, volume)
         else:
             delete_code, _ = _delete(client, volume)
             assert delete_code == 204 or delete_code == 404
@@ -757,7 +756,7 @@ def test_delete_export_rule(client, namespace, auth, vol_exists, policy_status,
 
     with user_set(client):
         if volume_exists:
-            _put(client, volume)
+            _post(client, volume)
         else:
             delete_code, _ = _delete(client, volume)
             assert delete_code == 204 or delete_code == 404
