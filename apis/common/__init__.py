@@ -333,7 +333,7 @@ def init_namespace(api, backend_name):
         @api.response(201, description="The provided access rule was added")
         @in_group(api, ADMIN_GROUP)
         def put(self, volume_name, policy, rule):
-            backend().policy_rule_present(volume_name, policy, rule)
+            backend().ensure_policy_rule_present(volume_name, policy, rule)
             return '', 201
 
         @api.doc(description=("Delete rule from policy"))
@@ -341,5 +341,5 @@ def init_namespace(api, backend_name):
         @api.response(404, description="No such policy, rule or volume exists")
         @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name, policy, rule):
-            backend().policy_rule_absent(volume_name, policy, rule)
+            backend().ensure_policy_rule_absent(volume_name, policy, rule)
             return '', 204

@@ -21,7 +21,6 @@ from ordered_set import OrderedSet
 from abc import ABCMeta, abstractmethod
 import logging
 from contextlib import contextmanager
-from functools import partial
 
 log = logging.getLogger(__name__)
 
@@ -60,11 +59,56 @@ class StorageBackend(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
-    def create_volume(self, name):
+    def restrict_volume(self, name):
+        return NotImplemented
+
+    @abstractmethod
+    def patch_volume(self, volume_name, data):
+        return NotImplemented
+
+    @abstractmethod
+    def create_volume(self, name, **kwargs):
+        # FIXME: clarify **kwargs
+        return NotImplemented
+
+    @abstractmethod
+    def locks(self, volume_name):
+        return NotImplemented
+
+    @abstractmethod
+    def add_lock(self, volume_name, host_owner):
+        return NotImplemented
+
+    @abstractmethod
+    def remove_lock(self, host_owner):
+        return NotImplemented
+
+    @abstractmethod
+    def policies(self, volume_name):
+        return NotImplemented
+
+    @abstractmethod
+    def get_policy(self, volume_name, policy_name):
+        return NotImplemented
+
+    @abstractmethod
+    def add_policy(self, volume_name, policy_name, rules):
+        return NotImplemented
+
+    @abstractmethod
+    def remove_policy(self, volume_name, policy_name):
+        return NotImplemented
+
+    @abstractmethod
+    def clone_volume(self, from_volume_name, from_snapshot_name):
         return NotImplemented
 
     @abstractmethod
     def create_snapshot(self, volume_name, snapshot_name):
+        return NotImplemented
+
+    @abstractmethod
+    def get_snapshot(self, volume_name, snapshot_name):
         return NotImplemented
 
     @abstractmethod
@@ -76,51 +120,15 @@ class StorageBackend(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
-    def get_snapshot(self, volume_name, snapshot_name):
+    def rollback_volume(self, volume_name, restore_snapshot_name):
         return NotImplemented
 
     @abstractmethod
-    def clone_volume(self, volume_name, snapshot_name):
+    def ensure_policy_rule_present(self, volume_name, policy_name, rule):
         return NotImplemented
 
     @abstractmethod
-    def rollback_volume(self, volume_name, snapshot_name):
-        return NotImplemented
-
-    @abstractmethod
-    def patch_volume(self, volume_name, data):
-        return NotImplemented
-
-    @abstractmethod
-    def restrict_volume(self, volume_name):
-        """
-        Raises KeyError if volume_name is not present.
-        """
-        return NotImplemented
-
-    @property
-    @abstractmethod
-    def locks(self):
-        return NotImplemented
-
-    @abstractmethod
-    def add_lock(self, host):
-        return NotImplemented
-
-    @abstractmethod
-    def remove_lock(self, host):
-        return NotImplemented
-
-    @abstractmethod
-    def policies(self, volume):
-        return NotImplemented
-
-    @abstractmethod
-    def add_policy(self, volume, policy_name, rules):
-        return NotImplemented
-
-    @abstractmethod
-    def remove_policy(self, volume_name, policy_name):
+    def ensure_policy_rule_absent(self, volume_name, policy_name, rule):
         return NotImplemented
 
     def init_app(self, app):
@@ -154,18 +162,18 @@ class DummyStorage(StorageBackend):
     def volumes(self):
         return list(self.vols.values())
 
-    def get_volume(self, path):
-        log.info("Trying to get volume {}".format(path))
+    def get_volume(self, name):
+        log.info("Trying to get volume {}".format(name))
 
-        with annotate_exception(KeyError, vol_404(path)):
-            return self.vols[path]
+        with annotate_exception(KeyError, vol_404(name)):
+            return self.vols[name]
 
-    def restrict_volume(self, path):
-        log.info("Restricting volume {}".format(path))
-        with annotate_exception(KeyError, vol_404(path)):
-            self.vols.pop(path)
-        self.locks_store.pop(path, None)
-        self.rules_store.pop(path, None)
+    def restrict_volume(self, name):
+        log.info("Restricting volume {}".format(name))
+        with annotate_exception(KeyError, vol_404(name)):
+            self.vols.pop(name)
+        self.locks_store.pop(name, None)
+        self.rules_store.pop(name, None)
 
     def patch_volume(self, volume_name, data):
         log.info("Updating volume {} with data {}"
@@ -196,21 +204,21 @@ class DummyStorage(StorageBackend):
         else:
             return [{'host': self.locks_store[volume_name]}]
 
-    def add_lock(self, volume_name, host):
+    def add_lock(self, volume_name, host_owner):
         assert volume_name
-        assert host
+        assert host_owner
 
-        log.info("Host {} is locking {}".format(host, volume_name))
-        if volume_name in self.locks_store and self.locks_store[volume_name] != host:
+        log.info("Host_Owner {} is locking {}".format(host_owner, volume_name))
+        if volume_name in self.locks_store and self.locks_store[volume_name] != host_owner:
             raise ValueError("{} is already locked by {}!"
                              .format(volume_name,
                                      self.locks_store[volume_name]))
 
-        self.locks_store[volume_name] = host
+        self.locks_store[volume_name] = host_owner
 
-    def remove_lock(self, volume_name, host):
+    def remove_lock(self, volume_name, host_owner):
         with annotate_exception(KeyError, vol_404(volume_name)):
-            if host == self.locks_store[volume_name]:
+            if host_owner == self.locks_store[volume_name]:
                 self.locks_store.pop(volume_name)
 
     def policies(self, volume_name):
@@ -269,11 +277,11 @@ class DummyStorage(StorageBackend):
                  .format(volume_name, restore_snapshot_name))
         pass
 
-    def policy_rule_present(self, volume_name, policy_name, rule):
+    def ensure_policy_rule_present(self, volume_name, policy_name, rule):
         if rule not in self.rules_store[volume_name][policy_name]['rules']:
             self.rules_store[volume_name][policy_name]['rules'].append(rule)
 
-    def policy_rule_absent(self, volume_name, policy_name, rule):
+    def ensure_policy_rule_absent(self, volume_name, policy_name, rule):
         stored_rules = self.rules_store[volume_name][policy_name]['rules']
         self.rules_store[volume_name][policy_name]['rules'] = list(filter(
             lambda x: x != rule, stored_rules))
