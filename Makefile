@@ -13,6 +13,7 @@ REPOURL=git+https://github.com
 # DB gitlab group
 REPOPREFIX=/cerndb
 REPO_NAME=storage-api
+SOURCES := $(shell find apis app.py -name '*.py')
 
 # Get all the package infos from the spec file
 PKGVERSION=$(shell awk '/Version:/ { print $$2 }' ${SPECFILE})
@@ -35,6 +36,8 @@ all:    sources
 clean:
 	find . -name \*.pyc -o -name \*.pyo -o -name __pycache__ -exec rm -rf {} +
 	rm -f $(TARFILE)
+	make stop
+	rm -rf swagger.json html
 
 srpm:   all
 	rpmbuild -bs --define '_sourcedir $(PWD)' ${SPECFILE}
@@ -57,3 +60,36 @@ tag-qa:
 tag-stable:
 	koji tag-build db6-stable $(PKGID)-$(PKGRELEASE).el6
 	koji tag-build db7-stable $(PKGID)-$(PKGRELEASE).el7.cern
+
+lint: $(SOURCES)
+	flake8 app.py apis setup.py extensions
+
+.PHONY: lint
+
+devserver.PID:
+	FLASK_APP=app.py FLASK_DEBUG=true flask run & echo $$! > $@;
+
+
+devserver: devserver.PID
+
+
+stop: devserver.PID
+	kill `cat $<` && rm $<
+
+
+test: $(SOURCES)
+	pytest -vvv --runslow --hypothesis-profile=ci
+.PHONY: test
+
+
+swagger.json: $(SOURCES) devserver.PID
+	sleep 2 && wget http://127.0.0.1:5000/swagger.json -O swagger.json
+	make stop
+
+html: swagger.json
+	mkdir -p html
+	spectacle --target-dir html swagger.json
+
+doc_deploy: swagger.json html
+	bash ./deploy.sh html
+.PHONY: doc_deploy
