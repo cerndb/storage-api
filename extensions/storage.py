@@ -43,7 +43,7 @@ class StorageBackend(metaclass=ABCMeta):
     @abstractmethod
     def volumes():
         """
-        Return all volumes of the storage backend.
+        Return all active and usable volumes of the storage backend.
 
         Read-only property.
         """
@@ -52,7 +52,14 @@ class StorageBackend(metaclass=ABCMeta):
     @abstractmethod
     def get_volume(self, volume_name):
         """
-        Return a specific volume.
+        Return (the data for) a specific volume as a dictionary with (at
+        least) the following elements:
+        - size_used
+        - size_total
+        - filer_address
+
+        Back-ends are allowed to add implementation-specific
+        elements.
 
         Raises KeyError if no such volume exists.
         """
@@ -60,80 +67,229 @@ class StorageBackend(metaclass=ABCMeta):
 
     @abstractmethod
     def restrict_volume(self, volume_name):
+        """
+        Restrict or delete a volume. This will cause it to not appear in
+        volumes or get_volume(), as if the volume never existed.
+
+        What action is actually performed is platform-dependent, but
+        should be semantically as close to a delete operation as
+        possible.
+        """
         return NotImplemented
 
     @abstractmethod
     def patch_volume(self, volume_name, **data):
+        """
+        Update a volume with data from **data.
+
+        Raises:
+        - ValueError on poorly formatted data, or invalid data
+          entries/attempts to write to read-only fields
+        - KeyError if no volume named volume_name exists.
+        """
         return NotImplemented
 
     @abstractmethod
-    def create_volume(self, volume_name,
-                      autosize_enabled,
-                      autosize_increment,
-                      max_autosize,
-                      filer_address,
-                      junction_path,
-                      name, size_total, state):
+    def create_volume(self, volume_name, **fields):
+        """
+        Create a new volume with a given name and the provided data
+        fields.
+
+        Fields can be at least:
+        - size_total
+
+        Raises:
+        - ValueError if the data is malformed
+        - KeyError if the volume already exists
+
+        Back-ends are allowed to add implementation-specific elements.
+        """
         return NotImplemented
 
     @abstractmethod
     def locks(self, volume_name):
+        """
+        Return the string naming the host currently holding a lock on
+        the volume named volume_name, or None if there were no locks.
+
+        Raises:
+        - KeyError if no such volume exists
+        """
         return NotImplemented
 
     @abstractmethod
-    def add_lock(self, volume_name, host_owner):
+    def create_lock(self, volume_name, host_owner):
+        """
+        Install a lock held by the host host_owner on the given volume.
+
+        Raises:
+        - KeyError if no such volume exists
+        """
         return NotImplemented
 
     @abstractmethod
-    def remove_lock(self, host_owner):
+    def remove_lock(self, volume_name, host_owner):
+        """
+        Remove/break/force the lock on a volume, if held by
+        host_owner. Does nothing if no locks were held on volume_name,
+        or if the lock wasn't held by host_owner.
+
+        Raises:
+        - KeyError if no such volume exists
+        """
         return NotImplemented
 
     @abstractmethod
     def policies(self, volume_name):
+        """
+        Return a list of export policies for the given volume, as a list
+        of dictionaries with their associated policies.
+
+        Example:
+        ```
+        [{
+         "policy_name": "my_policy",
+         "rules": ["127.0.0.1", "10.10.10.1/24"]
+        }]
+        ```
+
+        Notably, no policies would yield []. The interpretation
+        of these values are up to the implementation, but it can be
+        assumed that no policies is not the same thing as a policy with
+        no rules.
+
+        Raises:
+        - KeyError if no such volume exists
+        """
         return NotImplemented
 
     @abstractmethod
     def get_policy(self, volume_name, policy_name):
+        """
+        Return a (potentially empty) list of export policies in the form
+        of strings representing IP numbers, with possible masks
+        associated with the given policy.
+
+        Raises:
+        - KeyError if volume_name does not exist or does not have a
+          policy named policy_name
+        """
         return NotImplemented
 
     @abstractmethod
-    def add_policy(self, volume_name, policy_name, rules):
+    def create_policy(self, volume_name, policy_name, rules):
+        """
+        Add a new policy with a set of rules to a given volume
+
+        Raises:
+        - ValueError if there is already a policy with that name
+        - KeyError if there is no such volume
+        """
         return NotImplemented
 
     @abstractmethod
     def remove_policy(self, volume_name, policy_name):
+        """
+        Remove a policy.
+
+        Raises:
+        - KeyError if no such volume or policy exists
+        """
+
         return NotImplemented
 
     @abstractmethod
     def clone_volume(self, from_volume_name, from_snapshot_name):
+        """
+        Create a clone of a volume from a provided snapshot.
+
+        Raises:
+        - KeyError if no such volume or snapshot exists
+        """
         return NotImplemented
 
     @abstractmethod
     def create_snapshot(self, volume_name, snapshot_name):
+        """
+        Make a snapshot from the current state of a volume.
+
+        Raises:
+        - KeyError if no volume named volume_name exists
+        - ValueError if there is already a snapshot named snapshot_name,
+          or if the name is invalid.
+        """
         return NotImplemented
 
     @abstractmethod
     def get_snapshot(self, volume_name, snapshot_name):
+        """
+        Get the data associated with the snapshot.
+
+        FIXME: describe the contents of a snapshot?
+
+        Back-ends are allowed to add additional keys.
+
+        Raises:
+        - KeyError if no such volume or snapshot exists
+        """
+
         return NotImplemented
 
     @abstractmethod
     def delete_snapshot(self, volume_name, snapshot_name):
+        """
+        Delete, or the closest possible equivalent, a given snapshot.
+
+        Raises:
+        - KeyError if no such volume or snapshot exists
+        """
         return NotImplemented
 
     @abstractmethod
     def get_snapshots(self, volume_name):
+        """
+        Return a list of snapshots for volume_name.
+
+        Raises:
+        - KeyError if no such volume exists.
+        """
         return NotImplemented
 
     @abstractmethod
     def rollback_volume(self, volume_name, restore_snapshot_name):
+        """
+        Roll back a volume to a snapshot.
+
+        Raises:
+        - KeyError if volume_name does not exist or does not have a
+          snapshot named restore_snapshot_name.
+        """
         return NotImplemented
 
     @abstractmethod
     def ensure_policy_rule_present(self, volume_name, policy_name, rule):
+        """
+        Idempotently ensure that a given export policy (as represented
+        by an IP with optional mask) is present in the rules of a given
+        policy. If it is not present it will be added.
+
+        Raises:
+        - KeyError if no such volume or policy exists.
+        """
+
         return NotImplemented
 
     @abstractmethod
     def ensure_policy_rule_absent(self, volume_name, policy_name, rule):
+        """
+        Idempotently ensure that a given export policy (as represented
+        by an IP with optional mask) is absent in the rules of a given
+        policy. Will delete it if present, otherwise give no warning.
+
+        Raises:
+        - KeyError if no such volume or policy exists.
+        """
+
         return NotImplemented
 
     def init_app(self, app):
@@ -200,6 +356,7 @@ class DummyStorage(StorageBackend):
         self.rules_store[name] = {}
 
     def locks(self, volume_name):
+        # fixme: follow spec
 
         if volume_name not in self.locks_store:
             if volume_name not in self.vols:
@@ -209,7 +366,7 @@ class DummyStorage(StorageBackend):
         else:
             return [{'host': self.locks_store[volume_name]}]
 
-    def add_lock(self, volume_name, host_owner):
+    def create_lock(self, volume_name, host_owner):
         assert volume_name
         assert host_owner
 
@@ -233,7 +390,7 @@ class DummyStorage(StorageBackend):
     def get_policy(self, volume_name, policy_name):
         return self.rules_store[volume_name][policy_name]
 
-    def add_policy(self, volume_name, policy_name, rules):
+    def create_policy(self, volume_name, policy_name, rules):
         log.info("Adding policy {} with rules {} on volume {}"
                  .format(policy_name, rules, volume_name))
 

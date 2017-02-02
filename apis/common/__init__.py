@@ -158,6 +158,7 @@ def init_namespace(api, backend_name):
         @api.expect(optional_from_snapshot, validate=True)
         @in_group(api, ADMIN_GROUP)
         def put(self, volume_name):
+            # FIXME: doesn't make sense. Change to POST
             assert "/snapshots" not in volume_name
             data = marshal(apis.api.payload, optional_from_snapshot)
 
@@ -230,6 +231,7 @@ def init_namespace(api, backend_name):
         @api.doc(description=("Create a new snapshot of *volume_name*"
                               " under *snapshot_name*"))
         def put(self, volume_name, snapshot_name):
+            # fixme: change to POST
             log.info("Creating snapshot {} for volume {}"
                      .format(snapshot_name, volume_name))
             # fixme: handle errors!
@@ -267,7 +269,7 @@ def init_namespace(api, backend_name):
         @in_group(api, ADMIN_GROUP)
         def put(self, volume_name, host):
             with valueerror_is_400(api):
-                backend().add_lock(volume_name, host)
+                backend().create_lock(volume_name, host)
             return '', 201
 
         @api.doc(description="Force the lock for the host")
@@ -308,10 +310,11 @@ def init_namespace(api, backend_name):
         @api.expect(policy_rule_write_model, validate=True)
         @in_group(api, ADMIN_GROUP)
         def put(self, volume_name, policy):
+            # FIXME: change to POST
             # DATA = list of strings, potentially empty (no access)
             rules = marshal(apis.api.payload, policy_rule_write_model)['rules']
             with keyerror_is_404(api):
-                backend().add_policy(volume_name, policy, rules)
+                backend().create_policy(volume_name, policy, rules)
             return '', 201
 
         @api.doc(description=("Delete the entire policy"))

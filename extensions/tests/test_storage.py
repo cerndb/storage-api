@@ -25,7 +25,7 @@ def test_get_no_locks(storage):
 @pytest.mark.parametrize("storage", [DummyStorage()])
 def test_add_lock(storage):
     storage.create_volume('volumename')
-    storage.add_lock('volumename', 'db.cern.ch')
+    storage.create_lock('volumename', 'db.cern.ch')
 
     assert {'host': 'db.cern.ch'} in storage.locks('volumename')
 
@@ -33,7 +33,7 @@ def test_add_lock(storage):
 @pytest.mark.parametrize("storage", [DummyStorage()])
 def test_remove_lock(storage):
     storage.create_volume('volumename')
-    storage.add_lock('volumename', 'db.cern.ch')
+    storage.create_lock('volumename', 'db.cern.ch')
     storage.remove_lock('volumename', 'db.cern.ch')
 
     assert {'host': 'db.cern.ch'} not in storage.locks('volumename')
@@ -57,7 +57,7 @@ def test_add_policy(storage):
     storage.create_volume(name=volume_name)
     rules = ["host1.db.cern.ch", "*db.cern.ch", "*foo.cern.ch"]
 
-    storage.add_policy(volume_name, "a policy", rules)
+    storage.create_policy(volume_name, "a policy", rules)
 
     policies = storage.policies(volume_name)
 
@@ -72,7 +72,7 @@ def test_delete_policy(storage):
     storage.create_volume(name=volume_name)
     rules = ["host1.db.cern.ch", "*db.cern.ch"]
 
-    storage.add_policy(volume_name, "a policy", rules)
+    storage.create_policy(volume_name, "a policy", rules)
     storage.remove_policy(volume_name, "a policy")
     assert len(storage.policies(volume_name)) == 0
 
@@ -84,7 +84,7 @@ def test_delete_volume_policies_deleted_also(storage):
     rules = ["host1.db.cern.ch", "*db.cern.ch"]
     policy_name = "a policy"
 
-    storage.add_policy(volume_name, policy_name, rules)
+    storage.create_policy(volume_name, policy_name, rules)
     storage.restrict_volume(volume_name)
 
     storage.create_volume(name=volume_name)
@@ -95,7 +95,7 @@ def test_delete_volume_policies_deleted_also(storage):
 def test_add_policy_no_volume_raises_key_error(storage):
     volume_name = uuid.uuid1()
     with pytest.raises(KeyError):
-        storage.add_policy(volume_name, "a policy", rules=[])
+        storage.create_policy(volume_name, "a policy", rules=[])
 
 
 @pytest.mark.parametrize("storage", [DummyStorage()])
