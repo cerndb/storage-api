@@ -199,12 +199,14 @@ class StorageBackend(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
-    def clone_volume(self, from_volume_name, from_snapshot_name):
+    def clone_volume(self, clone_volume_name,
+                     from_volume_name, from_snapshot_name):
         """
         Create a clone of a volume from a provided snapshot.
 
         Raises:
         - KeyError if no such volume or snapshot exists
+        - ValueError if clone_volume_name already exists
         """
         return NotImplemented
 
@@ -314,6 +316,14 @@ class StorageBackend(metaclass=ABCMeta):
 
 class DummyStorage(StorageBackend):
 
+    def raise_if_volume_absent(self, volume_name):
+        """
+        Raise a KeyError with an appropriate message if a volume is
+        absent.
+        """
+        if volume_name not in self.vols:
+            raise KeyError(vol_404(volume_name))
+
     def __init__(self):
         self.vols = {}
         self.locks_store = {}
@@ -325,7 +335,6 @@ class DummyStorage(StorageBackend):
 
     def get_volume(self, volume_name):
         log.info("Trying to get volume {}".format(volume_name))
-
         with annotate_exception(KeyError, vol_404(volume_name)):
             return self.vols[volume_name]
 
@@ -356,15 +365,12 @@ class DummyStorage(StorageBackend):
         self.rules_store[name] = {}
 
     def locks(self, volume_name):
-        # fixme: follow spec
+        self.raise_if_volume_absent(volume_name)
 
         if volume_name not in self.locks_store:
-            if volume_name not in self.vols:
-                raise KeyError("No such volume: {}".format(volume_name))
-            else:
-                return []
+            return None
         else:
-            return [{'host': self.locks_store[volume_name]}]
+            return self.locks_store[volume_name]
 
     def create_lock(self, volume_name, host_owner):
         assert volume_name
@@ -379,6 +385,8 @@ class DummyStorage(StorageBackend):
         self.locks_store[volume_name] = host_owner
 
     def remove_lock(self, volume_name, host_owner):
+        self.raise_if_volume_absent(volume_name)
+
         with annotate_exception(KeyError, vol_404(volume_name)):
             if host_owner == self.locks_store[volume_name]:
                 self.locks_store.pop(volume_name)
@@ -388,14 +396,14 @@ class DummyStorage(StorageBackend):
             return list(self.rules_store[volume_name].values())
 
     def get_policy(self, volume_name, policy_name):
+        self.raise_if_volume_absent(volume_name)
+
         return self.rules_store[volume_name][policy_name]
 
     def create_policy(self, volume_name, policy_name, rules):
         log.info("Adding policy {} with rules {} on volume {}"
                  .format(policy_name, rules, volume_name))
-
-        if volume_name not in self.vols:
-            raise KeyError("No such volume {}".format(volume_name))
+        self.raise_if_volume_absent(volume_name)
 
         self.rules_store[volume_name][policy_name] = {
             'policy_name': policy_name,
@@ -404,18 +412,19 @@ class DummyStorage(StorageBackend):
     def remove_policy(self, volume_name, policy_name):
         log.info("Removing policy {} from volume {}"
                  .format(policy_name, volume_name))
-
+        self.raise_if_volume_absent(volume_name)
         self.rules_store[volume_name].pop(policy_name)
 
-    def clone_volume(self, name, from_volume_name, from_snapshot_name):
+    def clone_volume(self, clone_volume_name,
+                     from_volume_name, from_snapshot_name):
         log.info("Cloning volume {target} from {source}:{snapshot}"
-                 .format(target=name, source=from_volume_name,
+                 .format(target=clone_volume_name, source=from_volume_name,
                          snapshot=from_snapshot_name))
-        if name in self.vols:
+        if clone_volume_name in self.vols:
             raise ValueError("Name already in use!")
 
         with annotate_exception(KeyError, vol_404(from_volume_name)):
-            self.vols[name] = self.vols[from_volume_name]
+            self.vols[clone_volume_name] = self.vols[from_volume_name]
 
     def create_snapshot(self, volume_name, snapshot_name):
         log.info("Creating snapshot {}:{}".format(volume_name, snapshot_name))
@@ -424,26 +433,32 @@ class DummyStorage(StorageBackend):
 
     def get_snapshot(self, volume_name, snapshot_name):
         log.info("Fetching snapshot {}:{}".format(volume_name, snapshot_name))
+        self.raise_if_volume_absent(volume_name)
         return self.vols[volume_name]['snapshots'][snapshot_name]
 
     def delete_snapshot(self, volume_name, snapshot_name):
         log.info("Deleting {} on {}".format(snapshot_name, volume_name))
+        self.raise_if_volume_absent(volume_name)
         self.vols[volume_name]['snapshots'].pop(snapshot_name)
 
     def get_snapshots(self, volume_name):
         log.info("Getting snapshots for {}".format(volume_name))
+        self.raise_if_volume_absent(volume_name)
         return list(self.vols[volume_name]['snapshots'].values())
 
     def rollback_volume(self, volume_name, restore_snapshot_name):
         log.info("Restoring {} to {}"
                  .format(volume_name, restore_snapshot_name))
+        self.raise_if_volume_absent(volume_name)
         pass
 
     def ensure_policy_rule_present(self, volume_name, policy_name, rule):
+        self.raise_if_volume_absent(volume_name)
         if rule not in self.rules_store[volume_name][policy_name]['rules']:
             self.rules_store[volume_name][policy_name]['rules'].append(rule)
 
     def ensure_policy_rule_absent(self, volume_name, policy_name, rule):
+        self.raise_if_volume_absent(volume_name)
         stored_rules = self.rules_store[volume_name][policy_name]['rules']
         self.rules_store[volume_name][policy_name]['rules'] = list(filter(
             lambda x: x != rule, stored_rules))

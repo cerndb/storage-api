@@ -258,7 +258,8 @@ def init_namespace(api, backend_name):
                                        " held) or a single dict describing the"
                                        " host holding the lock"))
         def get(self, volume_name):
-            return backend().locks(volume_name)
+            mby_lock = backend().locks(volume_name)
+            return [] if mby_lock is None else [{"host": mby_lock}]
 
     @api.route('/volumes/<path:volume_name>/locks/<string:host>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
