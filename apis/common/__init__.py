@@ -258,8 +258,9 @@ def init_namespace(api, backend_name):
                                        " held) or a single dict describing the"
                                        " host holding the lock"))
         def get(self, volume_name):
-            mby_lock = backend().locks(volume_name)
-            return [] if mby_lock is None else [{"host": mby_lock}]
+            with keyerror_is_404():
+                mby_lock = backend().locks(volume_name)
+                return [] if mby_lock is None else [{"host": mby_lock}]
 
     @api.route('/volumes/<path:volume_name>/locks/<string:host>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
@@ -269,7 +270,7 @@ def init_namespace(api, backend_name):
         @api.response(201, "A new lock was added")
         @in_group(api, ADMIN_GROUP)
         def put(self, volume_name, host):
-            with valueerror_is_400():
+            with valueerror_is_400(), keyerror_is_404():
                 backend().create_lock(volume_name, host)
             return '', 201
 

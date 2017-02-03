@@ -11,7 +11,7 @@ import logging
 from functools import partial
 
 import pytest
-from hypothesis import given, example
+from hypothesis import given
 from hypothesis.strategies import (characters, text, lists,
                                    composite, integers,
                                    booleans, sampled_from)
@@ -49,10 +49,8 @@ params_policy_presence = pytest.mark.parametrize(
 params_auth_status = pytest.mark.parametrize('auth',
                                              ["authorised", "not_authorised"])
 
-params_volume_names = compose_decorators(given(volume_name=name_strings()),
-                                         example(volume_name="foo/bar"),
-                                         example(volume_name="foo\\bar"))
 
+params_volume_names = compose_decorators(given(volume_name=name_strings()))
 params_vol_ns_auth = compose_decorators(params_volume_names,
                                         params_namespaces,
                                         params_auth_status,
@@ -141,6 +139,22 @@ def client(request):
     extensions.DummyStorage().init_app(app.app)
 
 
+def init_vols_from_params(client, namespace, auth, vol_exists, volume_name):
+    volume_resource = '/{}/volumes/{}'.format(namespace, volume_name)
+    authorised = auth == "authorised"
+    volume_exists = vol_exists == "vol_present"
+
+    with user_set(client):
+        delete_code, _ = _delete(client, volume_resource)
+        if volume_exists:
+            post_code, _ = _post(client, volume_resource)
+            assert post_code == 200
+        else:
+            assert _get(client, volume_resource)[0] == 404
+
+    return (volume_resource, volume_exists, authorised)
+
+
 @params_namespaces
 def test_list_no_volumes(client, namespace):
     code, response = _get(client, "/{}/volumes".format(namespace))
@@ -167,10 +181,7 @@ def test_post_to_existing_volume_errors(client, namespace):
     assert len(_get(client, '/{}/volumes'.format(namespace))[1]) == 1
 
 
-@params_volume_names
-@params_namespaces
-@params_auth_status
-@params_vol_presence
+@params_vol_ns_auth
 def test_post_new_volume(client, namespace, auth, vol_exists, volume_name):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
     authorised = auth == "authorised"
@@ -205,11 +216,9 @@ def test_post_new_volume(client, namespace, auth, vol_exists, volume_name):
         assert post_code == 400
 
 
-@given(volume_name=name_strings())
-@example(volume_name="foo/bar")
-@example(volume_name="foo\\bar")
-@params_namespaces
-def test_get_nonexistent_volume(client, namespace, volume_name):
+@params_vol_ns_auth
+def test_get_nonexistent_volume(client, auth, vol_exists,
+                                volume_name, namespace):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
 
     get_code, get_response = _get(client, resource)
@@ -217,11 +226,9 @@ def test_get_nonexistent_volume(client, namespace, volume_name):
     assert 'message' in get_response
 
 
-@params_namespaces
-@params_auth_status
-@params_vol_presence
-def test_delete_volume(client, auth, vol_exists, namespace):
-    resource = '/{}/volumes/myvolume'.format(namespace)
+@params_vol_ns_auth
+def test_delete_volume(client, auth, vol_exists, volume_name, namespace):
+    resource = '/{}/volumes/{}'.format(namespace, volume_name)
     authorised = auth == "authorised"
     volume_exists = vol_exists == "vol_present"
 
@@ -339,9 +346,9 @@ def test_clone_from_snapshot_name_collission(client, namespace):
         _post(client, volume, data={})
         _put(client, snapshot_resource, data={})
         post_code, post_result = _post(client,
-                                    volume,
-                                    data={'from_snapshot': snapshot_name,
-                                          'from_volume': volume_name})
+                                       volume,
+                                       data={'from_snapshot': snapshot_name,
+                                             'from_volume': volume_name})
     assert post_code == 400
     assert 'message' in post_result
     assert 'in use' in post_result['message']
@@ -362,12 +369,13 @@ def test_clone_from_snapshot_source_does_not_exist(client, namespace):
     assert 'No such volume' in post_result['message']
 
 
-@given(volume_name=name_strings(), patch_args=patch_arguments())
-@params_namespaces
-@params_vol_presence
-def test_patch_volume(client, namespace, vol_exists, volume_name, patch_args):
+@given(patch_args=patch_arguments())
+@params_vol_ns_auth
+def test_patch_volume(client, namespace, vol_exists, auth,
+                      volume_name, patch_args):
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
     volume_exists = vol_exists == "vol_present"
+    authorised = auth == "authorised"
 
     with user_set(client):
         if volume_exists:
@@ -375,11 +383,17 @@ def test_patch_volume(client, namespace, vol_exists, volume_name, patch_args):
         else:
             _delete(client, volume)
 
+    if authorised:
+        with user_set(client):
+            patch_code, _patch_result = _patch(client, volume, data=patch_args)
+    else:
         patch_code, _patch_result = _patch(client, volume, data=patch_args)
 
     _get_code, get_result = _get(client, volume)
 
-    if not volume_exists and patch_args:
+    if not authorised:
+        assert patch_code == 403
+    elif not volume_exists and patch_args:
         assert patch_code == 404
     else:
         if patch_args:
@@ -390,7 +404,7 @@ def test_patch_volume(client, namespace, vol_exists, volume_name, patch_args):
             assert patch_code == 400
 
 
-@given(volume_name=name_strings())
+@params_volume_names
 @params_namespaces
 def test_delete_snapshot_nonexistent_snapshot_and_volume(client, namespace, volume_name):
     volume = '/{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
@@ -410,12 +424,13 @@ def test_delete_snapshot_nonexistent_snapshot_and_volume(client, namespace, volu
     assert delete_code == 404
 
 
-@given(volume_name=name_strings())
+@params_volume_names
 @params_namespaces
-@pytest.mark.parametrize('authorisation', ["authorised", "not_authorised"])
-def test_delete_snapshot(client, namespace, authorisation, volume_name):
+@params_auth_status
+def test_delete_snapshot(client, namespace, auth, volume_name):
     volume = '/{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
     snapshot = '{}/snapshots/my-snapshot'.format(volume, volume_name)
+    authorised = auth == "authorised"
 
     with user_set(client):
         _post(client, volume)
@@ -424,26 +439,26 @@ def test_delete_snapshot(client, namespace, authorisation, volume_name):
         get_before, _ = _get(client, snapshot)
         assert get_before == 200
 
-    if authorisation == "authorised":
+    if authorised:
         with user_set(client):
             delete_code, _delete_result = _delete(client, snapshot)
     else:
         delete_code, _delete_result = _delete(client, snapshot)
 
-    if authorisation == "authorised":
+    if authorised:
         assert delete_code == 204
     else:
         assert delete_code == 403
 
     get_after, _ = _get(client, snapshot)
 
-    if authorisation == "authorised":
+    if authorised:
         assert get_after == 404
     else:
         assert get_after == 200
 
 
-@given(volume_name=name_strings())
+@params_volume_names
 @params_namespaces
 def test_get_empty_locks(client, namespace, volume_name):
     volume = '/{}/volumes/{}'.format(namespace, volume_name, namespace)
@@ -455,50 +470,54 @@ def test_get_empty_locks(client, namespace, volume_name):
     assert get_result == []
 
 
-@given(volume_name=name_strings())
-@params_namespaces
-@pytest.mark.parametrize('authorisation', ["authorised", "not_authorised"])
-def test_lock_volume(client, namespace, authorisation, volume_name):
+@params_vol_ns_auth
+def test_lock_volume(client, namespace, auth, vol_exists, volume_name):
     host = "dbhost.cern.ch"
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
     lock = '{}/locks/{}'.format(volume, host)
-    authorised = (authorisation == "authorised")
+    authorised = auth == "authorised"
+    volume_exists = vol_exists == "vol_present"
 
     with user_set(client):
-        _post(client, volume)
+        if volume_exists:
+            _post(client, volume, data={})
+        else:
+            _delete(client, volume)
 
     if not authorised:
         put_code, _ = _put(client, lock)
-        assert put_code == 403
     else:
         with user_set(client):
             put_code, _ = _put(client, lock)
-            assert put_code == 201
 
     get_code, get_result = _get(client, volume + '/locks')
-    assert get_code == 200
 
-    if authorised:
+    if not authorised:
+        assert put_code == 403
+        if volume_exists:
+            assert get_code == 200
+            assert len(get_result) == 0
+    elif volume_exists:
         assert len(get_result) == 1
         assert get_result[0]['host'] == host
     else:
-        assert len(get_result) == 0
+        assert put_code == 404
 
 
-@given(volume_name=name_strings())
-@params_namespaces
-@pytest.mark.parametrize('authorisation', ["authorised", "not_authorised"])
-def test_force_lock_on_volume(client, namespace, authorisation, volume_name):
+@params_vol_ns_auth
+def test_force_lock_on_volume(client, namespace, auth, vol_exists, volume_name):
     host = "dbhost.cern.ch"
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
     lock = '{}/locks/{}'.format(volume, host)
-
-    authorised = (authorisation == "authorised")
+    authorised = auth == "authorised"
+    volume_exists = vol_exists == "vol_present"
 
     with user_set(client):
-        _post(client, volume)
-        put_code, _ = _put(client, lock)
-        assert put_code == 201
+        if volume_exists:
+            _post(client, volume, data={})
+            _put(client, lock, data={})
+        else:
+            _delete(client, volume)
 
     if not authorised:
         delete_code, _ = _delete(client, lock)
@@ -506,19 +525,23 @@ def test_force_lock_on_volume(client, namespace, authorisation, volume_name):
     else:
         with user_set(client):
             delete_code, _ = _delete(client, lock)
-            assert delete_code == 204
 
     get_code, get_result = _get(client, volume + '/locks')
-    assert get_code == 200
 
     if not authorised:
-        assert len(get_result) == 1
-        assert get_result[0]['host'] == host
+        if volume_exists:
+            assert len(get_result) == 1
+            assert get_result[0]['host'] == host
+    elif not volume_exists:
+        assert get_code == 404
+        assert delete_code == 404
     else:
+        assert get_code == 200
+        assert delete_code == 204
         assert len(get_result) == 0
 
 
-@given(volume_name=name_strings())
+@params_volume_names
 @params_namespaces
 def test_lock_locked_volume(client, namespace, volume_name):
     host1 = "dbhost1.cern.ch"
@@ -542,7 +565,7 @@ def test_lock_locked_volume(client, namespace, volume_name):
         assert put_code == 201
 
 
-@given(volume_name=name_strings())
+@params_volume_names
 @params_namespaces
 def test_lock_volume_idempotent(client, namespace, volume_name):
     host = "dbhost1.cern.ch"
@@ -562,10 +585,7 @@ def test_lock_volume_idempotent(client, namespace, volume_name):
     assert get_result == [{'host': host}]
 
 
-@given(volume_name=name_strings())
-@params_namespaces
-@params_vol_presence
-@params_auth_status
+@params_vol_ns_auth
 def test_get_acl(client, namespace, auth, vol_exists, volume_name):
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
 
@@ -598,10 +618,8 @@ def test_get_acl(client, namespace, auth, vol_exists, volume_name):
         assert get_result == []
 
 
-@given(volume_name=name_strings(), policy_name=policy_name_strings())
-@params_namespaces
-@params_vol_presence
-@params_auth_status
+@given(policy_name=policy_name_strings())
+@params_vol_ns_auth
 def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
     volume = '/{}/volumes/{}'.format(namespace, volume_name)
     policy = '{}/export/{}'.format(volume, policy_name)
@@ -649,18 +667,19 @@ def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
         assert get_all[0] == get_result
 
 
-@given(volume_name=name_strings(), policy_name=policy_name_strings())
-@params_namespaces
-@params_vol_presence
+@given(policy_name=policy_name_strings())
 @params_policy_presence
-@params_auth_status
+@params_vol_ns_auth
 def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
                     volume_name, policy_name):
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
-    policy = '{}/export/{}'.format(volume, policy_name)
 
-    authorised = auth == "authorised"
-    volume_exists = vol_exists == "vol_present"
+    volume, volume_exists, authorised = init_vols_from_params(client,
+                                                              namespace,
+                                                              auth,
+                                                              vol_exists,
+                                                              volume_name)
+
+    policy = '{}/export/{}'.format(volume, policy_name)
     policy_exists = policy_status == "policy_present"
 
     rules = []
@@ -670,11 +689,6 @@ def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
         return
 
     with user_set(client):
-        if volume_exists:
-            _post(client, volume)
-        else:
-            delete_code, _ = _delete(client, volume)
-            assert delete_code == 204 or delete_code == 404
         if policy_exists:
             _post(client, policy, data={'rules': rules})
         else:
@@ -703,18 +717,18 @@ def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
         assert get_all == []
 
 
-@given(volume_name=name_strings(), policy_name=policy_name_strings())
-@params_namespaces
-@params_vol_presence
+@given(policy_name=policy_name_strings())
 @params_policy_presence
-@params_auth_status
+@params_vol_ns_auth
 def test_put_export_rule(client, namespace, auth, vol_exists, policy_status,
                          volume_name, policy_name):
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
-    policy = '{}/export/{}'.format(volume, policy_name)
 
-    authorised = auth == "authorised"
-    volume_exists = vol_exists == "vol_present"
+    volume, volume_exists, authorised = init_vols_from_params(client,
+                                                              namespace,
+                                                              auth,
+                                                              vol_exists,
+                                                              volume_name)
+    policy = '{}/export/{}'.format(volume, policy_name)
     policy_exists = policy_status == "policy_present"
 
     rules = ["127.0.0.1", "10.10.10.1/24"]
@@ -725,11 +739,6 @@ def test_put_export_rule(client, namespace, auth, vol_exists, policy_status,
         return
 
     with user_set(client):
-        if volume_exists:
-            _post(client, volume)
-        else:
-            delete_code, _ = _delete(client, volume)
-            assert delete_code == 204 or delete_code == 404
         if policy_exists:
             _post(client, policy, data={'rules': []})
         else:
@@ -763,18 +772,17 @@ def test_put_export_rule(client, namespace, auth, vol_exists, policy_status,
         assert get_result['rules'] == rules
 
 
-@given(volume_name=name_strings(), policy_name=policy_name_strings())
-@params_namespaces
-@params_vol_presence
+@given(policy_name=policy_name_strings())
 @params_policy_presence
-@params_auth_status
+@params_vol_ns_auth
 def test_delete_export_rule(client, namespace, auth, vol_exists, policy_status,
                             volume_name, policy_name):
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    volume, volume_exists, authorised = init_vols_from_params(client,
+                                                              namespace,
+                                                              auth,
+                                                              vol_exists,
+                                                              volume_name)
     policy = '{}/export/{}'.format(volume, policy_name)
-
-    authorised = auth == "authorised"
-    volume_exists = vol_exists == "vol_present"
     policy_exists = policy_status == "policy_present"
 
     rules = ["127.0.0.1", "10.10.10.1/24"]
@@ -785,11 +793,6 @@ def test_delete_export_rule(client, namespace, auth, vol_exists, policy_status,
         return
 
     with user_set(client):
-        if volume_exists:
-            _post(client, volume)
-        else:
-            delete_code, _ = _delete(client, volume)
-            assert delete_code == 204 or delete_code == 404
         if policy_exists:
             _delete(client, policy)
             _post(client, policy, data={'rules': rules})

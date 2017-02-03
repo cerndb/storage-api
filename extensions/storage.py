@@ -378,8 +378,7 @@ class DummyStorage(StorageBackend):
             return self.locks_store[volume_name]
 
     def create_lock(self, volume_name, host_owner):
-        assert volume_name
-        assert host_owner
+        self.raise_if_volume_absent(volume_name)
 
         log.info("Host_Owner {} is locking {}".format(host_owner, volume_name))
         if volume_name in self.locks_store and self.locks_store[volume_name] != host_owner:
