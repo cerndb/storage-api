@@ -155,6 +155,15 @@ def init_vols_from_params(client, namespace, auth, vol_exists, volume_name):
     return (volume_resource, volume_exists, authorised)
 
 
+@contextmanager
+def maybe_authorised(client, authorised):
+    if authorised:
+        with user_set(client):
+            yield
+    else:
+        yield
+
+
 @params_namespaces
 def test_list_no_volumes(client, namespace):
     code, response = _get(client, "/{}/volumes".format(namespace))
@@ -183,15 +192,11 @@ def test_post_to_existing_volume_errors(client, namespace):
 
 @params_vol_ns_auth
 def test_post_new_volume(client, namespace, auth, vol_exists, volume_name):
-    resource = '/{}/volumes/{}'.format(namespace, volume_name)
-    authorised = auth == "authorised"
-    volume_exists = vol_exists == "vol_present"
-
-    with user_set(client):
-        if volume_exists:
-            _post(client, resource, data={})
-        else:
-            _delete(client, resource)
+    resource, volume_exists, authorised = init_vols_from_params(client,
+                                                                namespace,
+                                                                auth,
+                                                                vol_exists,
+                                                                volume_name)
 
     if authorised:
         with user_set(client):
@@ -217,24 +222,29 @@ def test_post_new_volume(client, namespace, auth, vol_exists, volume_name):
 
 
 @params_vol_ns_auth
-def test_get_nonexistent_volume(client, auth, vol_exists,
-                                volume_name, namespace):
-    resource = '/{}/volumes/{}'.format(namespace, volume_name)
+def test_get_volume(client, auth, vol_exists, volume_name, namespace):
+    volume, volume_exists, _authorised = init_vols_from_params(client,
+                                                               namespace,
+                                                               auth,
+                                                               vol_exists,
+                                                               volume_name)
 
-    get_code, get_response = _get(client, resource)
-    assert get_code == 404
-    assert 'message' in get_response
+    get_code, get_response = _get(client, volume)
+
+    if not volume_exists:
+        assert get_code == 404
+        assert 'message' in get_response
+    else:
+        assert get_code == 200
 
 
 @params_vol_ns_auth
 def test_delete_volume(client, auth, vol_exists, volume_name, namespace):
-    resource = '/{}/volumes/{}'.format(namespace, volume_name)
-    authorised = auth == "authorised"
-    volume_exists = vol_exists == "vol_present"
-
-    if volume_exists:
-        with user_set(client):
-            _post(client, resource, data={})
+    resource, volume_exists, authorised = init_vols_from_params(client,
+                                                                namespace,
+                                                                auth,
+                                                                vol_exists,
+                                                                volume_name)
 
     if authorised:
         with user_set(client):
@@ -373,15 +383,11 @@ def test_clone_from_snapshot_source_does_not_exist(client, namespace):
 @params_vol_ns_auth
 def test_patch_volume(client, namespace, vol_exists, auth,
                       volume_name, patch_args):
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
-    volume_exists = vol_exists == "vol_present"
-    authorised = auth == "authorised"
-
-    with user_set(client):
-        if volume_exists:
-            post_code, post_result = _post(client, volume)
-        else:
-            _delete(client, volume)
+    volume, volume_exists, authorised = init_vols_from_params(client,
+                                                              namespace,
+                                                              auth,
+                                                              vol_exists,
+                                                              volume_name)
 
     if authorised:
         with user_set(client):
@@ -472,17 +478,13 @@ def test_get_empty_locks(client, namespace, volume_name):
 
 @params_vol_ns_auth
 def test_lock_volume(client, namespace, auth, vol_exists, volume_name):
+    volume, volume_exists, authorised = init_vols_from_params(client,
+                                                              namespace,
+                                                              auth,
+                                                              vol_exists,
+                                                              volume_name)
     host = "dbhost.cern.ch"
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
     lock = '{}/locks/{}'.format(volume, host)
-    authorised = auth == "authorised"
-    volume_exists = vol_exists == "vol_present"
-
-    with user_set(client):
-        if volume_exists:
-            _post(client, volume, data={})
-        else:
-            _delete(client, volume)
 
     if not authorised:
         put_code, _ = _put(client, lock)
@@ -506,18 +508,17 @@ def test_lock_volume(client, namespace, auth, vol_exists, volume_name):
 
 @params_vol_ns_auth
 def test_force_lock_on_volume(client, namespace, auth, vol_exists, volume_name):
+    volume, volume_exists, authorised = init_vols_from_params(client,
+                                                              namespace,
+                                                              auth,
+                                                              vol_exists,
+                                                              volume_name)
     host = "dbhost.cern.ch"
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
     lock = '{}/locks/{}'.format(volume, host)
-    authorised = auth == "authorised"
-    volume_exists = vol_exists == "vol_present"
 
-    with user_set(client):
-        if volume_exists:
-            _post(client, volume, data={})
-            _put(client, lock, data={})
-        else:
-            _delete(client, volume)
+    if volume_exists:
+        with user_set(client):
+            _put(client, lock)
 
     if not authorised:
         delete_code, _ = _delete(client, lock)
@@ -587,17 +588,11 @@ def test_lock_volume_idempotent(client, namespace, volume_name):
 
 @params_vol_ns_auth
 def test_get_acl(client, namespace, auth, vol_exists, volume_name):
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
-
-    authorised = auth == "authorised"
-    volume_exists = vol_exists == "vol_present"
-
-    with user_set(client):
-        if volume_exists:
-            _post(client, volume)
-        else:
-            _delete(client, volume)
-
+    volume, volume_exists, authorised = init_vols_from_params(client,
+                                                              namespace,
+                                                              auth,
+                                                              vol_exists,
+                                                              volume_name)
     if authorised:
         with user_set(client):
             get_code, get_result = _get(client, volume + "/export")
