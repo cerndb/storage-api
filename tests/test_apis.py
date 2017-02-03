@@ -594,9 +594,9 @@ def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
 
     if authorised:
         with user_set(client):
-            put_code, _put_result = _put(client, policy, data={'rules': rules})
+            post_code, _post_result = _post(client, policy, data={'rules': rules})
     else:
-        put_code, _put_result = _put(client, policy, data={'rules': rules})
+        post_code, _post_result = _post(client, policy, data={'rules': rules})
 
     with user_set(client):
         get_code, get_result = _get(client, policy)
@@ -604,12 +604,12 @@ def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
 
     # Assertions:
     if not authorised:
-        assert put_code == 403
+        assert post_code == 403
     elif not volume_exists:
         # No volume => 404
-        assert put_code == 404
+        assert post_code == 404
     else:
-        assert put_code == 201
+        assert post_code == 201
         assert get_code == 200
 
         assert get_result
@@ -646,7 +646,7 @@ def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
             delete_code, _ = _delete(client, volume)
             assert delete_code == 204 or delete_code == 404
         if policy_exists:
-            _put(client, policy, data={'rules': rules})
+            _post(client, policy, data={'rules': rules})
         else:
             del_code, _ = _delete(client, policy)
             assert del_code == 404 or del_code == 204
@@ -701,7 +701,7 @@ def test_put_export_rule(client, namespace, auth, vol_exists, policy_status,
             delete_code, _ = _delete(client, volume)
             assert delete_code == 204 or delete_code == 404
         if policy_exists:
-            _put(client, policy, data={'rules': []})
+            _post(client, policy, data={'rules': []})
         else:
             del_code, _ = _delete(client, policy)
             assert del_code == 404 or del_code == 204
@@ -761,7 +761,7 @@ def test_delete_export_rule(client, namespace, auth, vol_exists, policy_status,
             delete_code, _ = _delete(client, volume)
             assert delete_code == 204 or delete_code == 404
         if policy_exists:
-            _put(client, policy, data={'rules': rules})
+            _post(client, policy, data={'rules': rules})
         else:
             del_code, _ = _delete(client, policy)
             assert del_code == 404 or del_code == 204

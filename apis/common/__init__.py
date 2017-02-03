@@ -308,13 +308,13 @@ def init_namespace(api, backend_name):
 
         @api.doc(description="Grant hosts matching a given pattern access to the given volume")
         @api.response(201, description="The provided access rules were added")
+        @api.response(404, description="There is no such volume")
+        @api.response(400, description="A policy with that name already exists")
         @api.expect(policy_rule_write_model, validate=True)
         @in_group(api, ADMIN_GROUP)
-        def put(self, volume_name, policy):
-            # FIXME: change to POST
-            # DATA = list of strings, potentially empty (no access)
+        def post(self, volume_name, policy):
             rules = marshal(apis.api.payload, policy_rule_write_model)['rules']
-            with keyerror_is_404():
+            with keyerror_is_404(), valueerror_is_400():
                 backend().create_policy(volume_name, policy, rules)
             return '', 201
 
