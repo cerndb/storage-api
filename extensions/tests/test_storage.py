@@ -43,7 +43,7 @@ def test_remove_lock(storage):
 @pytest.mark.parametrize("storage", [DummyStorage()])
 def test_get_snapshots(storage):
     volume_name = uuid.uuid1()
-    storage.create_volume(name=volume_name)
+    storage.create_volume(volume_name=volume_name)
 
     storage.create_snapshot(volume_name, snapshot_name="snapshot-new")
 
@@ -54,7 +54,7 @@ def test_get_snapshots(storage):
 @pytest.mark.parametrize("storage", [DummyStorage()])
 def test_add_policy(storage):
     volume_name = uuid.uuid1()
-    storage.create_volume(name=volume_name)
+    storage.create_volume(volume_name=volume_name)
     rules = ["host1.db.cern.ch", "*db.cern.ch", "*foo.cern.ch"]
 
     storage.create_policy(volume_name, "a policy", rules)
@@ -69,7 +69,7 @@ def test_add_policy(storage):
 @pytest.mark.parametrize("storage", [DummyStorage()])
 def test_delete_policy(storage):
     volume_name = uuid.uuid1()
-    storage.create_volume(name=volume_name)
+    storage.create_volume(volume_name=volume_name)
     rules = ["host1.db.cern.ch", "*db.cern.ch"]
 
     storage.create_policy(volume_name, "a policy", rules)
@@ -80,14 +80,14 @@ def test_delete_policy(storage):
 @pytest.mark.parametrize("storage", [DummyStorage()])
 def test_delete_volume_policies_deleted_also(storage):
     volume_name = uuid.uuid1()
-    storage.create_volume(name=volume_name)
+    storage.create_volume(volume_name=volume_name)
     rules = ["host1.db.cern.ch", "*db.cern.ch"]
     policy_name = "a policy"
 
     storage.create_policy(volume_name, policy_name, rules)
     storage.restrict_volume(volume_name)
 
-    storage.create_volume(name=volume_name)
+    storage.create_volume(volume_name=volume_name)
     assert len(storage.policies(volume_name)) == 0
 
 

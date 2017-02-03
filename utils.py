@@ -22,3 +22,16 @@ def filter_none(d):
     """
 
     return dict_without(d, *filter(lambda k: d[k] is None, d.keys()))
+
+
+def compose_decorators(*decs):
+    """
+    Compose a set of decorators into one.
+
+    Suggested by Jochen Ritzel: http://stackoverflow.com/a/5409569
+    """
+    def deco(f):
+        for dec in reversed(decs):
+            f = dec(f)
+        return f
+    return deco

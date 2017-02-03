@@ -43,7 +43,8 @@ class StorageBackend(metaclass=ABCMeta):
     @abstractmethod
     def volumes():
         """
-        Return all active and usable volumes of the storage backend.
+        Return all active and usable volumes of the storage backend as
+        a list of dictionaries (see get_volume() for their format).
 
         Read-only property.
         """
@@ -54,6 +55,7 @@ class StorageBackend(metaclass=ABCMeta):
         """
         Return (the data for) a specific volume as a dictionary with (at
         least) the following elements:
+        - name
         - size_used
         - size_total
         - filer_address
@@ -352,17 +354,20 @@ class DummyStorage(StorageBackend):
             with annotate_exception(KeyError, vol_404(volume_name)):
                 self.vols[volume_name][key] = data[key]
 
-    def create_volume(self, name, **kwargs):
+    def create_volume(self, volume_name, **kwargs):
         log.info("Adding new volume '{}': {}"
-                 .format(name, str(kwargs)))
+                 .format(volume_name, str(kwargs)))
 
-        data = {'name': name,
+        if volume_name in self.vols:
+            raise KeyError("Volume {} already exists!".format(volume_name))
+
+        data = {'name': volume_name,
                 'locks': [],
                 'snapshots': {},
                 **kwargs}
-        self.vols[name] = data
-        self.locks_store.pop(name, None)
-        self.rules_store[name] = {}
+        self.vols[volume_name] = data
+        self.locks_store.pop(volume_name, None)
+        self.rules_store[volume_name] = {}
 
     def locks(self, volume_name):
         self.raise_if_volume_absent(volume_name)
