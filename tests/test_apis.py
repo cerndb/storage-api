@@ -636,6 +636,12 @@ def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
 def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
                     volume_name, policy_name):
 
+    policy_exists = policy_status == "policy_present"
+
+    if vol_exists == "vol_absent" and policy_exists:
+        # This cannot ever happen
+        return
+
     volume, volume_exists, authorised = init_vols_from_params(client,
                                                               namespace,
                                                               auth,
@@ -643,13 +649,8 @@ def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
                                                               volume_name)
 
     policy = '{}/export/{}'.format(volume, policy_name)
-    policy_exists = policy_status == "policy_present"
 
     rules = []
-
-    if not volume_exists and policy_exists:
-        # This cannot ever happen
-        return
 
     with user_set(client):
         if policy_exists:
@@ -682,20 +683,21 @@ def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
 def test_put_export_rule(client, namespace, auth, vol_exists, policy_status,
                          volume_name, policy_name):
 
+    policy_exists = policy_status == "policy_present"
+
+    if vol_exists == "vol_absent" and policy_exists:
+        # This cannot ever happen
+        return
+
     volume, volume_exists, authorised = init_vols_from_params(client,
                                                               namespace,
                                                               auth,
                                                               vol_exists,
                                                               volume_name)
     policy = '{}/export/{}'.format(volume, policy_name)
-    policy_exists = policy_status == "policy_present"
 
     rules = ["127.0.0.1", "10.10.10.1/24"]
     put_codes = []
-
-    if not volume_exists and policy_exists:
-        # This cannot ever happen
-        return
 
     with user_set(client):
         if policy_exists:
@@ -730,20 +732,22 @@ def test_put_export_rule(client, namespace, auth, vol_exists, policy_status,
 @params_vol_ns_auth
 def test_delete_export_rule(client, namespace, auth, vol_exists, policy_status,
                             volume_name, policy_name):
+    policy_exists = policy_status == "policy_present"
+
+    if vol_exists == "vol_absent" and policy_exists:
+        # This cannot ever happen
+        return
+
     volume, volume_exists, authorised = init_vols_from_params(client,
                                                               namespace,
                                                               auth,
                                                               vol_exists,
                                                               volume_name)
     policy = '{}/export/{}'.format(volume, policy_name)
-    policy_exists = policy_status == "policy_present"
 
     rules = ["127.0.0.1", "10.10.10.1/24"]
     delete_codes = []
 
-    if not volume_exists and policy_exists:
-        # This cannot ever happen
-        return
 
     with user_set(client):
         if policy_exists:
