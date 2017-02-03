@@ -43,13 +43,14 @@ def exception_is_errorcode(api, exception, error_code, message=None):
         api.abort(error_code, message)
 
 
-keyerror_is_404 = partial(exception_is_errorcode,
-                          exception=KeyError, error_code=404)
-valueerror_is_400 = partial(exception_is_errorcode,
-                            exception=ValueError, error_code=400)
-
-
 def init_namespace(api, backend_name):
+    keyerror_is_404 = partial(exception_is_errorcode, api=api,
+                              exception=KeyError, error_code=404)
+    keyerror_is_400 = partial(exception_is_errorcode, api=api,
+                              exception=KeyError, error_code=400)
+    valueerror_is_400 = partial(exception_is_errorcode, api=api,
+                                exception=ValueError, error_code=400)
+
     def backend():
         """
         Return the actual backend object as given by backend_name. Has
@@ -143,7 +144,7 @@ def init_namespace(api, backend_name):
         def get(self, volume_name):
             assert "/snapshots" not in volume_name
             log.info("GET for {}".format(volume_name))
-            with keyerror_is_404(api):
+            with keyerror_is_404():
                 return backend().get_volume(volume_name)
 
         @api.doc(body=optional_from_snapshot,
@@ -162,22 +163,23 @@ def init_namespace(api, backend_name):
             data = marshal(apis.api.payload, optional_from_snapshot)
 
             if data['from_volume'] and data['from_snapshot']:
-                with keyerror_is_404(api), valueerror_is_400(api):
+                with keyerror_is_404(), valueerror_is_400():
                     backend().clone_volume(volume_name, data['from_volume'],
                                            data['from_snapshot'])
                 return '', 201
 
             elif data['from_snapshot']:
 
-                with keyerror_is_404(api):
+                with keyerror_is_404():
                     backend().rollback_volume(volume_name,
                                               data['from_snapshot'])
             else:
-                backend().create_volume(volume_name,
-                                        **dict_without(dict(data),
-                                                       'from_snapshot',
-                                                       'from_volume',
-                                                       'name'))
+                with valueerror_is_400(), keyerror_is_400():
+                    backend().create_volume(volume_name,
+                                            **dict_without(dict(data),
+                                                           'from_snapshot',
+                                                           'from_volume',
+                                                           'name'))
 
         @api.doc(description=("Restrict the volume named *volume_name*"
                               " but do not actually delete it"))
@@ -186,7 +188,7 @@ def init_namespace(api, backend_name):
         @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name):
             assert "/snapshots" not in volume_name
-            with keyerror_is_404(api):
+            with keyerror_is_404():
                 backend().restrict_volume(volume_name)
             return '', 204
 
@@ -198,7 +200,7 @@ def init_namespace(api, backend_name):
             data = filter_none(marshal(apis.api.payload, volume_writable_model))
             log.info("PATCH with payload {}".format(str(data)))
             if data:
-                with keyerror_is_404(api):
+                with keyerror_is_404():
                     backend().patch_volume(volume_name, **data)
             else:
                 raise api.abort(400, "No PATCH data provided!")
@@ -220,7 +222,7 @@ def init_namespace(api, backend_name):
         @api.doc(description="Get the current information for a given snapshot")
         @api.marshal_with(snapshot_model)
         def get(self, volume_name, snapshot_name):
-            with keyerror_is_404(api):
+            with keyerror_is_404():
                 return backend().get_snapshot(volume_name, snapshot_name)
 
         @api.response(409, description=("Too many snapshots, cannot create another. "
@@ -229,12 +231,11 @@ def init_namespace(api, backend_name):
         @api.expect(snapshot_put_model)
         @api.doc(description=("Create a new snapshot of *volume_name*"
                               " under *snapshot_name*"))
-        def put(self, volume_name, snapshot_name):
-            # fixme: change to POST
+        def post(self, volume_name, snapshot_name):
             log.info("Creating snapshot {} for volume {}"
                      .format(snapshot_name, volume_name))
-            # fixme: handle errors!
-            backend().create_snapshot(volume_name, snapshot_name)
+            with keyerror_is_404(), valueerror_is_400():
+                backend().create_snapshot(volume_name, snapshot_name)
             return '', 201
 
         @api.doc(description=("Delete the snapshot"))
@@ -244,7 +245,7 @@ def init_namespace(api, backend_name):
                       model=None)
         @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name, snapshot_name):
-            with keyerror_is_404(api):
+            with keyerror_is_404():
                 backend().delete_snapshot(volume_name, snapshot_name)
             return '', 204
 
@@ -268,7 +269,7 @@ def init_namespace(api, backend_name):
         @api.response(201, "A new lock was added")
         @in_group(api, ADMIN_GROUP)
         def put(self, volume_name, host):
-            with valueerror_is_400(api):
+            with valueerror_is_400():
                 backend().create_lock(volume_name, host)
             return '', 201
 
@@ -276,7 +277,7 @@ def init_namespace(api, backend_name):
         @api.response(204, description="Lock successfully forced")
         @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name, host):
-            with keyerror_is_404(api):
+            with keyerror_is_404():
                 backend().remove_lock(volume_name, host)
             return '', 204
 
@@ -289,7 +290,7 @@ def init_namespace(api, backend_name):
         @api.doc(description="Get the full ACL for the volume")
         @in_group(api, ADMIN_GROUP)
         def get(self, volume_name):
-            with keyerror_is_404(api):
+            with keyerror_is_404():
                 return backend().policies(volume_name)
 
     @api.route('/volumes/<path:volume_name>/export/<string:policy>')
@@ -302,7 +303,7 @@ def init_namespace(api, backend_name):
         @api.doc(description="Display the rules of a given policy")
         @in_group(api, ADMIN_GROUP)
         def get(self, volume_name, policy):
-            with keyerror_is_404(api):
+            with keyerror_is_404():
                 return backend().get_policy(volume_name, policy)
 
         @api.doc(description="Grant hosts matching a given pattern access to the given volume")
@@ -313,7 +314,7 @@ def init_namespace(api, backend_name):
             # FIXME: change to POST
             # DATA = list of strings, potentially empty (no access)
             rules = marshal(apis.api.payload, policy_rule_write_model)['rules']
-            with keyerror_is_404(api):
+            with keyerror_is_404():
                 backend().create_policy(volume_name, policy, rules)
             return '', 201
 
@@ -322,7 +323,7 @@ def init_namespace(api, backend_name):
         @api.response(404, description="No such policy exists")
         @in_group(api, ADMIN_GROUP)
         def delete(self, volume_name, policy):
-            with keyerror_is_404(api):
+            with keyerror_is_404():
                 backend().remove_policy(volume_name, policy)
             return '', 204
 

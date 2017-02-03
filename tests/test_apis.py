@@ -244,9 +244,9 @@ def test_create_snapshot_from_volume(client, namespace):
     snapshot = '{}/snapshots/{}'.format(volume, snapshot_name)
 
     with user_set(client):
-        snapshot_put_code, _snapshot_put_result = _put(client, snapshot, data={})
+        snapshot_post_code, _snapshot_post_result = _post(client, snapshot, data={})
 
-    assert snapshot_put_code == 201
+    assert snapshot_post_code == 201
 
     get_code, get_result = _get(client, snapshot)
     assert get_code == 200
@@ -390,8 +390,8 @@ def test_delete_snapshot(client, namespace, authorisation, volume_name):
 
     with user_set(client):
         _post(client, volume)
-        put_code, _ = _put(client, snapshot, data={})
-        assert put_code == 201
+        post_code, _ = _post(client, snapshot, data={})
+        assert post_code == 201
         get_before, _ = _get(client, snapshot)
         assert get_before == 200
 

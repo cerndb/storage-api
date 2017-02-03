@@ -19,7 +19,7 @@ def test_get_nonexistent_volume(storage):
 @pytest.mark.parametrize("storage", [DummyStorage()])
 def test_get_no_locks(storage):
     storage.create_volume('bork')
-    assert storage.locks('bork') == None
+    assert storage.locks('bork') is None
 
 
 @pytest.mark.parametrize("storage", [DummyStorage()])
@@ -37,7 +37,7 @@ def test_remove_lock(storage):
     storage.remove_lock('volumename', 'db.cern.ch')
 
     assert 'db.cern.ch' != storage.locks('volumename')
-    assert storage.locks('volumename') == None
+    assert storage.locks('volumename') is None
 
 
 @pytest.mark.parametrize("storage", [DummyStorage()])
