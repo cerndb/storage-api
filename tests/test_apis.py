@@ -198,10 +198,7 @@ def test_post_new_volume(client, namespace, auth, vol_exists, volume_name):
                                                                 vol_exists,
                                                                 volume_name)
 
-    if authorised:
-        with user_set(client):
-            post_code, post_response = _post(client, resource, data={})
-    else:
+    with maybe_authorised(client, authorised):
         post_code, post_response = _post(client, resource, data={})
 
     get_code, stored_resource = _get(client, resource)
@@ -245,11 +242,7 @@ def test_delete_volume(client, auth, vol_exists, volume_name, namespace):
                                                                 auth,
                                                                 vol_exists,
                                                                 volume_name)
-
-    if authorised:
-        with user_set(client):
-            code, response = _delete(client, resource)
-    else:
+    with maybe_authorised(client, authorised):
         code, response = _delete(client, resource)
 
     get_code, _get_response = _get(client, resource)
@@ -389,11 +382,8 @@ def test_patch_volume(client, namespace, vol_exists, auth,
                                                               vol_exists,
                                                               volume_name)
 
-    if authorised:
-        with user_set(client):
+    with maybe_authorised(client, authorised):
             patch_code, _patch_result = _patch(client, volume, data=patch_args)
-    else:
-        patch_code, _patch_result = _patch(client, volume, data=patch_args)
 
     _get_code, get_result = _get(client, volume)
 
@@ -445,10 +435,7 @@ def test_delete_snapshot(client, namespace, auth, volume_name):
         get_before, _ = _get(client, snapshot)
         assert get_before == 200
 
-    if authorised:
-        with user_set(client):
-            delete_code, _delete_result = _delete(client, snapshot)
-    else:
+    with maybe_authorised(client, authorised):
         delete_code, _delete_result = _delete(client, snapshot)
 
     if authorised:
@@ -486,11 +473,8 @@ def test_lock_volume(client, namespace, auth, vol_exists, volume_name):
     host = "dbhost.cern.ch"
     lock = '{}/locks/{}'.format(volume, host)
 
-    if not authorised:
+    with maybe_authorised(client, authorised):
         put_code, _ = _put(client, lock)
-    else:
-        with user_set(client):
-            put_code, _ = _put(client, lock)
 
     get_code, get_result = _get(client, volume + '/locks')
 
@@ -520,16 +504,13 @@ def test_force_lock_on_volume(client, namespace, auth, vol_exists, volume_name):
         with user_set(client):
             _put(client, lock)
 
-    if not authorised:
+    with maybe_authorised(client, authorised):
         delete_code, _ = _delete(client, lock)
-        assert delete_code == 403
-    else:
-        with user_set(client):
-            delete_code, _ = _delete(client, lock)
 
     get_code, get_result = _get(client, volume + '/locks')
 
     if not authorised:
+        assert delete_code == 403
         if volume_exists:
             assert len(get_result) == 1
             assert get_result[0]['host'] == host
@@ -616,29 +597,16 @@ def test_get_acl(client, namespace, auth, vol_exists, volume_name):
 @given(policy_name=policy_name_strings())
 @params_vol_ns_auth
 def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+
+    volume, volume_exists, authorised = init_vols_from_params(client,
+                                                              namespace,
+                                                              auth,
+                                                              vol_exists,
+                                                              volume_name)
     policy = '{}/export/{}'.format(volume, policy_name)
-
-    authorised = auth == "authorised"
-    volume_exists = vol_exists == "vol_present"
-
     rules = ["host1.db.cern.ch", "*db.cern.ch", "*foo.cern.ch"]
 
-    with user_set(client):
-        del_code, _ = _delete(client, policy)
-        assert del_code == 404 or del_code == 204
-
-        if volume_exists:
-            _delete(client, volume)
-            _post(client, volume)
-        else:
-            delete_code, _ = _delete(client, volume)
-            assert delete_code == 204 or delete_code == 404
-
-    if authorised:
-        with user_set(client):
-            post_code, _post_result = _post(client, policy, data={'rules': rules})
-    else:
+    with maybe_authorised(client, authorised):
         post_code, _post_result = _post(client, policy, data={'rules': rules})
 
     with user_set(client):
@@ -690,12 +658,8 @@ def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
             del_code, _ = _delete(client, policy)
             assert del_code == 404 or del_code == 204
 
-    if authorised:
-        with user_set(client):
-            del_code, _del_result = _delete(client, policy)
-    else:
+    with maybe_authorised(client, authorised):
         del_code, _del_result = _delete(client, policy)
-
     with user_set(client):
         get_code, _get_result = _get(client, policy)
         _, get_all = _get(client, volume + "/export")
@@ -740,13 +704,7 @@ def test_put_export_rule(client, namespace, auth, vol_exists, policy_status,
             del_code, _ = _delete(client, policy)
             assert del_code == 404 or del_code == 204
 
-    if authorised:
-        with user_set(client):
-            for rule in rules:
-                put_code, _ = _put(client, ("{}/{}"
-                                            .format(policy, rule)))
-                put_codes.append(put_code)
-    else:
+    with maybe_authorised(client, authorised):
         for rule in rules:
             put_code, _ = _put(client, ("{}/{}".format(policy, rule)))
             put_codes.append(put_code)
@@ -795,13 +753,7 @@ def test_delete_export_rule(client, namespace, auth, vol_exists, policy_status,
             del_code, _ = _delete(client, policy)
             assert del_code == 404 or del_code == 204
 
-    if authorised:
-        with user_set(client):
-            for rule in rules:
-                delete_code, _ = _delete(client, ("{}/{}"
-                                                  .format(policy, rule)))
-                delete_codes.append(delete_code)
-    else:
+    with maybe_authorised(client, authorised):
         for rule in rules:
             delete_code, _ = _delete(client, ("{}/{}".format(policy, rule)))
             delete_codes.append(delete_code)
