@@ -16,17 +16,58 @@ cases, reasonable descriptions of what went wrong should be included,
 and -- if possible -- suggestions on how to fix the situation.
 """
 
-from ordered_set import OrderedSet
 
 from abc import ABCMeta, abstractmethod
 import logging
 from contextlib import contextmanager
+import functools
+
+from ordered_set import OrderedSet
+import cerberus
 
 log = logging.getLogger(__name__)
+SCHEMAS = [('volume',
+            {'name': {'type': 'string', 'minlength': 1,
+                      'required': True},
+             'size_used': {'type': 'integer', 'min': 0,
+                           'required': True},
+             'size_total': {'type': 'integer', 'min': 0,
+                            'required': True},
+             'filer_address': {'type': 'string', 'minlength': 1,
+                               'required': True}})]
+
+cerberus.schema_registry.extend(SCHEMAS)
+
+
+class ValidationError(Exception):
+    pass
 
 
 def vol_404(volume_name):
     return "No such volume: {}".format(volume_name)
+
+
+def normalised_with(schema_name, allow_unknown=False):
+    """
+    A decorator to normalise and validate the return values of a
+    function according to a schema.
+
+    Raises a ValidationError if the schema was not correctly validated.
+    """
+
+    def validator_decorator(func):
+        @functools.wraps(func)
+        def inner_wrapper(*args, **kwargs):
+            schema = cerberus.schema_registry.get(name=schema_name)
+            v = cerberus.Validator(schema, allow_unknown=allow_unknown)
+            return_value = func(*args, **kwargs)
+            validation_result = v.validate(return_value, normalize=True)
+            if not validation_result:
+                raise ValidationError(v.errors)  # pragma: no cover
+            else:
+                return v.normalized(return_value)
+        return inner_wrapper
+    return validator_decorator
 
 
 @contextmanager
@@ -38,6 +79,9 @@ def annotate_exception(exception, annotation):
 
 
 class StorageBackend(metaclass=ABCMeta):
+
+    def __repr__(self):
+        return "{}({})".format(type(self).__name__, str(self.__dict__))
 
     @property
     @abstractmethod
@@ -76,6 +120,9 @@ class StorageBackend(metaclass=ABCMeta):
         What action is actually performed is platform-dependent, but
         should be semantically as close to a delete operation as
         possible.
+
+        Notably, there is no guarantee that it is possible to create a
+        new volume with the same name as a recently deleted volume.
         """
         return NotImplemented
 
@@ -125,6 +172,7 @@ class StorageBackend(metaclass=ABCMeta):
         Install a lock held by the host host_owner on the given volume.
 
         Raises:
+        - ValueError if a lock is already held on that volume by another host
         - KeyError if no such volume exists
         """
         return NotImplemented
@@ -192,7 +240,8 @@ class StorageBackend(metaclass=ABCMeta):
     @abstractmethod
     def remove_policy(self, volume_name, policy_name):
         """
-        Remove a policy.
+        Remove a policy. After removal, it must be possible to create an
+        new policy with the same name.
 
         Raises:
         - KeyError if no such volume or policy exists
@@ -317,7 +366,6 @@ class StorageBackend(metaclass=ABCMeta):
 
 
 class DummyStorage(StorageBackend):
-
     def raise_if_volume_absent(self, volume_name):
         """
         Raise a KeyError with an appropriate message if a volume is
@@ -326,15 +374,30 @@ class DummyStorage(StorageBackend):
         if volume_name not in self.vols:
             raise KeyError(vol_404(volume_name))
 
+    def raise_if_snapshot_absent(self, volume_name, snapshot_name):
+        """
+        Raise a KeyError with an appropriate message if a snapshot is
+        absent.
+
+        This implies first running raise_if_volume absent(volume_name).
+        """
+        self.raise_if_volume_absent(volume_name)
+
+        if snapshot_name not in self.snapshots_store[volume_name]:
+            raise KeyError("No such snapshot exists for volume '{}': '{}'"
+                           .format(volume_name, snapshot_name))
+
     def __init__(self):
         self.vols = {}
         self.locks_store = {}
         self.rules_store = {}
+        self.snapshots_store = {}
 
     @property
     def volumes(self):
         return list(self.vols.values())
 
+    @normalised_with('volume', allow_unknown=True)
     def get_volume(self, volume_name):
         log.info("Trying to get volume {}".format(volume_name))
         with annotate_exception(KeyError, vol_404(volume_name)):
@@ -346,6 +409,7 @@ class DummyStorage(StorageBackend):
             self.vols.pop(volume_name)
         self.locks_store.pop(volume_name, None)
         self.rules_store.pop(volume_name, None)
+        self.snapshots_store.pop(volume_name, None)
 
     def patch_volume(self, volume_name, **data):
         log.info("Updating volume {} with data {}"
@@ -361,13 +425,15 @@ class DummyStorage(StorageBackend):
         if volume_name in self.vols:
             raise KeyError("Volume {} already exists!".format(volume_name))
 
-        data = {'name': volume_name,
-                'locks': [],
-                'snapshots': {},
+        data = {'name': str(volume_name),
+                'size_used': 0,
+                'size_total': kwargs.get('size_total', 0),
+                'filer_address': kwargs.get('filer_address', "dummy-filer"),
                 **kwargs}
         self.vols[volume_name] = data
         self.locks_store.pop(volume_name, None)
         self.rules_store[volume_name] = {}
+        self.snapshots_store[volume_name] = {}
 
     def locks(self, volume_name):
         self.raise_if_volume_absent(volume_name)
@@ -408,10 +474,7 @@ class DummyStorage(StorageBackend):
         log.info("Adding policy {} with rules {} on volume {}"
                  .format(policy_name, rules, volume_name))
         self.raise_if_volume_absent(volume_name)
-
-        self.rules_store[volume_name][policy_name] = {
-            'policy_name': policy_name,
-            'rules': list(OrderedSet(rules))}
+        self.rules_store[volume_name][policy_name] = list(OrderedSet(rules))
 
     def remove_policy(self, volume_name, policy_name):
         log.info("Removing policy {} from volume {}"
@@ -424,6 +487,8 @@ class DummyStorage(StorageBackend):
         log.info("Cloning volume {target} from {source}:{snapshot}"
                  .format(target=clone_volume_name, source=from_volume_name,
                          snapshot=from_snapshot_name))
+        self.raise_if_snapshot_absent(from_volume_name, from_snapshot_name)
+
         if clone_volume_name in self.vols:
             raise ValueError("Name already in use!")
 
@@ -433,38 +498,38 @@ class DummyStorage(StorageBackend):
     def create_snapshot(self, volume_name, snapshot_name):
         log.info("Creating snapshot {}:{}".format(volume_name, snapshot_name))
         with annotate_exception(KeyError, vol_404(volume_name)):
-            self.vols[volume_name]['snapshots'][snapshot_name] = {'name': snapshot_name}
+            self.snapshots_store[volume_name][snapshot_name] = {
+                'name': snapshot_name}
 
     def get_snapshot(self, volume_name, snapshot_name):
         log.info("Fetching snapshot {}:{}".format(volume_name, snapshot_name))
-        self.raise_if_volume_absent(volume_name)
-        return self.vols[volume_name]['snapshots'][snapshot_name]
+        self.raise_if_snapshot_absent(volume_name, snapshot_name)
+        return self.snapshots_store[volume_name][snapshot_name]
 
     def delete_snapshot(self, volume_name, snapshot_name):
         log.info("Deleting {} on {}".format(snapshot_name, volume_name))
-        self.raise_if_volume_absent(volume_name)
-        self.vols[volume_name]['snapshots'].pop(snapshot_name)
+        self.raise_if_snapshot_absent(volume_name, snapshot_name)
+        self.snapshots_store.pop(snapshot_name)
 
     def get_snapshots(self, volume_name):
         log.info("Getting snapshots for {}".format(volume_name))
         self.raise_if_volume_absent(volume_name)
-        return list(self.vols[volume_name]['snapshots'].values())
+        return list(self.snapshots_store.values())
 
     def rollback_volume(self, volume_name, restore_snapshot_name):
         log.info("Restoring {} to {}"
                  .format(volume_name, restore_snapshot_name))
-        self.raise_if_volume_absent(volume_name)
-        pass
+        self.raise_if_snapshot_absent(volume_name, restore_snapshot_name)
 
     def ensure_policy_rule_present(self, volume_name, policy_name, rule):
         self.raise_if_volume_absent(volume_name)
-        if rule not in self.rules_store[volume_name][policy_name]['rules']:
-            self.rules_store[volume_name][policy_name]['rules'].append(rule)
+        if rule not in self.rules_store[volume_name][policy_name]:
+            self.rules_store[volume_name][policy_name].append(rule)
 
     def ensure_policy_rule_absent(self, volume_name, policy_name, rule):
         self.raise_if_volume_absent(volume_name)
-        stored_rules = self.rules_store[volume_name][policy_name]['rules']
-        self.rules_store[volume_name][policy_name]['rules'] = list(filter(
+        stored_rules = self.rules_store[volume_name][policy_name]
+        self.rules_store[volume_name][policy_name] = list(filter(
             lambda x: x != rule, stored_rules))
 
 
