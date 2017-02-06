@@ -171,8 +171,9 @@ def init_namespace(api, backend_name):
             elif data['from_snapshot']:
 
                 with keyerror_is_404():
-                    backend().rollback_volume(volume_name,
-                                              data['from_snapshot'])
+                    backend().rollback_volume(
+                        volume_name,
+                        restore_snapshot_name=data['from_snapshot'])
             else:
                 with valueerror_is_400(), keyerror_is_400():
                     backend().create_volume(volume_name,
@@ -292,7 +293,9 @@ def init_namespace(api, backend_name):
         @in_group(api, ADMIN_GROUP)
         def get(self, volume_name):
             with keyerror_is_404():
-                return backend().policies(volume_name)
+                return [{'policy_name': policy,
+                         'rules': rules} for policy, rules in
+                        backend().policies(volume_name)]
 
     @api.route('/volumes/<path:volume_name>/export/<string:policy>')
     @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
@@ -305,7 +308,9 @@ def init_namespace(api, backend_name):
         @in_group(api, ADMIN_GROUP)
         def get(self, volume_name, policy):
             with keyerror_is_404():
-                return backend().get_policy(volume_name, policy)
+                rules = backend().get_policy(volume_name, policy)
+                return {'policy_name': policy,
+                        'rules': rules}
 
         @api.doc(description="Grant hosts matching a given pattern access to the given volume")
         @api.response(201, description="The provided access rules were added")

@@ -307,7 +307,7 @@ def test_rollback_from_snapshot(client, namespace):
 
     with user_set(client):
         _post(client, volume, data={})
-        _put(client, snapshot_resource, data={})
+        _post(client, snapshot_resource, data={})
         post_code, post_result = _post(client, volume,
                                        data={'from_snapshot':
                                              snapshot_name})
@@ -327,7 +327,7 @@ def test_clone_from_snapshot(client, namespace):
 
     with user_set(client):
         _post(client, volume, data={})
-        _put(client, snapshot_resource, data={})
+        _post(client, snapshot_resource, data={})
         post_code, post_result = _post(client,
                                        clone_volume,
                                        data={'from_snapshot': snapshot_name,
@@ -347,7 +347,7 @@ def test_clone_from_snapshot_name_collission(client, namespace):
 
     with user_set(client):
         _post(client, volume, data={})
-        _put(client, snapshot_resource, data={})
+        _post(client, snapshot_resource, data={})
         post_code, post_result = _post(client,
                                        volume,
                                        data={'from_snapshot': snapshot_name,

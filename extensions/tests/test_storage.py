@@ -120,8 +120,10 @@ def test_get_snapshots(storage):
 
     storage.create_snapshot(volume_name, snapshot_name="snapshot-new")
 
-    assert len(storage.get_snapshots(volume_name)) == 1
+    snapshots = storage.get_snapshots(volume_name)
+    assert len(snapshots) == 1
     assert storage.get_snapshot(volume_name, "snapshot-new")['name'] == "snapshot-new"
+    assert snapshots[0]['name'] == "snapshot-new"
 
 
 @on_all_backends
@@ -135,8 +137,8 @@ def test_add_policy(storage):
     policies = storage.policies(volume_name)
 
     assert len(policies) == 1
-    assert policies[0] == rules
-    assert storage.get_policy(volume_name, "a policy") == policies[0]
+    assert policies[0][1] == rules
+    assert storage.get_policy(volume_name, "a policy") == (policies[0][1])
 
 
 @on_all_backends
@@ -210,7 +212,7 @@ def test_clone_volume(storage):
 
 @on_all_backends
 def test_delete_snapshot(storage):
-    volume_name = uuid.uuid1()
+    volume_name = str(uuid.uuid1())
     storage.create_volume(volume_name=volume_name)
 
     with pytest.raises(KeyError):
@@ -223,7 +225,7 @@ def test_delete_snapshot(storage):
 
 @on_all_backends
 def test_rollback_volume(storage):
-    volume_name = uuid.uuid1()
+    volume_name = str(uuid.uuid1())
     storage.create_volume(volume_name=volume_name)
 
     with pytest.raises(KeyError):
@@ -264,7 +266,7 @@ def test_ensure_policy_rule_present(storage):
 
 @on_all_backends
 def test_ensure_policy_rule_absent(storage):
-    volume_name = uuid.uuid1()
+    volume_name = str(uuid.uuid1())
     rule = "127.0.0.1/24"
     storage.create_volume(volume_name=volume_name)
     storage.create_policy(volume_name=volume_name, policy_name="policy",

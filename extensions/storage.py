@@ -193,14 +193,11 @@ class StorageBackend(metaclass=ABCMeta):
     def policies(self, volume_name):
         """
         Return a list of export policies for the given volume, as a list
-        of dictionaries with their associated policies.
+        of name/value tuples.
 
         Example:
         ```
-        [{
-         "policy_name": "my_policy",
-         "rules": ["127.0.0.1", "10.10.10.1/24"]
-        }]
+        ["my_policy", ["127.0.0.1", "10.10.10.1/24"]]
         ```
 
         Notably, no policies would yield []. The interpretation
@@ -463,7 +460,7 @@ class DummyStorage(StorageBackend):
 
     def policies(self, volume_name):
         with annotate_exception(KeyError, vol_404(volume_name)):
-            return list(self.rules_store[volume_name].values())
+            return list(self.rules_store[volume_name].items())
 
     def get_policy(self, volume_name, policy_name):
         self.raise_if_volume_absent(volume_name)
@@ -509,15 +506,15 @@ class DummyStorage(StorageBackend):
     def delete_snapshot(self, volume_name, snapshot_name):
         log.info("Deleting {} on {}".format(snapshot_name, volume_name))
         self.raise_if_snapshot_absent(volume_name, snapshot_name)
-        self.snapshots_store.pop(snapshot_name)
+        self.snapshots_store[volume_name].pop(snapshot_name)
 
     def get_snapshots(self, volume_name):
         log.info("Getting snapshots for {}".format(volume_name))
         self.raise_if_volume_absent(volume_name)
-        return list(self.snapshots_store.values())
+        return list(self.snapshots_store[volume_name].values())
 
     def rollback_volume(self, volume_name, restore_snapshot_name):
-        log.info("Restoring {} to {}"
+        log.info("Restoring '{}' to '{}'"
                  .format(volume_name, restore_snapshot_name))
         self.raise_if_snapshot_absent(volume_name, restore_snapshot_name)
 
