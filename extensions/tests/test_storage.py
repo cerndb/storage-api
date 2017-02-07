@@ -5,6 +5,7 @@ import functools
 
 import pytest
 
+
 def on_all_backends(func):
     """
     This has to be a separate decorator because the storage
@@ -70,6 +71,7 @@ def test_patch_volume(storage):
 
     assert v['size_total'] == 2056
 
+
 @on_all_backends
 def test_get_no_locks(storage):
     storage.create_volume('bork')
@@ -103,6 +105,7 @@ def test_remove_lock_wrong_host(storage):
     storage.remove_lock('volumename', 'othermachine.cern.ch')
 
     assert storage.locks('volumename') == 'db.cern.ch'
+
 
 @on_all_backends
 def test_lock_locked(storage):
@@ -279,8 +282,6 @@ def test_ensure_policy_rule_absent(storage):
                                           rule=rule)
 
     assert storage.get_policy(volume_name, policy_name="policy") == []
-
-
 
 
 @on_all_backends
