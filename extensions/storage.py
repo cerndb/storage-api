@@ -47,10 +47,21 @@ def vol_404(volume_name):
     return "No such volume: {}".format(volume_name)
 
 
-def normalised_with(schema_name, allow_unknown=False):
+def validate_value(v, value):
+    validation_result = v.validate(value, normalize=True)
+    if not validation_result:
+        raise ValidationError(v.errors)  # pragma: no cover
+    else:
+        return v.normalized(value)
+
+
+def normalised_with(schema_name, allow_unknown=False, as_list=False):
     """
     A decorator to normalise and validate the return values of a
     function according to a schema.
+
+    If as_list is True, validate and normalise each entry in the
+    returned list.
 
     Raises a ValidationError if the schema was not correctly validated.
     """
@@ -61,11 +72,18 @@ def normalised_with(schema_name, allow_unknown=False):
             schema = cerberus.schema_registry.get(name=schema_name)
             v = cerberus.Validator(schema, allow_unknown=allow_unknown)
             return_value = func(*args, **kwargs)
-            validation_result = v.validate(return_value, normalize=True)
-            if not validation_result:
-                raise ValidationError(v.errors)  # pragma: no cover
+
+            if as_list:
+                if isinstance(return_value, str):
+                    raise ValidationError("Expected a list!")  # pragma: no cover
+                try:
+                    return list(map(functools.partial(validate_value, v),
+                                    return_value))
+                except TypeError:  # pragma: no cover
+                    raise ValidationError("Expected a list!")
             else:
-                return v.normalized(return_value)
+                return validate_value(v, return_value)
+
         return inner_wrapper
     return validator_decorator
 
@@ -392,6 +410,10 @@ class DummyStorage(StorageBackend):
 
     @property
     def volumes(self):
+        return self._volumes()
+
+    @normalised_with('volume', as_list=True)
+    def _volumes(self):
         return list(self.vols.values())
 
     @normalised_with('volume', allow_unknown=True)
