@@ -38,6 +38,7 @@ clean:
 	rm -f $(TARFILE)
 	make stop
 	rm -rf swagger.json html
+	cd doc && make clean
 
 srpm:   all
 	rpmbuild -bs --define '_sourcedir $(PWD)' ${SPECFILE}
