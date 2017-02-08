@@ -21,8 +21,8 @@ def in_group(api, group_name):
     group, or if the session is unauthenticated.
 
     Args:
-        api (str): fisk
-        group_name (str): bar
+        api (flask_restplus.Api): The API to signal errors to etc
+        group_name (str): A group name to check for membership in
 
     Example::
 
