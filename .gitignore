@@ -10,3 +10,4 @@ dist/
 html
 /devserver.PID
 /storage-api-*.tar.gz
+doc/_build/

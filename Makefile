@@ -88,7 +88,9 @@ swagger.json: $(SOURCES) devserver.PID
 	make stop
 
 html: swagger.json
+	cd doc && make html
 	mkdir -p html/api
+	cp -r doc/_build/html/* html/
 	spectacle --target-dir html/api swagger.json
 
 doc_deploy: swagger.json html

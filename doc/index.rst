@@ -6,10 +6,13 @@
 Welcome to CERN Unified Storage API's documentation!
 ====================================================
 
-Contents:
 
 .. toctree::
    :maxdepth: 2
+
+   CERN Unified Storage API README <README.md>
+   modules
+   API Documentation (generated) <./api#http://>
 
 
 
@@ -19,4 +22,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
