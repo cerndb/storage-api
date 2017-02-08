@@ -650,7 +650,7 @@ def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
 
     policy = '{}/export/{}'.format(volume, policy_name)
 
-    rules = []
+    rules = []  # type: List[str]
 
     with user_set(client):
         if policy_exists:

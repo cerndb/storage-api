@@ -64,6 +64,9 @@ tag-stable:
 
 lint: $(SOURCES)
 	flake8 app.py apis setup.py extensions
+	mypy --ignore-missing-imports --fast-parser \
+	     --check-untyped-defs --warn-no-return \
+	     app.py apis setup.py extensions
 
 .PHONY: lint
 
@@ -87,7 +90,10 @@ swagger.json: $(SOURCES) devserver.PID
 	sleep 2 && wget http://127.0.0.1:5000/swagger.json -O swagger.json
 	make stop
 
-html: swagger.json
+doc/source/modules.rst:
+	sphinx-apidoc -f -o doc/source/
+
+html: swagger.json doc/source/modules.rst
 	cd doc && make html
 	mkdir -p html/api
 	cp -r doc/_build/html/* html/

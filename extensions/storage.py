@@ -21,6 +21,7 @@ from abc import ABCMeta, abstractmethod
 import logging
 from contextlib import contextmanager
 import functools
+from typing import Dict, Any
 
 from ordered_set import OrderedSet
 import cerberus
@@ -40,14 +41,18 @@ cerberus.schema_registry.extend(SCHEMAS)
 
 
 class ValidationError(Exception):
+    """
+    An Exception raised when a return value fails to pass its schema
+    validation.
+    """
     pass
 
 
-def vol_404(volume_name):
+def vol_404(volume_name: str) -> str:
     return "No such volume: {}".format(volume_name)
 
 
-def validate_value(v, value):
+def validate_value(v: cerberus.Validator, value: Dict[str, Any]):
     validation_result = v.validate(value, normalize=True)
     if not validation_result:
         raise ValidationError(v.errors)  # pragma: no cover
@@ -55,7 +60,9 @@ def validate_value(v, value):
         return v.normalized(value)
 
 
-def normalised_with(schema_name, allow_unknown=False, as_list=False):
+def normalised_with(schema_name: str,
+                    allow_unknown: bool=False,
+                    as_list: bool=False):
     """
     A decorator to normalise and validate the return values of a
     function according to a schema.
@@ -77,8 +84,7 @@ def normalised_with(schema_name, allow_unknown=False, as_list=False):
                 if isinstance(return_value, str):
                     raise ValidationError("Expected a list!")  # pragma: no cover
                 try:
-                    return list(map(functools.partial(validate_value, v),
-                                    return_value))
+                    return [validate_value(v, x) for x in return_value]
                 except TypeError:  # pragma: no cover
                     raise ValidationError("Expected a list!")
             else:
@@ -90,6 +96,16 @@ def normalised_with(schema_name, allow_unknown=False, as_list=False):
 
 @contextmanager
 def annotate_exception(exception, annotation):
+    """
+    Context manager to annotate a particular type of exception with a
+    descriptive text.
+
+    Example:
+    ```
+    with annotate_exception(KeyError, "no such item!"):
+      a = foo['key']
+    ```
+    """
     try:
         yield
     except exception:
@@ -103,7 +119,7 @@ class StorageBackend(metaclass=ABCMeta):
 
     @property
     @abstractmethod
-    def volumes():
+    def volumes(self):
         """
         Return all active and usable volumes of the storage backend as
         a list of dictionaries (see get_volume() for their format).
@@ -403,10 +419,10 @@ class DummyStorage(StorageBackend):
                            .format(volume_name, snapshot_name))
 
     def __init__(self):
-        self.vols = {}
-        self.locks_store = {}
-        self.rules_store = {}
-        self.snapshots_store = {}
+        self.vols = {}  # type: Dict[str, Dict[str, Any]]
+        self.locks_store = {}  # type: Dict[str, str]
+        self.rules_store = {}  # type: Dict[str, str]
+        self.snapshots_store = {}  # type: Dict[str, Dict[str, List[str]]]
 
     @property
     def volumes(self):
@@ -551,5 +567,6 @@ class DummyStorage(StorageBackend):
         self.rules_store[volume_name][policy_name] = list(filter(
             lambda x: x != rule, stored_rules))
 
-
-StorageBackend.register(DummyStorage)
+# I don't know if this does anything, but it may be necessary for, uh,
+# some reason?
+# StorageBackend.register(DummyStorage)

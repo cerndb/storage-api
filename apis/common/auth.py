@@ -8,10 +8,11 @@
 # or submit itself to any jurisdiction.
 
 from functools import wraps
+from typing import Any # noqa
 
 from flask import session, current_app
 
-authorizations = {}
+authorizations = {}  # type: Dict[str, Any]
 
 
 def in_group(api, group_name):
