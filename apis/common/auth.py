@@ -20,12 +20,16 @@ def in_group(api, group_name):
     Decorator: call flask.abort(403) if user is not in the specified
     group, or if the session is unauthenticated.
 
-    Usage:
-    ```
-    @in_group(api, group_name='it-db-storage')
-    def get(self):
-      pass
-    ```
+    Args:
+        api (str): fisk
+        group_name (str): bar
+
+    Example::
+
+        @in_group(api, group_name='it-db-storage')
+        def get(self):
+            pass
+
     """
 
     def group_decorator(func):

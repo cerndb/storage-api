@@ -90,8 +90,8 @@ swagger.json: $(SOURCES) devserver.PID
 	sleep 2 && wget http://127.0.0.1:5000/swagger.json -O swagger.json
 	make stop
 
-doc/source/modules.rst:
-	sphinx-apidoc -f -o doc/source/ .
+doc/source/modules.rst: Makefile $(SOURCES)
+	sphinx-apidoc -f -o doc/source/ . setup.py extensions.tests tests conftest.py
 
 html: swagger.json doc/source/modules.rst
 	cd doc && make html

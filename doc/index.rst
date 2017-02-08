@@ -12,7 +12,7 @@ CERN Unified Storage API documentation
 
    CERN Unified Storage API README <README.md>
    API Documentation (generated) <./api/index.html#http://>
-   source/modules
+   Source Documentation (generated) <source/modules>
 
 
 
