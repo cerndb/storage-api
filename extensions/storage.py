@@ -25,6 +25,7 @@ from typing import Dict, Any
 
 from ordered_set import OrderedSet
 import cerberus
+import flask
 
 log = logging.getLogger(__name__)
 SCHEMAS = [('volume',
@@ -133,6 +134,7 @@ class StorageBackend(metaclass=ABCMeta):
         """
         Return (the data for) a specific volume as a dictionary with (at
         least) the following elements:
+
         - name
         - size_used
         - size_total
@@ -141,7 +143,8 @@ class StorageBackend(metaclass=ABCMeta):
         Back-ends are allowed to add implementation-specific
         elements.
 
-        Raises KeyError if no such volume exists.
+        Raises:
+            KeyError: if no such volume exists
         """
         return NotImplemented
 
@@ -166,9 +169,9 @@ class StorageBackend(metaclass=ABCMeta):
         Update a volume with data from **data.
 
         Raises:
-        - ValueError on poorly formatted data, or invalid data
-          entries/attempts to write to read-only fields
-        - KeyError if no volume named volume_name exists.
+            ValueError: on poorly formatted data, or invalid data
+                entries/attempts to write to read-only fields
+            KeyError: if no volume named volume_name exists.
         """
         return NotImplemented
 
@@ -178,12 +181,13 @@ class StorageBackend(metaclass=ABCMeta):
         Create a new volume with a given name and the provided data
         fields.
 
-        Fields can be at least:
+        `fields` can be at least:
+
         - size_total
 
         Raises:
-        - ValueError if the data is malformed
-        - KeyError if the volume already exists
+            ValueError: if the data is malformed
+            KeyError: if the volume already exists
 
         Back-ends are allowed to add implementation-specific elements.
         """
@@ -196,7 +200,7 @@ class StorageBackend(metaclass=ABCMeta):
         the volume named volume_name, or None if there were no locks.
 
         Raises:
-        - KeyError if no such volume exists
+            KeyError: if no such volume exists
         """
         return NotImplemented
 
@@ -206,8 +210,9 @@ class StorageBackend(metaclass=ABCMeta):
         Install a lock held by the host host_owner on the given volume.
 
         Raises:
-        - ValueError if a lock is already held on that volume by another host
-        - KeyError if no such volume exists
+            ValueError: if a lock is already held on that volume by
+                another host
+            KeyError: if no such volume exists
         """
         return NotImplemented
 
@@ -219,7 +224,7 @@ class StorageBackend(metaclass=ABCMeta):
         or if the lock wasn't held by host_owner.
 
         Raises:
-        - KeyError if no such volume exists
+            KeyError: if no such volume exists
         """
         return NotImplemented
 
@@ -229,10 +234,9 @@ class StorageBackend(metaclass=ABCMeta):
         Return a list of export policies for the given volume, as a list
         of name/value tuples.
 
-        Example:
-        ```
-        ["my_policy", ["127.0.0.1", "10.10.10.1/24"]]
-        ```
+        Example::
+
+            ["my_policy", ["127.0.0.1", "10.10.10.1/24"]]
 
         Notably, no policies would yield []. The interpretation
         of these values are up to the implementation, but it can be
@@ -240,7 +244,7 @@ class StorageBackend(metaclass=ABCMeta):
         no rules.
 
         Raises:
-        - KeyError if no such volume exists
+            KeyError: if no such volume exists
         """
         return NotImplemented
 
@@ -252,8 +256,7 @@ class StorageBackend(metaclass=ABCMeta):
         associated with the given policy.
 
         Raises:
-        - KeyError if volume_name does not exist or does not have a
-          policy named policy_name
+            KeyError: if volume_name does not exist or does not have a policy named policy_name
         """
         return NotImplemented
 
@@ -263,8 +266,8 @@ class StorageBackend(metaclass=ABCMeta):
         Add a new policy with a set of rules to a given volume
 
         Raises:
-        - ValueError if there is already a policy with that name
-        - KeyError if there is no such volume
+            ValueError: if there is already a policy with that name
+            KeyError: if there is no such volume
         """
         return NotImplemented
 
@@ -275,7 +278,7 @@ class StorageBackend(metaclass=ABCMeta):
         new policy with the same name.
 
         Raises:
-        - KeyError if no such volume or policy exists
+            KeyError: if no such volume or policy exists
         """
 
         return NotImplemented
@@ -287,8 +290,8 @@ class StorageBackend(metaclass=ABCMeta):
         Create a clone of a volume from a provided snapshot.
 
         Raises:
-        - KeyError if no such volume or snapshot exists
-        - ValueError if clone_volume_name already exists
+            KeyError: if no such volume or snapshot exists
+            ValueError: if clone_volume_name already exists
         """
         return NotImplemented
 
@@ -298,9 +301,9 @@ class StorageBackend(metaclass=ABCMeta):
         Make a snapshot from the current state of a volume.
 
         Raises:
-        - KeyError if no volume named volume_name exists
-        - ValueError if there is already a snapshot named snapshot_name,
-          or if the name is invalid.
+            KeyError: if no volume named volume_name exists
+            ValueError: if there is already a snapshot named snapshot_name,
+                or if the name is invalid.
         """
         return NotImplemented
 
@@ -314,7 +317,7 @@ class StorageBackend(metaclass=ABCMeta):
         Back-ends are allowed to add additional keys.
 
         Raises:
-        - KeyError if no such volume or snapshot exists
+            KeyError: if no such volume or snapshot exists
         """
 
         return NotImplemented
@@ -325,7 +328,7 @@ class StorageBackend(metaclass=ABCMeta):
         Delete, or the closest possible equivalent, a given snapshot.
 
         Raises:
-        - KeyError if no such volume or snapshot exists
+            KeyError: if no such volume or snapshot exists
         """
         return NotImplemented
 
@@ -335,7 +338,7 @@ class StorageBackend(metaclass=ABCMeta):
         Return a list of snapshots for volume_name.
 
         Raises:
-        - KeyError if no such volume exists.
+            KeyError: if no such volume exists.
         """
         return NotImplemented
 
@@ -345,8 +348,8 @@ class StorageBackend(metaclass=ABCMeta):
         Roll back a volume to a snapshot.
 
         Raises:
-        - KeyError if volume_name does not exist or does not have a
-          snapshot named restore_snapshot_name.
+            KeyError: if volume_name does not exist or does not have a
+                snapshot named restore_snapshot_name.
         """
         return NotImplemented
 
@@ -358,7 +361,7 @@ class StorageBackend(metaclass=ABCMeta):
         policy. If it is not present it will be added.
 
         Raises:
-        - KeyError if no such volume or policy exists.
+            KeyError: if no such volume or policy exists.
         """
 
         return NotImplemented
@@ -371,22 +374,25 @@ class StorageBackend(metaclass=ABCMeta):
         policy. Will delete it if present, otherwise give no warning.
 
         Raises:
-        - KeyError if no such volume or policy exists.
+            KeyError: if no such volume or policy exists.
         """
 
         return NotImplemented
 
-    def init_app(self, app):
+    def init_app(self, app: flask.Flask):
         """
         Initialise a Flask app context with the storage system.
 
-        Example:
+        Args:
+            app (flask.Flask): The application to install the storage
+                system back-end in
 
-        ```
-        app = Flask(__name__)
-        netapp = NetAppStorage()
-        netapp.init_app(app=app)
-        ```
+
+        Example::
+
+            app = Flask(__name__)
+            netapp = NetAppStorage()
+            netapp.init_app(app=app)
         """
 
         if not hasattr(app, 'extensions'):   # pragma: no coverage
@@ -397,20 +403,26 @@ class StorageBackend(metaclass=ABCMeta):
 
 
 class DummyStorage(StorageBackend):
-    def raise_if_volume_absent(self, volume_name):
+    """
+    This is a dummy storage back-end meant for testing. It will persist
+    data given to it in RAM and follow the standard API provided by the
+    base class above, but that is about it.
+    """
+
+    def raise_if_volume_absent(self, volume_name: str):
         """
-        Raise a KeyError with an appropriate message if a volume is
+        Raise a `KeyError` with an appropriate message if a volume is
         absent.
         """
         if volume_name not in self.vols:
             raise KeyError(vol_404(volume_name))
 
-    def raise_if_snapshot_absent(self, volume_name, snapshot_name):
+    def raise_if_snapshot_absent(self, volume_name: str, snapshot_name: str):
         """
-        Raise a KeyError with an appropriate message if a snapshot is
-        absent.
+        Raise a `KeyError` with an appropriate message if a
+        snapshot is absent.
 
-        This implies first running raise_if_volume absent(volume_name).
+        This implies first running `raise_if_volume absent(volume_name)`.
         """
         self.raise_if_volume_absent(volume_name)
 
