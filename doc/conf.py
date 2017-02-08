@@ -349,4 +349,7 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {'python': ('https://docs.python.org/', None),
+                       'flask_restplus': ('https://flask-restplus.readthedocs.io/en/stable/', None),
+                       'netapp-api': ('https://cerndb.github.io/netapp-api-python/', None),
+                       'flask': ('http://flask.pocoo.org/docs/latest/', None)}
