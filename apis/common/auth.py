@@ -9,17 +9,19 @@
 
 from functools import wraps
 
-from flask import session, current_app, abort
+from flask import session, current_app
+
+authorizations = {}
 
 
-def in_group(group_name):
+def in_group(api, group_name):
     """
     Decorator: call flask.abort(403) if user is not in the specified
     group, or if the session is unauthenticated.
 
     Usage:
     ```
-    @in_group(group_name='it-db-storage')
+    @in_group(api, group_name='it-db-storage')
     def get(self):
       pass
     ```
@@ -27,11 +29,15 @@ def in_group(group_name):
 
     def group_decorator(func):
         @wraps(func)
+        @api.response(403, description=("Current user is not logged in or not"
+                                        " a member of the group '{}'")
+                      .format(group_name), model=None)
+        @api.doc(security=[{'sso': ['read', 'write']}])
         def group_wrapper(*args, **kwargs):
             user = session.get('user', None)
             if not user:
                 current_app.logger.error("User not authenticated at all")
-                abort(403)
+                api.abort(403, "The current user is not logged in!")
 
             current_app.logger.info("Testing if user is in group {}"
                                     .format(group_name))
@@ -42,6 +48,7 @@ def in_group(group_name):
                 current_app.logger.error("Logged-in user is not in group {}"
                                          .format(group_name))
 
-                abort(403)
+                api.abort(403, "The user is not in the group {}"
+                          .format(group_name))
         return group_wrapper
     return group_decorator

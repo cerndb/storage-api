@@ -6,3 +6,4 @@ branch = True
 exclude_lines =
         pragma: no cover
         return NotImplemented
+        if __name__ == .__main__.:

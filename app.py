@@ -43,7 +43,7 @@ extensions.DummyStorage().init_app(app)
 
 
 @sso.login_handler
-def login(user_info):
+def login(user_info):   # pragma: no cover
     flask.session['user'] = user_info
     groups = user_info["group"].split(';')
     app.logger.info("Shibboleth reported the following groups: {}"
@@ -53,7 +53,7 @@ def login(user_info):
 
 
 @sso.login_error_handler
-def error_callback(user_info):
+def error_callback(user_info):   # pragma: no cover
     if not app.debug:
         return flask.abort(403)
     else:
@@ -66,7 +66,7 @@ def error_callback(user_info):
 
 
 @app.route('/logout')
-def logout():
+def logout():   # pragma: no cover
     app.logger.info("Current session data: {}".format(str(flask.session)))
     if 'user' in flask.session:
         app.logger.info("Logging out user")
