@@ -91,7 +91,7 @@ swagger.json: $(SOURCES) devserver.PID
 	make stop
 
 doc/source/modules.rst:
-	sphinx-apidoc -f -o doc/source/
+	sphinx-apidoc -f -o doc/source/ .
 
 html: swagger.json doc/source/modules.rst
 	cd doc && make html

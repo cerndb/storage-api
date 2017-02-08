@@ -11,8 +11,8 @@ Welcome to CERN Unified Storage API's documentation!
    :maxdepth: 2
 
    CERN Unified Storage API README <README.md>
-   modules
    API Documentation (generated) <./api/index.html#http://>
+   source/modules
 
 
 
