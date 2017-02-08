@@ -13,3 +13,6 @@ requests==2.13.0
 jsonschema==2.5.1
 swagger-spec-validator==2.0.2
 Cerberus==1.1
+recommonmark==0.4.0
+sphinx-rtd-theme==0.1.9
+Sphinx==1.5.2
