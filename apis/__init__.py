@@ -10,8 +10,7 @@
 
 from flask_restplus import Api
 
-from .ceph import api as ceph
-from .netapp import api as netapp
+from .storage import api as unified_ns
 from apis.common.auth import authorizations
 
 import logging
@@ -28,5 +27,4 @@ api = Api(
     validate=True,
 )
 
-api.add_namespace(ceph)
-api.add_namespace(netapp)
+api.add_namespace(unified_ns)
