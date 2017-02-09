@@ -1,7 +1,7 @@
 Summary: CERN Unified Storage API
 Name: storage-api
 Version: 1.0.0
-Release: 4    ?dist:}
+Release: 4%{?dist}
 Source0: %{name}-%{version}.tar.gz
 License: GPLv3
 Group: CERN/Utilities

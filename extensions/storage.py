@@ -475,8 +475,8 @@ class DummyStorage(StorageBackend):
         data = {'name': str(volume_name),
                 'size_used': 0,
                 'size_total': kwargs.get('size_total', 0),
-                'filer_address': kwargs.get('filer_address', "dummy-filer"),
-                **kwargs}
+                'filer_address': kwargs.get('filer_address', "dummy-filer")}
+        # **kwargs missing!
         self.vols[volume_name] = data
         self.locks_store.pop(volume_name, None)
         self.rules_store[volume_name] = {}
