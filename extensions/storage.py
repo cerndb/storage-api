@@ -622,7 +622,7 @@ class NetappStorage(StorageBackend):
         return self.server.export_rules_of(policy_name)
 
     def get_snapshots(self, volume_name):
-        return list(self.server.snapshots_of(volume_name))
+        return [{'name': s} for s in self.server.snapshots_of(volume_name)]
 
     # STUBS #
     def clone_volume(self, clone_volume_name,
@@ -672,7 +672,11 @@ class NetappStorage(StorageBackend):
         pass
 
     def policies(self, volume_name):
-        pass
+        # We only have one, so return that!
+        policy_name = self.get_volume(volume_name)['active_policy_name']
+        rules = self.server.export_rules_of(policy_name)
+        response = (policy_name, rules)
+        return [response]
 
 # I don't know if this does anything, but it may be necessary for, uh,
 # some reason?
