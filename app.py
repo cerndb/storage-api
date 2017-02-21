@@ -17,6 +17,7 @@ import logging
 import flask
 from flask import Flask
 from flask_sso import SSO
+import netapp.api
 
 app = Flask(__name__)
 
@@ -38,6 +39,20 @@ app.config.setdefault('SSO_LOGIN_URL', '/login')
 
 sso = SSO(app=app)
 app.secret_key = os.urandom(24)
+log = logging.getLogger(__name__)
+
+try:
+    netapp_host = os.environ['ONTAP_HOST']
+    netapp_username = os.environ['ONTAP_USERNAME']
+    netapp_password = os.environ['ONTAP_PASSWORD']
+    server = netapp.api.Server(hostname=netapp_host,
+                               username=netapp_username,
+                               password=netapp_password)
+    extensions.NetappStorage(netapp_server=server).init_app(app)
+    log.info("Set up NetApp backend")
+except KeyError:
+    log.error("NetApp environment variables not configured, back-end inactive")
+    pass
 
 extensions.DummyStorage().init_app(app)
 

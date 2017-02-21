@@ -1,9 +1,17 @@
-from extensions.storage import DummyStorage
+from extensions.storage import DummyStorage, NetappStorage
 
 import uuid
 import functools
+import os
 
 import pytest
+import netapp.api
+
+
+def is_ontap_env_setup():
+    return ('ONTAP_HOST' in os.environ
+            and 'ONTAP_USERNAME' in os.environ
+            and 'ONTAP_PASSWORD' in os.environ)
 
 
 def on_all_backends(func):
@@ -14,8 +22,19 @@ def on_all_backends(func):
     Will parametrise the decorated test to run once for every type of
     storage provided here.
     """
+    backends = [DummyStorage()]
+
+    if is_ontap_env_setup():
+        server_host = os.environ['ONTAP_HOST']
+        server_username = os.environ['ONTAP_USERNAME']
+        server_password = os.environ['ONTAP_PASSWORD']
+        server = netapp.api.Server(hostname=server_host,
+                                   username=server_username,
+                                   password=server_password)
+        backends.append(NetappStorage(netapp_server=server))
+
     @functools.wraps(func)
-    @pytest.mark.parametrize("storage", [DummyStorage()])
+    @pytest.mark.parametrize("storage", backends)
     def backend_wrapper(*args, **kwargs):
         func(*args, **kwargs)
     return backend_wrapper

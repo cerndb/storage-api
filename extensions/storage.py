@@ -31,6 +31,16 @@ log = logging.getLogger(__name__)
 SCHEMAS = [('volume',
             {'name': {'type': 'string', 'minlength': 1,
                       'required': True},
+             'uuid': {'type': 'string', 'minlength': 1,
+                      'required': False},
+             'active_policy_name': {'type': 'string', 'minlength': 1,
+                                    'required': False},
+             'junction_path': {'type': 'string', 'minlength': 1,
+                               'required': False},
+             'aggregate_name': {'type': 'string', 'minlength': 1,
+                                'required': False},
+             'state': {'type': 'string', 'minlength': 1,
+                       'required': False},
              'size_used': {'type': 'integer', 'min': 0,
                            'required': True},
              'size_total': {'type': 'integer', 'min': 0,
@@ -578,6 +588,91 @@ class DummyStorage(StorageBackend):
         stored_rules = self.rules_store[volume_name][policy_name]
         self.rules_store[volume_name][policy_name] = list(filter(
             lambda x: x != rule, stored_rules))
+
+
+class NetappStorage(StorageBackend):
+    """
+    A Back-end for a NetApp storage system.
+    """
+
+    def __init__(self, netapp_server):
+        self.server = netapp_server
+
+    def format_volume(self, v):
+        return {'size_total': v.size_total_bytes,
+                'size_used': v.size_used_bytes,
+                'filer_address': v.node_name,
+                'aggregate_name': v.containing_aggregate_name,
+                **v.__dict__}
+
+    @property
+    def volumes(self):
+        return [self.format_volume(v) for v in self.server.volumes]
+
+    @normalised_with('volume', allow_unknown=True)
+    def get_volume(self, volume_name):
+        try:
+            volume = next(self.server.volumes.filter(name=volume_name))
+        except StopIteration:
+            with annotate_exception(KeyError, vol_404(volume_name)):
+                raise KeyError
+        return self.format_volume(volume)
+
+    def get_policy(self, volume_name, policy_name):
+        return self.server.export_rules_of(policy_name)
+
+    def get_snapshots(self, volume_name):
+        return list(self.server.snapshots_of(volume_name))
+
+    # STUBS #
+    def clone_volume(self, clone_volume_name,
+                     from_volume_name, from_snapshot_name):
+        pass
+
+    def create_snapshot(self, volume_name, snapshot_name):
+        pass
+
+    def get_snapshot(self, volume_name, snapshot_name):
+        pass
+
+    def remove_policy(self, volume_name, policy_name):
+        pass
+
+    def create_policy(self, volume_name, policy_name, rules):
+        pass
+
+    def delete_snapshot(self, volume_name, snapshot_name):
+        pass
+
+    def rollback_volume(self, volume_name, restore_snapshot_name):
+        pass
+
+    def ensure_policy_rule_present(self, volume_name, policy_name, rule):
+        pass
+
+    def ensure_policy_rule_absent(self, volume_name, policy_name, rule):
+        pass
+
+    def create_volume(self, volume_name, **fields):
+        pass
+
+    def locks(self, volume_name):
+        pass
+
+    def create_lock(self, volume_name, host_owner):
+        pass
+
+    def remove_lock(self, volume_name, host_owner):
+        pass
+
+    def patch_volume(self, volume_name, **data):
+        pass
+
+    def restrict_volume(self, volume_name):
+        pass
+
+    def policies(self, volume_name):
+        pass
 
 # I don't know if this does anything, but it may be necessary for, uh,
 # some reason?

@@ -32,4 +32,5 @@ setup(name='storage-api',
           'flask_restplus',
           'flask',
           'flask_sso',
+          'netapp-api'
       ])

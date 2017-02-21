@@ -24,16 +24,20 @@ from flask import current_app
 api = Namespace('/',
                 description='Storage operations')
 
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
+
 VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
                            "Must not contain leading /")
-SUBSYSTEM_MAPPING = {'netapp': 'DummyStorage',
-                     'ceph': 'DummyStorage'}
+
+SUBSYSTEM_MAPPING = {'netapp': 'NetappStorage',
+                     'ceph': 'DummyStorage',
+                     'dummy': 'DummyStorage'}
+
 SUBSYSTEM_DESCRIPTION = ("The subsystem to run the command on."
                          " Must be one of: {}"
                          .format(", ".join(SUBSYSTEM_MAPPING.keys())))
-
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
 
 
 @contextmanager
@@ -70,7 +74,12 @@ def backend(backend_name):
                                          "Allowed values are: {}")
                                 .format(", ".join(SUBSYSTEM_MAPPING.keys()))):
         canonical_name = SUBSYSTEM_MAPPING[backend_name]
-    return current_app.extensions[canonical_name]
+    try:
+        return current_app.extensions[canonical_name]
+    except KeyError:
+        log.error("Backend {} not installed, using dummy back-end"
+                  .format(canonical_name))
+        return current_app.extensions['DummyStorage']
 
 
 policy_rule_list_field = fields.List(fields.String(
@@ -89,6 +98,9 @@ volume = api.inherit('Volume', volume_writable_model, {
                           example="foo/bar/baz",
                           ),
     'size_used': fields.Integer(),
+    'uuid': fields.String(min_length=1),
+    'active_policy_name': fields.String(min_length=1),
+    'aggregate_name': fields.String(min_length=1),
     'state': fields.String(min_length=1, ),
     'size_total': fields.Integer(),
     'filer_address': fields.String(min_length=1),
