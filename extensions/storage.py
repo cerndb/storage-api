@@ -624,6 +624,20 @@ class NetappStorage(StorageBackend):
     def get_snapshots(self, volume_name):
         return [{'name': s} for s in self.server.snapshots_of(volume_name)]
 
+    def policies(self, volume_name):
+        # We only have one, so return that!
+        policy_name = self.get_volume(volume_name)['active_policy_name']
+        rules = self.server.export_rules_of(policy_name)
+        response = (policy_name, rules)
+        return [response]
+
+    def locks(self, volume_name):
+        ls = [l.client_address for l in self.server.locks_on(volume_name)]
+        if not ls:
+            return None
+        else:
+            return ls
+
     # STUBS #
     def clone_volume(self, clone_volume_name,
                      from_volume_name, from_snapshot_name):
@@ -656,9 +670,6 @@ class NetappStorage(StorageBackend):
     def create_volume(self, volume_name, **fields):
         pass
 
-    def locks(self, volume_name):
-        pass
-
     def create_lock(self, volume_name, host_owner):
         pass
 
@@ -670,13 +681,6 @@ class NetappStorage(StorageBackend):
 
     def restrict_volume(self, volume_name):
         pass
-
-    def policies(self, volume_name):
-        # We only have one, so return that!
-        policy_name = self.get_volume(volume_name)['active_policy_name']
-        rules = self.server.export_rules_of(policy_name)
-        response = (policy_name, rules)
-        return [response]
 
 # I don't know if this does anything, but it may be necessary for, uh,
 # some reason?
