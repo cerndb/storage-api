@@ -21,7 +21,7 @@ env:
     - COMMIT_AUTHOR_EMAIL: "albin.stjerna@cern.ch"
 install:
   - pip install -r requirements.txt
-  - pip install flake8
+  - pip install flake8 typed-ast
   - pip install mod_wsgi-httpd
   - APXS=~/virtualenv/python3.5/bin/mod_wsgi-apxs pip install mod_wsgi
   - python setup.py install
