@@ -1,4 +1,4 @@
-from extensions.storage import DummyStorage, NetappStorage
+from extensions.storage import DummyStorage, NetappStorage, StorageBackend # noqa
 
 import uuid
 import functools
@@ -22,7 +22,7 @@ def on_all_backends(func):
     Will parametrise the decorated test to run once for every type of
     storage provided here.
     """
-    backends = [DummyStorage()]
+    backends = [DummyStorage()]  # type: List[StorageBackend]
 
     if is_ontap_env_setup():
         server_host = os.environ['ONTAP_HOST']
