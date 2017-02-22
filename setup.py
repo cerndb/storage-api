@@ -27,10 +27,13 @@ setup(name='storage-api',
       packages=find_packages(),
       scripts=['app.py'],
       test_suite="",
-      requires=[
+      install_requires=[
+          'netapp-api',
           'ConfigParser',
           'flask_restplus',
           'flask',
           'flask_sso',
-          'netapp-api'
-      ])
+      ],
+      dependency_links=[("git+https://https://github.com/cerndb/"
+                         "netapp-api-python.git"
+                         "#egg=netapp-api-0.4.2")])
