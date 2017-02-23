@@ -1,0 +1,22 @@
+apis.common package
+===================
+
+Submodules
+----------
+
+apis.common.auth module
+-----------------------
+
+.. automodule:: apis.common.auth
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: apis.common
+    :members:
+    :undoc-members:
+    :show-inheritance:

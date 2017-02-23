@@ -1,0 +1,29 @@
+apis package
+============
+
+Subpackages
+-----------
+
+.. toctree::
+
+    apis.common
+
+Submodules
+----------
+
+apis.storage module
+-------------------
+
+.. automodule:: apis.storage
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: apis
+    :members:
+    :undoc-members:
+    :show-inheritance:

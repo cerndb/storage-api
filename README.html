@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CERN Unified Storage API &mdash; CERN Unified Storage API 1.2.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CERN Unified Storage API 1.2.0 documentation" href="index.html"/>
+        <link rel="next" title="storage-api" href="source/modules.html"/>
+        <link rel="prev" title="CERN Unified Storage API documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> CERN Unified Storage API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">CERN Unified Storage API README</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#aim-of-the-project">Aim of the project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#components-and-design">Components and Design</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#development">Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#testing-and-continuous-integration">Testing and Continuous Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deployment">Deployment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference external" href="./api/index.html#http://">API Documentation (generated)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/modules.html">Source Documentation (generated)</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">CERN Unified Storage API</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>CERN Unified Storage API</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="cern-unified-storage-api">
+<span id="cern-unified-storage-api"></span><h1>CERN Unified Storage API<a class="headerlink" href="#cern-unified-storage-api" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://travis-ci.org/cerndb/storage-api"><img alt="Build Status" src="https://travis-ci.org/cerndb/storage-api.svg?branch=master" /></a>
+<a class="reference external" href="https://coveralls.io/github/cerndb/storage-api?branch=master"><img alt="Coverage Status" src="https://coveralls.io/repos/github/cerndb/storage-api/badge.svg?branch=master" /></a></p>
+<div class="section" id="aim-of-the-project">
+<span id="aim-of-the-project"></span><h2>Aim of the project<a class="headerlink" href="#aim-of-the-project" title="Permalink to this headline">¶</a></h2>
+<p>IT DB Storage team is facing the need to work with different storage
+providers in order to deliver different storage solutions that should
+adapt to different projects needs. So far, a library and a set of
+scripts has been developed to interact mainly with NetApp storage.  The
+actual solution presents a RESTful API developed using Flask and
+Python 3.</p>
+</div>
+<div class="section" id="components-and-design">
+<span id="components-and-design"></span><h2>Components and Design<a class="headerlink" href="#components-and-design" title="Permalink to this headline">¶</a></h2>
+<p>The Storage API uses the flask-sso module developed by
+<a class="reference external" href="https://github.com/inveniosoftware/flask-sso">Invenio</a>. Authorisation
+is based on CERN e-groups (Active Directory distribution lists) and it&#8217;s
+implemented on the endpoint using a decorator. Authentication together
+with some basic access control is based on
+<a class="reference external" href="https://shibboleth.net/">Shibboleth</a> implementing Single Sign On
+(SSO). The use of Shibboleth determined the choice of an http server to
+Apache. An again the use of Apache somehow made natural to use mod_wsgi
+as WSGI platform to run python code.</p>
+<p>The application is designed around common Python and Flask framework
+patterns, with some help from the flask-restplus framework to provide
+boilerplate REST code. A factory pattern is used to mount the same APIs
+mapped to different back-ends as Flask paths. Back-ends are implemented
+as Flask extensions and modelled using an
+<a class="reference external" href="https://pymotw.com/2/abc/">abstract base class</a>, and resolved at
+run-time. This way, the API allows for successive implementations of
+future back-ends on the same API.</p>
+</div>
+<div class="section" id="development">
+<span id="development"></span><h2>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h2>
+<p>In order to further develope/test the core functionality no http server
+is needed. In order to test the http endpoints you can use the flask
+framework. To combine https access with Single Sign On a Shibboleth &amp;
+Apache setup is required. The setup steps are quite well described by
+<a class="reference external" href="https://alexpearce.me/2014/10/setting-up-flask-with-apache-and-shibboleth/">Alex Pearce article</a>,
+especially targeting a CERN environment.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">cerndb</span><span class="o">/</span><span class="n">storage</span><span class="o">-</span><span class="n">api</span>
+<span class="n">cd</span> <span class="n">storage</span><span class="o">-</span><span class="n">api</span>
+<span class="n">virtualenv</span> <span class="n">v1</span>
+<span class="n">source</span> <span class="o">.</span><span class="n">v1</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+<span class="n">pip3</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">python3</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>You can run the API in the Flask development server without SSO like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ export FLASK_APP=app.py
+$ export FLASK_DEBUG=1
+$ flask run
+</pre></div>
+</div>
+<p>Accessing <code class="docutils literal"><span class="pre">/login</span></code> in debug mode will immediately authorise you.</p>
+<p>There is also a shorthand Makefile option available as <code class="docutils literal"><span class="pre">make</span> <span class="pre">devserver</span></code>
+with corresponding <code class="docutils literal"><span class="pre">make</span> <span class="pre">stop</span></code>.</p>
+</div>
+<div class="section" id="testing-and-continuous-integration">
+<span id="testing-and-continuous-integration"></span><h2>Testing and Continuous Integration<a class="headerlink" href="#testing-and-continuous-integration" title="Permalink to this headline">¶</a></h2>
+<p>Continuous integration is provided by Travis, and tests are run using
+py.test and the Hypothesis framework. A more exhaustive Hypothesis test
+run takes a while to run (around 10-15 minutes), so it is advised to use
+the much less exhaustive &#8220;dev&#8221; test profile and leave the &#8220;ci&#8221; profile
+for Travis. The profile can be provided as a command-line option for
+pytest: <code class="docutils literal"><span class="pre">pytest</span> <span class="pre">--hypothesis-profile=dev</span></code>. Logging verbosity during
+tests can be increased using <code class="docutils literal"><span class="pre">-vvvv</span></code> with a variable number of <code class="docutils literal"><span class="pre">v</span></code>:s
+(more is noisier).</p>
+</div>
+<div class="section" id="deployment">
+<span id="deployment"></span><h2>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h2>
+<p>The API is deployed via an RPM, which sets up a clean Python virtual
+environment and installs using normal Pip proceducers into it (e.g. the
+same as the ones used for development). An example config for Apache
+featuring SSO/Shibboleth config and proper virtual environment handling
+is available in <code class="docutils literal"><span class="pre">templates/storage-api.conf</span></code>. For more information, see
+<a class="reference external" href="http://modwsgi.readthedocs.io/en/develop/user-guides/virtual-environments.html">the mod_wsgi documentation on the subject</a>.</p>
+</div>
+<div class="section" id="documentation">
+<span id="documentation"></span><h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>An interactive API Documentation is automatically generated by
+flask-restplus and served at the path <code class="docutils literal"><span class="pre">/</span></code>, with a JSON description
+available at <code class="docutils literal"><span class="pre">/swagger.json</span></code>. A HTML version is also rendered by
+<a class="reference external" href="http://sourcey.com/spectacle/">Spectacle</a> and published automatically
+by Travis to
+<a class="reference external" href="http://cerndb.github.io/storage-api/">cerndb.github.io/storage-api</a>.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="source/modules.html" class="btn btn-neutral float-right" title="storage-api" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="CERN Unified Storage API documentation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, CERN.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.2.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
