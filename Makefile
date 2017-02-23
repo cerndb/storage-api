@@ -64,9 +64,9 @@ tag-stable:
 
 lint: $(SOURCES)
 	flake8 app.py apis setup.py extensions
-	mypy --ignore-missing-imports --fast-parser \
-	     --check-untyped-defs --warn-no-return \
-	     app.py apis setup.py extensions
+	# mypy --ignore-missing-imports --fast-parser \
+	#      --check-untyped-defs --warn-no-return \
+	#      app.py apis setup.py extensions
 
 .PHONY: lint
 
