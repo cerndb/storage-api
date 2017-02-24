@@ -627,7 +627,7 @@ class NetappStorage(StorageBackend):
     def policies(self, volume_name):
         # We only have one, so return that!
         policy_name = self.get_volume(volume_name)['active_policy_name']
-        rules = self.server.export_rules_of(policy_name)
+        rules = [r[1] for r in self.server.export_rules_of(policy_name)]
         response = (policy_name, rules)
         return [response]
 
@@ -638,49 +638,78 @@ class NetappStorage(StorageBackend):
         else:
             return ls
 
-    # STUBS #
     def clone_volume(self, clone_volume_name,
                      from_volume_name, from_snapshot_name):
-        pass
+
+        junction_path = self.get_volume(clone_volume_name)['junction_path']
+
+        self.server.clone_volume(from_volume_name, clone_volume_name,
+                                 junction_path, from_snapshot_name)
 
     def create_snapshot(self, volume_name, snapshot_name):
-        pass
+        self.server.create_snapshot(volume_name, snapshot_name)
 
     def get_snapshot(self, volume_name, snapshot_name):
-        pass
+        snapshots = self.server.snapshots_of(volume_name)
+        for snapshot in snapshots:
+            if snapshot == snapshot_name:
+                return snapshot
+        raise ValueError("No such snapshot {}".format(snapshot_name))
 
     def remove_policy(self, volume_name, policy_name):
-        pass
+        self.server.delete_export_policy(policy_name)
 
     def create_policy(self, volume_name, policy_name, rules):
-        pass
+        self.server.create_export_policy(policy_name, rules=rules)
+        self.server.set_volume_export_policy(volume_name, policy_name)
 
     def delete_snapshot(self, volume_name, snapshot_name):
-        pass
+        self.server.delete_snapshot(volume_name, snapshot_name)
 
     def rollback_volume(self, volume_name, restore_snapshot_name):
-        pass
+        self.get_snapshot(volume_name, restore_snapshot_name)
+        self.server.rollback_volume_from_snapshot(volume_name, restore_snapshot_name)
 
     def ensure_policy_rule_present(self, volume_name, policy_name, rule):
-        pass
+        rules = [r for _i, r in self.server.export_rules_of(policy_name)]
+        if rule not in rules:
+            self.server.add_export_rule(policy_name, rule)
 
     def ensure_policy_rule_absent(self, volume_name, policy_name, rule):
-        pass
+        for index, stored_rule in self.server.export_rules_of(policy_name):
+            if rule == stored_rule:
+                self.server.remove_export_rule(policy_name, index)
+                break
 
     def create_volume(self, volume_name, **fields):
-        pass
+        # FIXME: needs to enforce size
+        # FIXME: where do we get aggregate names, junction paths?
+        self.server.create_volume(name=volume_name,
+                                  size_kb=fields['size_total'],
+                                  junction_path="???",
+                                  aggregate_name="???")
 
     def create_lock(self, volume_name, host_owner):
-        pass
+        # There doesn't seem to be any way of implementing this. :(
+        return NotImplemented
 
     def remove_lock(self, volume_name, host_owner):
-        pass
+        self.server.break_lock(volume_name, host_owner)
 
     def patch_volume(self, volume_name, **data):
-        pass
+        previous = self.get_volume(volume_name)
+        autosize_enabled = data.get('autosize_enabled',
+                                    previous['autosize_enabled'])
+        autosize_increment = data.get('autosize_increment',
+                                      previous['autosize_increment'])
+        max_autosize = data.get('max_autosize', previous['max_autosize'])
+
+        self.set_volume_autosize(volume_name, max_size_kb=max_autosize,
+                                 increment_kb=autosize_increment,
+                                 autosize_enabled=autosize_enabled)
 
     def restrict_volume(self, volume_name):
-        pass
+        self.server.restrict_volume(volume_name)
 
 # I don't know if this does anything, but it may be necessary for, uh,
 # some reason?
