@@ -605,6 +605,20 @@ class NetappStorage(StorageBackend):
                 'aggregate_name': v.containing_aggregate_name,
                 **v.__dict__}
 
+    def name_from_path(self, junction_path):
+        """
+        'Resolve' a junction path to a proper volume name.
+
+        Raises KeyError if there was no such volume.
+        """
+        vols = self.server.volumes.filter(junction_path=junction_path)
+        try:
+            volume = next(vols)
+        except StopIteration:
+            raise KeyError(junction_path)
+
+        return volume.name
+
     @property
     def volumes(self):
         return [self.format_volume(v) for v in self.server.volumes]
