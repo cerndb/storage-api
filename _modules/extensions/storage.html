@@ -156,6 +156,7 @@
 <span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span>
 <span class="kn">import</span> <span class="nn">functools</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">re</span>
 
 <span class="kn">from</span> <span class="nn">ordered_set</span> <span class="k">import</span> <span class="n">OrderedSet</span>
 <span class="kn">import</span> <span class="nn">cerberus</span>
@@ -753,6 +754,13 @@
 
         <span class="k">return</span> <span class="n">volume</span><span class="o">.</span><span class="n">name</span></div>
 
+<div class="viewcode-block" id="NetappStorage.node_junction_path"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.node_junction_path">[docs]</a>    <span class="k">def</span> <span class="nf">node_junction_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert a &quot;volume_name&quot; parameter to a node name and junction</span>
+<span class="sd">        path.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">volumes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">format_volume</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">volumes</span><span class="p">]</span>
@@ -830,12 +838,51 @@
                 <span class="k">break</span></div>
 
 <div class="viewcode-block" id="NetappStorage.create_volume"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.create_volume">[docs]</a>    <span class="k">def</span> <span class="nf">create_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="o">**</span><span class="n">fields</span><span class="p">):</span>
-        <span class="c1"># FIXME: needs to enforce size</span>
-        <span class="c1"># FIXME: where do we get aggregate names, junction paths?</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">create_volume</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">volume_name</span><span class="p">,</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Important note: the volume &quot;name&quot; for NetApp is in actuality its</span>
+<span class="sd">        node name and junction path, separated by colon.</span>
+
+<span class="sd">        Therefore, an *actual* name must be provided as a data field</span>
+<span class="sd">        (&#39;name&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">junction_path</span> <span class="o">=</span> <span class="n">volume_name</span>
+
+        <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide explicit name for NetApp!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;size_total&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide size_total for NetApp!&quot;</span><span class="p">)</span>
+
+        <span class="n">aggregate_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="s1">&#39;aggregate_name&#39;</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+            <span class="n">aggregate_name</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;aggregate_name&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Aggregate not provided,&quot;</span>
+                     <span class="s2">&quot; using the one with the most free space...&quot;</span><span class="p">)</span>
+            <span class="c1"># sorted sorts ascending by default.</span>
+            <span class="n">aggregates</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">aggregates</span><span class="p">,</span>
+                                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">bytes_available</span><span class="p">,</span>
+                                <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">not_aggr0</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;(?!^aggr0.*)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">aggregate</span> <span class="ow">in</span> <span class="n">aggregates</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">not_aggr0</span><span class="p">(</span><span class="n">aggregate</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+                    <span class="n">aggregate_name</span> <span class="o">=</span> <span class="n">aggregate</span><span class="o">.</span><span class="n">name</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Picked aggregate </span><span class="si">{}</span><span class="s2"> for </span><span class="si">{}</span><span class="s2">&quot;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">aggregate_name</span><span class="p">,</span>
+                                     <span class="n">volume_name</span><span class="p">))</span>
+                    <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Skipping aggregate </span><span class="si">{}</span><span class="s2"> because it is aggr0&quot;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">aggregate</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="k">assert</span> <span class="n">aggregate_name</span><span class="p">,</span> <span class="s2">&quot;Could not find a suitable aggregate!&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">create_volume</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
                                   <span class="n">size_kb</span><span class="o">=</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;size_total&#39;</span><span class="p">],</span>
-                                  <span class="n">junction_path</span><span class="o">=</span><span class="s2">&quot;???&quot;</span><span class="p">,</span>
-                                  <span class="n">aggregate_name</span><span class="o">=</span><span class="s2">&quot;???&quot;</span><span class="p">)</span></div>
+                                  <span class="n">junction_path</span><span class="o">=</span><span class="n">junction_path</span><span class="p">,</span>
+                                  <span class="n">aggregate_name</span><span class="o">=</span><span class="n">aggregate_name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NetappStorage.create_lock"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.create_lock">[docs]</a>    <span class="k">def</span> <span class="nf">create_lock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">host_owner</span><span class="p">):</span>
         <span class="c1"># There doesn&#39;t seem to be any way of implementing this. :(</span>

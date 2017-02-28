@@ -310,7 +310,11 @@ absent.</p>
 <dl class="method">
 <dt id="extensions.storage.NetappStorage.create_volume">
 <code class="descname">create_volume</code><span class="sig-paren">(</span><em>volume_name</em>, <em>**fields</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/extensions/storage.html#NetappStorage.create_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#extensions.storage.NetappStorage.create_volume" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Important note: the volume &#8220;name&#8221; for NetApp is in actuality its
+node name and junction path, separated by colon.</p>
+<p>Therefore, an <em>actual</em> name must be provided as a data field
+(&#8216;name&#8217;)</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="extensions.storage.NetappStorage.delete_snapshot">
@@ -362,6 +366,13 @@ absent.</p>
 <code class="descname">name_from_path</code><span class="sig-paren">(</span><em>junction_path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/extensions/storage.html#NetappStorage.name_from_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#extensions.storage.NetappStorage.name_from_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>&#8216;Resolve&#8217; a junction path to a proper volume name.</p>
 <p>Raises KeyError if there was no such volume.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="extensions.storage.NetappStorage.node_junction_path">
+<code class="descname">node_junction_path</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/extensions/storage.html#NetappStorage.node_junction_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#extensions.storage.NetappStorage.node_junction_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a &#8220;volume_name&#8221; parameter to a node name and junction
+path.</p>
 </dd></dl>
 
 <dl class="method">
