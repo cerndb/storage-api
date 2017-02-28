@@ -210,8 +210,7 @@ class Volume(Resource):
                 backend(subsystem).create_volume(volume_name,
                                                  **dict_without(dict(data),
                                                                 'from_snapshot',
-                                                                'from_volume',
-                                                                'name'))
+                                                                'from_volume'))
 
     @api.doc(description=("Restrict the volume named *volume_name*"
                           " but do not actually delete it"))

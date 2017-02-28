@@ -22,6 +22,7 @@ import logging
 from contextlib import contextmanager
 import functools
 from typing import Dict, Any
+import re
 
 from ordered_set import OrderedSet
 import cerberus
@@ -619,6 +620,13 @@ class NetappStorage(StorageBackend):
 
         return volume.name
 
+    def node_junction_path(self, volume_name):
+        """
+        Convert a "volume_name" parameter to a node name and junction
+        path.
+        """
+        pass
+
     @property
     def volumes(self):
         return [self.format_volume(v) for v in self.server.volumes]
@@ -696,12 +704,51 @@ class NetappStorage(StorageBackend):
                 break
 
     def create_volume(self, volume_name, **fields):
-        # FIXME: needs to enforce size
-        # FIXME: where do we get aggregate names, junction paths?
-        self.server.create_volume(name=volume_name,
+        """
+        Important note: the volume "name" for NetApp is in actuality its
+        node name and junction path, separated by colon.
+
+        Therefore, an *actual* name must be provided as a data field
+        ('name')
+        """
+
+        junction_path = volume_name
+
+        if 'name' not in fields:
+            raise ValueError("Must provide explicit name for NetApp!")
+        if 'size_total' not in fields:
+            raise ValueError("Must provide size_total for NetApp!")
+
+        aggregate_name = None
+
+        if 'aggregate_name' in fields:
+            aggregate_name = fields['aggregate_name']
+        else:
+            log.info("Aggregate not provided,"
+                     " using the one with the most free space...")
+            # sorted sorts ascending by default.
+            aggregates = sorted(self.server.aggregates,
+                                key=lambda a: a.bytes_available,
+                                reverse=True)
+            not_aggr0 = functools.partial(re.compile("(?!^aggr0.*)").match)
+
+            for aggregate in aggregates:
+                if not_aggr0(aggregate.name):
+                    aggregate_name = aggregate.name
+                    log.info("Picked aggregate {} for {}"
+                             .format(aggregate_name,
+                                     volume_name))
+                    break
+                else:
+                    log.info("Skipping aggregate {} because it is aggr0"
+                             .format(aggregate.name))
+
+        assert aggregate_name, "Could not find a suitable aggregate!"
+
+        self.server.create_volume(name=fields['name'],
                                   size_kb=fields['size_total'],
-                                  junction_path="???",
-                                  aggregate_name="???")
+                                  junction_path=junction_path,
+                                  aggregate_name=aggregate_name)
 
     def create_lock(self, volume_name, host_owner):
         # There doesn't seem to be any way of implementing this. :(
