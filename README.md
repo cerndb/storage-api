@@ -35,20 +35,17 @@ future back-ends on the same API.
 
 ## Development
 
-In order to further develope/test the core functionality no http server
-is needed. In order to test the http endpoints you can use the flask
-framework. To combine https access with Single Sign On a Shibboleth &
-Apache setup is required. The setup steps are quite well described by
-[Alex Pearce article][ap-flask-sso],
-especially targeting a CERN environment.
+Development and testing (without proper authentication) can be done
+without a full deployment setup (see below). You need Python 3 and
+virtualenv (on Ubuntu `python3-virtualenv`) installed before running the
+commands below.
 
 ```
 git clone https://github.com/cerndb/storage-api
 cd storage-api
-virtualenv v1
+virtualenv --python=python3 v1
 source .v1/bin/activate
-pip3 install -r requirements.txt
-python3 setup.py install
+pip install -r requirements.txt
 ```
 
 You can run the API in the Flask development server without SSO like this:
@@ -59,7 +56,7 @@ $ export FLASK_DEBUG=1
 $ flask run
 ```
 
-Accessing `/login` in debug mode will immediately authorise you.
+Accessing `/login` in debug mode *will immediately authorise you*.
 
 There is also a shorthand Makefile option available as `make devserver`
 with corresponding `make stop`.
@@ -83,6 +80,11 @@ same as the ones used for development). An example config for Apache
 featuring SSO/Shibboleth config and proper virtual environment handling
 is available in `templates/storage-api.conf`. For more information, see
 [the mod_wsgi documentation on the subject][mod-wsgi-venv].
+
+To combine https access with Single Sign On a Shibboleth &
+Apache setup is required. The setup steps are quite well described by
+[Alex Pearce article][ap-flask-sso],
+especially targeting a CERN environment.
 
 ## Documentation
 
