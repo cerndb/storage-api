@@ -189,7 +189,7 @@
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -231,56 +231,7 @@
                   <h5>Response Example
                     <span>(200 OK)</span>
                   </h5>
-                  <div class="hljs"><pre><code class="hljs json">[
-  {
-    <span class="hljs-attr">&quot;allOf&quot;</span>: [
-      {
-        <span class="hljs-attr">&quot;$ref&quot;</span>: <span class="hljs-string"><a href="#definition-VolumeWritable">&quot;#/definitions/VolumeWritable&quot;</a></span>
-      },
-      {
-        <span class="hljs-attr">&quot;properties&quot;</span>: {
-          <span class="hljs-attr">&quot;active_policy_name&quot;</span>: {
-            <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-            <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-          },
-          <span class="hljs-attr">&quot;aggregate_name&quot;</span>: {
-            <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-            <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-          },
-          <span class="hljs-attr">&quot;filer_address&quot;</span>: {
-            <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-            <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-          },
-          <span class="hljs-attr">&quot;junction_path&quot;</span>: {
-            <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-            <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-          },
-          <span class="hljs-attr">&quot;name&quot;</span>: {
-            <span class="hljs-attr">&quot;description&quot;</span>: <span class="hljs-string">&quot;The name of the volume. Must not contain leading /&quot;</span>,
-            <span class="hljs-attr">&quot;example&quot;</span>: <span class="hljs-string">&quot;foo/bar/baz&quot;</span>,
-            <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-            <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-          },
-          <span class="hljs-attr">&quot;size_total&quot;</span>: {
-            <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;integer&quot;</span>
-          },
-          <span class="hljs-attr">&quot;size_used&quot;</span>: {
-            <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;integer&quot;</span>
-          },
-          <span class="hljs-attr">&quot;state&quot;</span>: {
-            <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-            <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-          },
-          <span class="hljs-attr">&quot;uuid&quot;</span>: {
-            <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-            <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-          }
-        },
-        <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>
-      }
-    ]
-  }
-]
+                  <div class="hljs"><pre><code class="lang-json"><span class="hljs-string">&quot;undefined&quot;</span>
 </code></pre> </div>
                 </section>
               </div>
@@ -314,11 +265,11 @@
                 <section class="swagger-request-params">
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The name of the volume. Must not contain leading /</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -334,11 +285,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">volume_name</div>
+                      <div class="prop-title">subsystem</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The name of the volume. Must not contain leading /</p>
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -377,7 +328,20 @@
                   </div>
                 </section>
               </div>
-              <div class="doc-examples"></div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(204 No Content)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(403 Forbidden)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+              </div>
             </div>
             <div class="doc-row">
               <div class="doc-copy">
@@ -449,11 +413,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The name of the volume. Must not contain leading /</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -469,11 +433,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">volume_name</div>
+                      <div class="prop-title">subsystem</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The name of the volume. Must not contain leading /</p>
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -523,55 +487,14 @@
                   <h5>Response Example
                     <span>(200 OK)</span>
                   </h5>
-                  <div class="hljs"><pre><code class="hljs json">{
-  <span class="hljs-attr">&quot;allOf&quot;</span>: [
-    {
-      <span class="hljs-attr">&quot;$ref&quot;</span>: <span class="hljs-string"><a href="#definition-VolumeWritable">&quot;#/definitions/VolumeWritable&quot;</a></span>
-    },
-    {
-      <span class="hljs-attr">&quot;properties&quot;</span>: {
-        <span class="hljs-attr">&quot;active_policy_name&quot;</span>: {
-          <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-          <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-        },
-        <span class="hljs-attr">&quot;aggregate_name&quot;</span>: {
-          <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-          <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-        },
-        <span class="hljs-attr">&quot;filer_address&quot;</span>: {
-          <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-          <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-        },
-        <span class="hljs-attr">&quot;junction_path&quot;</span>: {
-          <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-          <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-        },
-        <span class="hljs-attr">&quot;name&quot;</span>: {
-          <span class="hljs-attr">&quot;description&quot;</span>: <span class="hljs-string">&quot;The name of the volume. Must not contain leading /&quot;</span>,
-          <span class="hljs-attr">&quot;example&quot;</span>: <span class="hljs-string">&quot;foo/bar/baz&quot;</span>,
-          <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-          <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-        },
-        <span class="hljs-attr">&quot;size_total&quot;</span>: {
-          <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;integer&quot;</span>
-        },
-        <span class="hljs-attr">&quot;size_used&quot;</span>: {
-          <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;integer&quot;</span>
-        },
-        <span class="hljs-attr">&quot;state&quot;</span>: {
-          <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-          <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-        },
-        <span class="hljs-attr">&quot;uuid&quot;</span>: {
-          <span class="hljs-attr">&quot;minLength&quot;</span>: <span class="hljs-number">1</span>,
-          <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-        }
-      },
-      <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>
-    }
-  ]
-}
+                  <div class="hljs"><pre><code class="lang-json"><span class="hljs-string">&quot;undefined&quot;</span>
 </code></pre> </div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(404 Not Found)</span>
+                  </h5>
+                  <div class="hljs"></div>
                 </section>
               </div>
             </div>
@@ -618,26 +541,6 @@
                 <section class="swagger-request-params">
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
-                      <span class="json-property-required"></span>
-                    </div>
-                    <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
-                    </div>
-                  </div>
-                  <div class="prop-row prop-inner">
-                    <div class="prop-name param-label">type</div>
-                    <div class="prop-value">
-                      <span class="json-property-type">string</span>
-                      <span class="json-property-range" title="Value limits"></span>
-                    </div>
-                  </div>
-                  <div class="prop-row prop-inner">
-                    <div class="prop-name param-label">in</div>
-                    <div class="prop-value">path</div>
-                  </div>
-                  <div class="prop-row prop-group">
-                    <div class="prop-name">
                       <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
@@ -656,12 +559,32 @@
                     <div class="prop-name param-label">in</div>
                     <div class="prop-value">path</div>
                   </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">subsystem</div>
+                      <span class="json-property-required"></span>
+                    </div>
+                    <div class="prop-value">
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-inner">
+                    <div class="prop-name param-label">type</div>
+                    <div class="prop-value">
+                      <span class="json-property-type">string</span>
+                      <span class="json-property-range" title="Value limits"></span>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-inner">
+                    <div class="prop-name param-label">in</div>
+                    <div class="prop-value">path</div>
+                  </div>
                 </section>
               </div>
               <div class="doc-examples">
                 <section>
                   <h5>Request Example</h5>
-                  <div class="hljs"><pre><code class="hljs json">{
+                  <div class="hljs"><pre><code class="lang-json">{
   <span class="hljs-attr">&quot;autosize_enabled&quot;</span>: <span class="hljs-string">&quot;boolean&quot;</span>,
   <span class="hljs-attr">&quot;autosize_increment&quot;</span>: <span class="hljs-string">&quot;integer&quot;</span>,
   <span class="hljs-attr">&quot;max_autosize&quot;</span>: <span class="hljs-string">&quot;integer&quot;</span>
@@ -683,7 +606,14 @@
                   </div>
                 </section>
               </div>
-              <div class="doc-examples"></div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(403 Forbidden)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+              </div>
             </div>
             <div class="doc-row">
               <div class="doc-copy">
@@ -750,26 +680,6 @@
                 <section class="swagger-request-params">
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
-                      <span class="json-property-required"></span>
-                    </div>
-                    <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
-                    </div>
-                  </div>
-                  <div class="prop-row prop-inner">
-                    <div class="prop-name param-label">type</div>
-                    <div class="prop-value">
-                      <span class="json-property-type">string</span>
-                      <span class="json-property-range" title="Value limits"></span>
-                    </div>
-                  </div>
-                  <div class="prop-row prop-inner">
-                    <div class="prop-name param-label">in</div>
-                    <div class="prop-value">path</div>
-                  </div>
-                  <div class="prop-row prop-group">
-                    <div class="prop-name">
                       <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
@@ -788,31 +698,32 @@
                     <div class="prop-name param-label">in</div>
                     <div class="prop-value">path</div>
                   </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">subsystem</div>
+                      <span class="json-property-required"></span>
+                    </div>
+                    <div class="prop-value">
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-inner">
+                    <div class="prop-name param-label">type</div>
+                    <div class="prop-value">
+                      <span class="json-property-type">string</span>
+                      <span class="json-property-range" title="Value limits"></span>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-inner">
+                    <div class="prop-name param-label">in</div>
+                    <div class="prop-value">path</div>
+                  </div>
                 </section>
               </div>
               <div class="doc-examples">
                 <section>
                   <h5>Request Example</h5>
-                  <div class="hljs"><pre><code class="hljs json">{
-  <span class="hljs-attr">&quot;allOf&quot;</span>: [
-    {
-      <span class="hljs-attr">&quot;$ref&quot;</span>: <span class="hljs-string"><a href="#definition-Snapshot">&quot;#/definitions/Snapshot&quot;</a></span>
-    },
-    {
-      <span class="hljs-attr">&quot;properties&quot;</span>: {
-        <span class="hljs-attr">&quot;from_snapshot&quot;</span>: {
-          <span class="hljs-attr">&quot;description&quot;</span>: <span class="hljs-string">&quot;The snapshot name to create from/restore&quot;</span>,
-          <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-        },
-        <span class="hljs-attr">&quot;from_volume&quot;</span>: {
-          <span class="hljs-attr">&quot;description&quot;</span>: <span class="hljs-string">&quot;When cloning a volume, use this volume as basis for the snapshot to start from&quot;</span>,
-          <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-        }
-      },
-      <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>
-    }
-  ]
-}
+                  <div class="hljs"><pre><code class="lang-json"><span class="hljs-string">&quot;undefined&quot;</span>
 </code></pre> </div>
                 </section>
               </div>
@@ -830,7 +741,14 @@
                   </div>
                 </section>
               </div>
-              <div class="doc-examples"></div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(403 Forbidden)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+              </div>
             </div>
             <div class="doc-row">
               <div class="doc-copy">
@@ -902,11 +820,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The name of the volume. Must not contain leading /</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -922,11 +840,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">volume_name</div>
+                      <div class="prop-title">subsystem</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The name of the volume. Must not contain leading /</p>
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -976,13 +894,14 @@
                   <h5>Response Example
                     <span>(200 OK)</span>
                   </h5>
-                  <div class="hljs"><pre><code class="hljs json">[
-  {
-    <span class="hljs-attr">&quot;policy_name&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
-    <span class="hljs-attr">&quot;rules&quot;</span>: <span class="hljs-string">&quot;array&quot;</span>
-  }
-]
+                  <div class="hljs"><pre><code class="lang-json"><span class="hljs-string">&quot;undefined&quot;</span>
 </code></pre> </div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(403 Forbidden)</span>
+                  </h5>
+                  <div class="hljs"></div>
                 </section>
               </div>
             </div>
@@ -1056,11 +975,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The name of the volume. Must not contain leading /</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -1076,11 +995,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">volume_name</div>
+                      <div class="prop-title">subsystem</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The name of the volume. Must not contain leading /</p>
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -1127,7 +1046,26 @@
                   </div>
                 </section>
               </div>
-              <div class="doc-examples"></div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(204 No Content)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(403 Forbidden)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(404 Not Found)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+              </div>
             </div>
             <div class="doc-row">
               <div class="doc-copy">
@@ -1219,11 +1157,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The name of the volume. Must not contain leading /</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -1239,11 +1177,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">volume_name</div>
+                      <div class="prop-title">subsystem</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The name of the volume. Must not contain leading /</p>
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -1293,11 +1231,20 @@
                   <h5>Response Example
                     <span>(200 OK)</span>
                   </h5>
-                  <div class="hljs"><pre><code class="hljs json">{
-  <span class="hljs-attr">&quot;policy_name&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>,
-  <span class="hljs-attr">&quot;rules&quot;</span>: <span class="hljs-string">&quot;array&quot;</span>
+                  <div class="hljs"><pre><code class="lang-json">{
+  <span class="hljs-attr">&quot;policy_name&quot;</span>: <span class="hljs-string">&quot;allow_cluster_x&quot;</span>,
+  <span class="hljs-attr">&quot;rules&quot;</span>: [
+    <span class="hljs-string">&quot;10.10.10.1/24&quot;</span>,
+    <span class="hljs-string">&quot;10.10.10.1/24&quot;</span>
+  ]
 }
 </code></pre> </div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(403 Forbidden)</span>
+                  </h5>
+                  <div class="hljs"></div>
                 </section>
               </div>
             </div>
@@ -1386,26 +1333,6 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
-                      <span class="json-property-required"></span>
-                    </div>
-                    <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
-                    </div>
-                  </div>
-                  <div class="prop-row prop-inner">
-                    <div class="prop-name param-label">type</div>
-                    <div class="prop-value">
-                      <span class="json-property-type">string</span>
-                      <span class="json-property-range" title="Value limits"></span>
-                    </div>
-                  </div>
-                  <div class="prop-row prop-inner">
-                    <div class="prop-name param-label">in</div>
-                    <div class="prop-value">path</div>
-                  </div>
-                  <div class="prop-row prop-group">
-                    <div class="prop-name">
                       <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
@@ -1424,13 +1351,36 @@
                     <div class="prop-name param-label">in</div>
                     <div class="prop-value">path</div>
                   </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">subsystem</div>
+                      <span class="json-property-required"></span>
+                    </div>
+                    <div class="prop-value">
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-inner">
+                    <div class="prop-name param-label">type</div>
+                    <div class="prop-value">
+                      <span class="json-property-type">string</span>
+                      <span class="json-property-range" title="Value limits"></span>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-inner">
+                    <div class="prop-name param-label">in</div>
+                    <div class="prop-value">path</div>
+                  </div>
                 </section>
               </div>
               <div class="doc-examples">
                 <section>
                   <h5>Request Example</h5>
-                  <div class="hljs"><pre><code class="hljs json">{
-  <span class="hljs-attr">&quot;rules&quot;</span>: <span class="hljs-string">&quot;array&quot;</span>
+                  <div class="hljs"><pre><code class="lang-json">{
+  <span class="hljs-attr">&quot;rules&quot;</span>: [
+    <span class="hljs-string">&quot;10.10.10.1/24&quot;</span>,
+    <span class="hljs-string">&quot;10.10.10.1/24&quot;</span>
+  ]
 }
 </code></pre> </div>
                 </section>
@@ -1473,7 +1423,32 @@
                   </div>
                 </section>
               </div>
-              <div class="doc-examples"></div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(201 Created)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(400 Bad Request)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(403 Forbidden)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(404 Not Found)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+              </div>
             </div>
             <div class="doc-row">
               <div class="doc-copy">
@@ -1525,26 +1500,6 @@
                 <section class="swagger-request-params">
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">rule</div>
-                      <span class="json-property-required"></span>
-                    </div>
-                    <div class="prop-value">
-                      <p>The policy rule to operate on</p>
-                    </div>
-                  </div>
-                  <div class="prop-row prop-inner">
-                    <div class="prop-name param-label">type</div>
-                    <div class="prop-value">
-                      <span class="json-property-type">string</span>
-                      <span class="json-property-range" title="Value limits"></span>
-                    </div>
-                  </div>
-                  <div class="prop-row prop-inner">
-                    <div class="prop-name param-label">in</div>
-                    <div class="prop-value">path</div>
-                  </div>
-                  <div class="prop-row prop-group">
-                    <div class="prop-name">
                       <div class="prop-title">policy</div>
                       <span class="json-property-required"></span>
                     </div>
@@ -1565,11 +1520,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">rule</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The policy rule to operate on</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -1590,6 +1545,26 @@
                     </div>
                     <div class="prop-value">
                       <p>The name of the volume. Must not contain leading /</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-inner">
+                    <div class="prop-name param-label">type</div>
+                    <div class="prop-value">
+                      <span class="json-property-type">string</span>
+                      <span class="json-property-range" title="Value limits"></span>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-inner">
+                    <div class="prop-name param-label">in</div>
+                    <div class="prop-value">path</div>
+                  </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">subsystem</div>
+                      <span class="json-property-required"></span>
+                    </div>
+                    <div class="prop-value">
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -1636,7 +1611,26 @@
                   </div>
                 </section>
               </div>
-              <div class="doc-examples"></div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(204 No Content)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(403 Forbidden)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(404 Not Found)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+              </div>
             </div>
             <div class="doc-row">
               <div class="doc-copy">
@@ -1688,26 +1682,6 @@
                 <section class="swagger-request-params">
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">rule</div>
-                      <span class="json-property-required"></span>
-                    </div>
-                    <div class="prop-value">
-                      <p>The policy rule to operate on</p>
-                    </div>
-                  </div>
-                  <div class="prop-row prop-inner">
-                    <div class="prop-name param-label">type</div>
-                    <div class="prop-value">
-                      <span class="json-property-type">string</span>
-                      <span class="json-property-range" title="Value limits"></span>
-                    </div>
-                  </div>
-                  <div class="prop-row prop-inner">
-                    <div class="prop-name param-label">in</div>
-                    <div class="prop-value">path</div>
-                  </div>
-                  <div class="prop-row prop-group">
-                    <div class="prop-name">
                       <div class="prop-title">policy</div>
                       <span class="json-property-required"></span>
                     </div>
@@ -1728,11 +1702,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">rule</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The policy rule to operate on</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -1753,6 +1727,26 @@
                     </div>
                     <div class="prop-value">
                       <p>The name of the volume. Must not contain leading /</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-inner">
+                    <div class="prop-name param-label">type</div>
+                    <div class="prop-value">
+                      <span class="json-property-type">string</span>
+                      <span class="json-property-range" title="Value limits"></span>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-inner">
+                    <div class="prop-name param-label">in</div>
+                    <div class="prop-value">path</div>
+                  </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">subsystem</div>
+                      <span class="json-property-required"></span>
+                    </div>
+                    <div class="prop-value">
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -1791,7 +1785,20 @@
                   </div>
                 </section>
               </div>
-              <div class="doc-examples"></div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(201 Created)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(403 Forbidden)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+              </div>
             </div>
             <div class="doc-row">
               <div class="doc-copy">
@@ -1863,11 +1870,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The name of the volume. Must not contain leading /</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -1883,11 +1890,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">volume_name</div>
+                      <div class="prop-title">subsystem</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The name of the volume. Must not contain leading /</p>
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -1929,11 +1936,7 @@
                   <h5>Response Example
                     <span>(200 OK)</span>
                   </h5>
-                  <div class="hljs"><pre><code class="hljs json">[
-  {
-    <span class="hljs-attr">&quot;host&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-  }
-]
+                  <div class="hljs"><pre><code class="lang-json"><span class="hljs-string">&quot;undefined&quot;</span>
 </code></pre> </div>
                 </section>
               </div>
@@ -1986,11 +1989,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The name of the volume. Must not contain leading /</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -2006,11 +2009,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">volume_name</div>
+                      <div class="prop-title">subsystem</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The name of the volume. Must not contain leading /</p>
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -2049,7 +2052,20 @@
                   </div>
                 </section>
               </div>
-              <div class="doc-examples"></div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(204 No Content)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(403 Forbidden)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+              </div>
             </div>
             <div class="doc-row">
               <div class="doc-copy">
@@ -2121,11 +2137,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The name of the volume. Must not contain leading /</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -2141,11 +2157,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">volume_name</div>
+                      <div class="prop-title">subsystem</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The name of the volume. Must not contain leading /</p>
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -2184,7 +2200,20 @@
                   </div>
                 </section>
               </div>
-              <div class="doc-examples"></div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(201 Created)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(403 Forbidden)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+              </div>
             </div>
             <div class="doc-row">
               <div class="doc-copy">
@@ -2249,11 +2278,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The name of the volume. Must not contain leading /</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -2269,11 +2298,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">volume_name</div>
+                      <div class="prop-title">subsystem</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The name of the volume. Must not contain leading /</p>
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -2315,14 +2344,7 @@
                   <h5>Response Example
                     <span>(200 OK)</span>
                   </h5>
-                  <div class="hljs"><pre><code class="hljs json">[
-  {
-    <span class="hljs-attr">&quot;autosize_enabled&quot;</span>: <span class="hljs-string">&quot;boolean&quot;</span>,
-    <span class="hljs-attr">&quot;autosize_increment&quot;</span>: <span class="hljs-string">&quot;integer&quot;</span>,
-    <span class="hljs-attr">&quot;max_autosize&quot;</span>: <span class="hljs-string">&quot;integer&quot;</span>,
-    <span class="hljs-attr">&quot;name&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>
-  }
-]
+                  <div class="hljs"><pre><code class="lang-json"><span class="hljs-string">&quot;undefined&quot;</span>
 </code></pre> </div>
                 </section>
               </div>
@@ -2375,11 +2397,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The name of the volume. Must not contain leading /</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -2395,11 +2417,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">volume_name</div>
+                      <div class="prop-title">subsystem</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The name of the volume. Must not contain leading /</p>
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -2446,7 +2468,26 @@
                   </div>
                 </section>
               </div>
-              <div class="doc-examples"></div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(204 No Content)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(403 Forbidden)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(404 Not Found)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+              </div>
             </div>
             <div class="doc-row">
               <div class="doc-copy">
@@ -2538,11 +2579,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
+                      <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
+                      <p>The name of the volume. Must not contain leading /</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -2558,11 +2599,11 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">volume_name</div>
+                      <div class="prop-title">subsystem</div>
                       <span class="json-property-required"></span>
                     </div>
                     <div class="prop-value">
-                      <p>The name of the volume. Must not contain leading /</p>
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
                     </div>
                   </div>
                   <div class="prop-row prop-inner">
@@ -2604,7 +2645,7 @@
                   <h5>Response Example
                     <span>(200 OK)</span>
                   </h5>
-                  <div class="hljs"><pre><code class="hljs json">{
+                  <div class="hljs"><pre><code class="lang-json">{
   <span class="hljs-attr">&quot;autosize_enabled&quot;</span>: <span class="hljs-string">&quot;boolean&quot;</span>,
   <span class="hljs-attr">&quot;autosize_increment&quot;</span>: <span class="hljs-string">&quot;integer&quot;</span>,
   <span class="hljs-attr">&quot;max_autosize&quot;</span>: <span class="hljs-string">&quot;integer&quot;</span>,
@@ -2680,26 +2721,6 @@
                   </div>
                   <div class="prop-row prop-group">
                     <div class="prop-name">
-                      <div class="prop-title">subsystem</div>
-                      <span class="json-property-required"></span>
-                    </div>
-                    <div class="prop-value">
-                      <p>The subsystem to run the command on. Must be one of: netapp, dummy, ceph</p>
-                    </div>
-                  </div>
-                  <div class="prop-row prop-inner">
-                    <div class="prop-name param-label">type</div>
-                    <div class="prop-value">
-                      <span class="json-property-type">string</span>
-                      <span class="json-property-range" title="Value limits"></span>
-                    </div>
-                  </div>
-                  <div class="prop-row prop-inner">
-                    <div class="prop-name param-label">in</div>
-                    <div class="prop-value">path</div>
-                  </div>
-                  <div class="prop-row prop-group">
-                    <div class="prop-name">
                       <div class="prop-title">volume_name</div>
                       <span class="json-property-required"></span>
                     </div>
@@ -2718,12 +2739,32 @@
                     <div class="prop-name param-label">in</div>
                     <div class="prop-value">path</div>
                   </div>
+                  <div class="prop-row prop-group">
+                    <div class="prop-name">
+                      <div class="prop-title">subsystem</div>
+                      <span class="json-property-required"></span>
+                    </div>
+                    <div class="prop-value">
+                      <p>The subsystem to run the command on. Must be one of: dummy, ceph, netapp</p>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-inner">
+                    <div class="prop-name param-label">type</div>
+                    <div class="prop-value">
+                      <span class="json-property-type">string</span>
+                      <span class="json-property-range" title="Value limits"></span>
+                    </div>
+                  </div>
+                  <div class="prop-row prop-inner">
+                    <div class="prop-name param-label">in</div>
+                    <div class="prop-value">path</div>
+                  </div>
                 </section>
               </div>
               <div class="doc-examples">
                 <section>
                   <h5>Request Example</h5>
-                  <div class="hljs"><pre><code class="hljs json">{
+                  <div class="hljs"><pre><code class="lang-json">{
   <span class="hljs-attr">&quot;purge_old_if_needed&quot;</span>: <span class="hljs-string">&quot;boolean&quot;</span>
 }
 </code></pre> </div>
@@ -2751,7 +2792,20 @@
                   </div>
                 </section>
               </div>
-              <div class="doc-examples"></div>
+              <div class="doc-examples">
+                <section>
+                  <h5>Response Example
+                    <span>(201 Created)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+                <section>
+                  <h5>Response Example
+                    <span>(409 Conflict)</span>
+                  </h5>
+                  <div class="hljs"></div>
+                </section>
+              </div>
             </div>
           </div>
           <!-- <h1>Schema definitions</h1> -->
@@ -2764,10 +2818,14 @@
                 <span class="json-property-range" title="Value limits"></span>
               </span>
             </h2>
-            <div class="doc-row">
-              <div class="doc-copy"> </div>
-              <div class="doc-examples"></div>
-            </div>
+            <!-- <div class="doc-row">
+                  <div class="doc-copy">
+              
+                    
+                  </div>
+              
+                  <div class="doc-examples"></div>
+                </div> -->
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-properties">
@@ -2796,10 +2854,14 @@
                 <span class="json-property-range" title="Value limits"></span>
               </span>
             </h2>
-            <div class="doc-row">
-              <div class="doc-copy"> </div>
-              <div class="doc-examples"></div>
-            </div>
+            <!-- <div class="doc-row">
+                  <div class="doc-copy">
+              
+                    
+                  </div>
+              
+                  <div class="doc-examples"></div>
+                </div> -->
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-properties">
@@ -2824,10 +2886,14 @@
                 <span class="json-property-range" title="Value limits"></span>
               </span>
             </h2>
-            <div class="doc-row">
-              <div class="doc-copy"> </div>
-              <div class="doc-examples"></div>
-            </div>
+            <!-- <div class="doc-row">
+                  <div class="doc-copy">
+              
+                    
+                  </div>
+              
+                  <div class="doc-examples"></div>
+                </div> -->
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-allOf">
@@ -2872,10 +2938,14 @@
                 <span class="json-property-range" title="Value limits"></span>
               </span>
             </h2>
-            <div class="doc-row">
-              <div class="doc-copy"> </div>
-              <div class="doc-examples"></div>
-            </div>
+            <!-- <div class="doc-row">
+                  <div class="doc-copy">
+              
+                    
+                  </div>
+              
+                  <div class="doc-examples"></div>
+                </div> -->
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-properties">
@@ -2898,10 +2968,14 @@
                 <span class="json-property-range" title="Value limits"></span>
               </span>
             </h2>
-            <div class="doc-row">
-              <div class="doc-copy"> </div>
-              <div class="doc-examples"></div>
-            </div>
+            <!-- <div class="doc-row">
+                  <div class="doc-copy">
+              
+                    
+                  </div>
+              
+                  <div class="doc-examples"></div>
+                </div> -->
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-properties">
@@ -2939,10 +3013,14 @@
                 <span class="json-property-range" title="Value limits"></span>
               </span>
             </h2>
-            <div class="doc-row">
-              <div class="doc-copy"> </div>
-              <div class="doc-examples"></div>
-            </div>
+            <!-- <div class="doc-row">
+                  <div class="doc-copy">
+              
+                    
+                  </div>
+              
+                  <div class="doc-examples"></div>
+                </div> -->
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-properties">
@@ -2968,10 +3046,14 @@
                 <span class="json-property-range" title="Value limits"></span>
               </span>
             </h2>
-            <div class="doc-row">
-              <div class="doc-copy"> </div>
-              <div class="doc-examples"></div>
-            </div>
+            <!-- <div class="doc-row">
+                  <div class="doc-copy">
+              
+                    
+                  </div>
+              
+                  <div class="doc-examples"></div>
+                </div> -->
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-allOf">
@@ -3055,10 +3137,14 @@
                 <span class="json-property-range" title="Value limits"></span>
               </span>
             </h2>
-            <div class="doc-row">
-              <div class="doc-copy"> </div>
-              <div class="doc-examples"></div>
-            </div>
+            <!-- <div class="doc-row">
+                  <div class="doc-copy">
+              
+                    
+                  </div>
+              
+                  <div class="doc-examples"></div>
+                </div> -->
             <div class="doc-row">
               <div class="doc-copy">
                 <section class="json-schema-properties">
