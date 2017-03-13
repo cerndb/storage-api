@@ -624,17 +624,32 @@ class NetappStorage(StorageBackend):
         """
         Convert a "volume_name" parameter to a node name and junction
         path.
+
+        Returns:
+          a tuple of `(node, junction path)`. If the string does not
+          adhere to the format, it is assumed to contain only the
+          junction path and the returned node is None.
         """
-        pass
+        try:
+            node, junction_path = volume_name.split(":")
+            return node, junction_path
+        except ValueError:
+            log.warning("{} does not follow naming"
+                        " convention node:junction_path!"
+                        .format(volume_name))
+            return None, volume_name
 
     @property
     def volumes(self):
-        return [self.format_volume(v) for v in self.server.volumes]
+        return [self.format_volume(v) for v in self.server.volumes
+                if not re.match("^aggr0.*", v.containing_aggregate_name)]
 
     @normalised_with('volume', allow_unknown=True)
     def get_volume(self, volume_name):
+        _node, junction_path = self.node_junction_path(volume_name)
         try:
-            volume = next(self.server.volumes.filter(name=volume_name))
+            volume = next(self.server.volumes.filter(
+                junction_path=junction_path))
         except StopIteration:
             with annotate_exception(KeyError, vol_404(volume_name)):
                 raise KeyError
@@ -711,18 +726,20 @@ class NetappStorage(StorageBackend):
         Therefore, an *actual* name must be provided as a data field
         ('name')
         """
+        # Fixme: optionally include autosize_enabled etc
 
-        junction_path = volume_name
+        _node, junction_path = self.node_junction_path(volume_name)
 
-        if 'name' not in fields:
+        if not fields.get('name', None):
             raise ValueError("Must provide explicit name for NetApp!")
-        if 'size_total' not in fields:
+        if not fields.get('size_total', None):
             raise ValueError("Must provide size_total for NetApp!")
 
         aggregate_name = None
 
-        if 'aggregate_name' in fields:
+        if fields.get('aggregate_name', None):
             aggregate_name = fields['aggregate_name']
+            log.debug("Using provided aggregate {}".format(aggregate_name))
         else:
             log.info("Aggregate not provided,"
                      " using the one with the most free space...")

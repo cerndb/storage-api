@@ -748,7 +748,6 @@ def test_delete_export_rule(client, namespace, auth, vol_exists, policy_status,
     rules = ["127.0.0.1", "10.10.10.1/24"]
     delete_codes = []
 
-
     with user_set(client):
         if policy_exists:
             _delete(client, policy)

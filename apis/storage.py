@@ -127,8 +127,13 @@ snapshot_model = api.model('Snapshot', {
 
 optional_from_snapshot = api.inherit(
     'OptionalFromSnapshot',
-    snapshot_model,
+    volume_writable_model,
     {
+        'name': fields.String(min_length=1,
+                              description=VOLUME_NAME_DESCRIPTION,
+                              example="my_volume"),
+        'aggregate_name': fields.String(min_length=1),
+        'size_total': fields.Integer(),
         'from_snapshot':
         fields.String(
             required=False,
