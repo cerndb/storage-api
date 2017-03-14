@@ -734,7 +734,8 @@
 <span class="sd">    A Back-end for a NetApp storage system.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">netapp_server</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">netapp_server</span><span class="p">,</span> <span class="n">vserver</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vserver</span> <span class="o">=</span> <span class="n">vserver</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">server</span> <span class="o">=</span> <span class="n">netapp_server</span>
 
 <div class="viewcode-block" id="NetappStorage.format_volume"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.format_volume">[docs]</a>    <span class="k">def</span> <span class="nf">format_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
@@ -900,10 +901,11 @@
 
         <span class="k">assert</span> <span class="n">aggregate_name</span><span class="p">,</span> <span class="s2">&quot;Could not find a suitable aggregate!&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">create_volume</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
-                                  <span class="n">size_kb</span><span class="o">=</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;size_total&#39;</span><span class="p">],</span>
-                                  <span class="n">junction_path</span><span class="o">=</span><span class="n">junction_path</span><span class="p">,</span>
-                                  <span class="n">aggregate_name</span><span class="o">=</span><span class="n">aggregate_name</span><span class="p">)</span></div>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">with_vserver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vserver</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">create_volume</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                      <span class="n">size_bytes</span><span class="o">=</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;size_total&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span>
+                                      <span class="n">junction_path</span><span class="o">=</span><span class="n">junction_path</span><span class="p">,</span>
+                                      <span class="n">aggregate_name</span><span class="o">=</span><span class="n">aggregate_name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NetappStorage.create_lock"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.create_lock">[docs]</a>    <span class="k">def</span> <span class="nf">create_lock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">host_owner</span><span class="p">):</span>
         <span class="c1"># There doesn&#39;t seem to be any way of implementing this. :(</span>
