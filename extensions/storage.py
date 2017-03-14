@@ -483,11 +483,15 @@ class DummyStorage(StorageBackend):
         if volume_name in self.vols:
             raise KeyError("Volume {} already exists!".format(volume_name))
 
+        size_total = kwargs.get('size_total', None)
+        filer_address = kwargs.get('filer_address', None)
+
         data = {'name': str(volume_name),
                 'size_used': 0,
-                'size_total': kwargs.get('size_total', 0),
-                'filer_address': kwargs.get('filer_address', "dummy-filer")}
-        # **kwargs missing!
+                'size_total': 0 if size_total is None else size_total,
+                'filer_address':
+                "dummy-filer" if filer_address is None else filer_address}
+
         self.vols[volume_name] = data
         self.locks_store.pop(volume_name, None)
         self.rules_store[volume_name] = {}
