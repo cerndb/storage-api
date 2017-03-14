@@ -45,10 +45,12 @@ try:
     netapp_host = os.environ['ONTAP_HOST']
     netapp_username = os.environ['ONTAP_USERNAME']
     netapp_password = os.environ['ONTAP_PASSWORD']
+    netapp_vserver = os.environ['ONTAP_VSERVER']
     server = netapp.api.Server(hostname=netapp_host,
                                username=netapp_username,
                                password=netapp_password)
-    extensions.NetappStorage(netapp_server=server).init_app(app)
+    extensions.NetappStorage(netapp_server=server,
+                             vserver=netapp_vserver).init_app(app)
     log.info("Set up NetApp backend")
 except KeyError:
     log.error("NetApp environment variables not configured, back-end inactive")

@@ -600,7 +600,8 @@ class NetappStorage(StorageBackend):
     A Back-end for a NetApp storage system.
     """
 
-    def __init__(self, netapp_server):
+    def __init__(self, netapp_server, vserver):
+        self.vserver = vserver
         self.server = netapp_server
 
     def format_volume(self, v):
@@ -766,10 +767,11 @@ class NetappStorage(StorageBackend):
 
         assert aggregate_name, "Could not find a suitable aggregate!"
 
-        self.server.create_volume(name=fields['name'],
-                                  size_kb=fields['size_total'],
-                                  junction_path=junction_path,
-                                  aggregate_name=aggregate_name)
+        with self.server.with_vserver(self.vserver):
+            self.server.create_volume(name=fields['name'],
+                                      size_bytes=fields['size_total']*1000,
+                                      junction_path=junction_path,
+                                      aggregate_name=aggregate_name)
 
     def create_lock(self, volume_name, host_owner):
         # There doesn't seem to be any way of implementing this. :(
