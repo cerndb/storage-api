@@ -373,6 +373,16 @@ node name and junction path, separated by colon.</p>
 <code class="descname">node_junction_path</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/extensions/storage.html#NetappStorage.node_junction_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#extensions.storage.NetappStorage.node_junction_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a &#8220;volume_name&#8221; parameter to a node name and junction
 path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a tuple of <cite>(node, junction path)</cite>. If the string does not
+adhere to the format, it is assumed to contain only the
+junction path and the returned node is None.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">

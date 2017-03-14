@@ -88,7 +88,10 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">CERN Unified Storage API README</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#aim-of-the-project">Aim of the project</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#components-and-design">Components and Design</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#development">Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#development">Development</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configuration">Configuration</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#testing-and-continuous-integration">Testing and Continuous Integration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#deployment">Deployment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
@@ -195,6 +198,14 @@ $ flask run
 <p>Accessing <code class="docutils literal"><span class="pre">/login</span></code> in debug mode <em>will immediately authorise you</em>.</p>
 <p>There is also a shorthand Makefile option available as <code class="docutils literal"><span class="pre">make</span> <span class="pre">devserver</span></code>
 with corresponding <code class="docutils literal"><span class="pre">make</span> <span class="pre">stop</span></code>.</p>
+<div class="section" id="configuration">
+<span id="configuration"></span><h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h3>
+<p>The NetApp back-end uses the environment variables <code class="docutils literal"><span class="pre">ONTAP_HOST</span></code>,
+<code class="docutils literal"><span class="pre">ONTAP_USERNAME</span></code>, <code class="docutils literal"><span class="pre">ONTAP_PASSWORD</span></code>, and <code class="docutils literal"><span class="pre">ONTAP_VSERVER</span></code> to set up the
+hostname, user name, password and vserver/vfiler to communicate with. If
+these variables are not found, the NetApp back-end will default to use
+the in-memory dummy back-end.</p>
+</div>
 </div>
 <div class="section" id="testing-and-continuous-integration">
 <span id="testing-and-continuous-integration"></span><h2>Testing and Continuous Integration<a class="headerlink" href="#testing-and-continuous-integration" title="Permalink to this headline">¶</a></h2>

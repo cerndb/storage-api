@@ -617,11 +617,15 @@
         <span class="k">if</span> <span class="n">volume_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">vols</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Volume </span><span class="si">{}</span><span class="s2"> already exists!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">volume_name</span><span class="p">))</span>
 
+        <span class="n">size_total</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;size_total&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">filer_address</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filer_address&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
         <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">volume_name</span><span class="p">),</span>
                 <span class="s1">&#39;size_used&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                <span class="s1">&#39;size_total&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;size_total&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-                <span class="s1">&#39;filer_address&#39;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filer_address&#39;</span><span class="p">,</span> <span class="s2">&quot;dummy-filer&quot;</span><span class="p">)}</span>
-        <span class="c1"># **kwargs missing!</span>
+                <span class="s1">&#39;size_total&#39;</span><span class="p">:</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">size_total</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">size_total</span><span class="p">,</span>
+                <span class="s1">&#39;filer_address&#39;</span><span class="p">:</span>
+                <span class="s2">&quot;dummy-filer&quot;</span> <span class="k">if</span> <span class="n">filer_address</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">filer_address</span><span class="p">}</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">vols</span><span class="p">[</span><span class="n">volume_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">locks_store</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
@@ -758,17 +762,32 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert a &quot;volume_name&quot; parameter to a node name and junction</span>
 <span class="sd">        path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">          a tuple of `(node, junction path)`. If the string does not</span>
+<span class="sd">          adhere to the format, it is assumed to contain only the</span>
+<span class="sd">          junction path and the returned node is None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">node</span><span class="p">,</span> <span class="n">junction_path</span> <span class="o">=</span> <span class="n">volume_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">node</span><span class="p">,</span> <span class="n">junction_path</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> does not follow naming&quot;</span>
+                        <span class="s2">&quot; convention node:junction_path!&quot;</span>
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">volume_name</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">volume_name</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">volumes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">format_volume</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">volumes</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">format_volume</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">volumes</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^aggr0.*&quot;</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">containing_aggregate_name</span><span class="p">)]</span>
 
     <span class="nd">@normalised_with</span><span class="p">(</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="n">allow_unknown</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <div class="viewcode-block" id="NetappStorage.get_volume"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.get_volume">[docs]</a>    <span class="k">def</span> <span class="nf">get_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
+        <span class="n">_node</span><span class="p">,</span> <span class="n">junction_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_junction_path</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">volume</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">volume_name</span><span class="p">))</span>
+            <span class="n">volume</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                <span class="n">junction_path</span><span class="o">=</span><span class="n">junction_path</span><span class="p">))</span>
         <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">annotate_exception</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="n">vol_404</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)):</span>
                 <span class="k">raise</span> <span class="ne">KeyError</span>
@@ -845,18 +864,20 @@
 <span class="sd">        Therefore, an *actual* name must be provided as a data field</span>
 <span class="sd">        (&#39;name&#39;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Fixme: optionally include autosize_enabled etc</span>
 
-        <span class="n">junction_path</span> <span class="o">=</span> <span class="n">volume_name</span>
+        <span class="n">_node</span><span class="p">,</span> <span class="n">junction_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_junction_path</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide explicit name for NetApp!&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="s1">&#39;size_total&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;size_total&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide size_total for NetApp!&quot;</span><span class="p">)</span>
 
         <span class="n">aggregate_name</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="k">if</span> <span class="s1">&#39;aggregate_name&#39;</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;aggregate_name&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
             <span class="n">aggregate_name</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;aggregate_name&#39;</span><span class="p">]</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Using provided aggregate </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">aggregate_name</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Aggregate not provided,&quot;</span>
                      <span class="s2">&quot; using the one with the most free space...&quot;</span><span class="p">)</span>

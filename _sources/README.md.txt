@@ -61,6 +61,14 @@ Accessing `/login` in debug mode *will immediately authorise you*.
 There is also a shorthand Makefile option available as `make devserver`
 with corresponding `make stop`.
 
+### Configuration
+
+The NetApp back-end uses the environment variables `ONTAP_HOST`,
+`ONTAP_USERNAME`, `ONTAP_PASSWORD`, and `ONTAP_VSERVER` to set up the
+hostname, user name, password and vserver/vfiler to communicate with. If
+these variables are not found, the NetApp back-end will default to use
+the in-memory dummy back-end.
+
 ## Testing and Continuous Integration
 
 Continuous integration is provided by Travis, and tests are run using

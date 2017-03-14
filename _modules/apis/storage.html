@@ -261,8 +261,13 @@
 
 <span class="n">optional_from_snapshot</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">inherit</span><span class="p">(</span>
     <span class="s1">&#39;OptionalFromSnapshot&#39;</span><span class="p">,</span>
-    <span class="n">snapshot_model</span><span class="p">,</span>
+    <span class="n">volume_writable_model</span><span class="p">,</span>
     <span class="p">{</span>
+        <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="n">min_length</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                              <span class="n">description</span><span class="o">=</span><span class="n">VOLUME_NAME_DESCRIPTION</span><span class="p">,</span>
+                              <span class="n">example</span><span class="o">=</span><span class="s2">&quot;my_volume&quot;</span><span class="p">),</span>
+        <span class="s1">&#39;aggregate_name&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="n">min_length</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="s1">&#39;size_total&#39;</span><span class="p">:</span> <span class="n">fields</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span>
         <span class="s1">&#39;from_snapshot&#39;</span><span class="p">:</span>
         <span class="n">fields</span><span class="o">.</span><span class="n">String</span><span class="p">(</span>
             <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
