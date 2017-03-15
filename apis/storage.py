@@ -212,10 +212,11 @@ class Volume(Resource):
                     restore_snapshot_name=data['from_snapshot'])
         else:
             with valueerror_is_400(), keyerror_is_400():
-                backend(subsystem).create_volume(volume_name,
-                                                 **dict_without(dict(data),
-                                                                'from_snapshot',
-                                                                'from_volume'))
+                return backend(subsystem).create_volume(
+                    volume_name,
+                    **dict_without(dict(data),
+                                   'from_snapshot',
+                                   'from_volume'))
 
     @api.doc(description=("Restrict the volume named *volume_name*"
                           " but do not actually delete it"))

@@ -11,7 +11,8 @@ import netapp.api
 def is_ontap_env_setup():
     return ('ONTAP_HOST' in os.environ
             and 'ONTAP_USERNAME' in os.environ
-            and 'ONTAP_PASSWORD' in os.environ)
+            and 'ONTAP_PASSWORD' in os.environ
+            and 'ONTAP_VSERVER' in os.environ)
 
 
 def on_all_backends(func):
@@ -28,9 +29,11 @@ def on_all_backends(func):
         server_host = os.environ['ONTAP_HOST']
         server_username = os.environ['ONTAP_USERNAME']
         server_password = os.environ['ONTAP_PASSWORD']
+        vserver = os.environ['ONTAP_VSERVER']
         server = netapp.api.Server(hostname=server_host,
                                    username=server_username,
-                                   password=server_password)
+                                   password=server_password,
+                                   vserver=vserver)
         backends.append(NetappStorage(netapp_server=server))
 
     @functools.wraps(func)
@@ -42,7 +45,8 @@ def on_all_backends(func):
 
 @on_all_backends
 def test_get_no_volumes(storage):
-    assert storage.volumes == []
+    if not isinstance(storage, NetappStorage):
+        assert storage.volumes == []
 
 
 @on_all_backends

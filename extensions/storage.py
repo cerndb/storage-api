@@ -646,8 +646,14 @@ class NetappStorage(StorageBackend):
 
     @property
     def volumes(self):
+        """
+        Explicitly ignores volumes belonging to aggr0 and volumes that
+        are restricted.
+        """
+
         return [self.format_volume(v) for v in self.server.volumes
-                if not re.match("^aggr0.*", v.containing_aggregate_name)]
+                if not re.match("^aggr0.*", v.containing_aggregate_name)
+                and not v.state == 'restricted']
 
     @normalised_with('volume', allow_unknown=True)
     def get_volume(self, volume_name):
@@ -723,6 +729,7 @@ class NetappStorage(StorageBackend):
                 self.server.remove_export_rule(policy_name, index)
                 break
 
+    @normalised_with('volume', allow_unknown=True)
     def create_volume(self, volume_name, **fields):
         """
         Important note: the volume "name" for NetApp is in actuality its
@@ -730,6 +737,8 @@ class NetappStorage(StorageBackend):
 
         Therefore, an *actual* name must be provided as a data field
         ('name')
+
+        Returns the newly created volume.
         """
         # Fixme: optionally include autosize_enabled etc
 
@@ -772,6 +781,8 @@ class NetappStorage(StorageBackend):
                                       size_bytes=fields['size_total']*1000,
                                       junction_path=junction_path,
                                       aggregate_name=aggregate_name)
+            for volume in self.server.volumes.filter(name=fields['name']):
+                return self.format_volume(volume)
 
     def create_lock(self, volume_name, host_owner):
         # There doesn't seem to be any way of implementing this. :(
@@ -793,7 +804,13 @@ class NetappStorage(StorageBackend):
                                  autosize_enabled=autosize_enabled)
 
     def restrict_volume(self, volume_name):
-        self.server.restrict_volume(volume_name)
+        _node, junction_path = self.node_junction_path(volume_name)
+        name = self.name_from_path(junction_path)
+        with self.server.with_vserver(self.vserver):
+            self.server.restrict_volume(name)
+
+            for volume in self.server.volumes.filter(name=name):
+                return self.format_volume(volume)
 
 # I don't know if this does anything, but it may be necessary for, uh,
 # some reason?
