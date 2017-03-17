@@ -27,6 +27,7 @@ import re
 from ordered_set import OrderedSet
 import cerberus
 import flask
+import netapp.api
 
 log = logging.getLogger(__name__)
 SCHEMAS = [('volume',
@@ -199,6 +200,9 @@ class StorageBackend(metaclass=ABCMeta):
         Raises:
             ValueError: if the data is malformed
             KeyError: if the volume already exists
+
+        Returns:
+            The created volume.
 
         Back-ends are allowed to add implementation-specific elements.
         """
@@ -496,6 +500,7 @@ class DummyStorage(StorageBackend):
         self.locks_store.pop(volume_name, None)
         self.rules_store[volume_name] = {}
         self.snapshots_store[volume_name] = {}
+        return self.vols[volume_name]
 
     def locks(self, volume_name):
         self.raise_if_volume_absent(volume_name)
@@ -737,8 +742,6 @@ class NetappStorage(StorageBackend):
 
         Therefore, an *actual* name must be provided as a data field
         ('name')
-
-        Returns the newly created volume.
         """
         # Fixme: optionally include autosize_enabled etc
 
@@ -777,12 +780,17 @@ class NetappStorage(StorageBackend):
         assert aggregate_name, "Could not find a suitable aggregate!"
 
         with self.server.with_vserver(self.vserver):
-            self.server.create_volume(name=fields['name'],
-                                      size_bytes=fields['size_total']*1000,
-                                      junction_path=junction_path,
-                                      aggregate_name=aggregate_name)
-            for volume in self.server.volumes.filter(name=fields['name']):
-                return self.format_volume(volume)
+            try:
+                self.server.create_volume(name=fields['name'],
+                                          size_bytes=fields['size_total'],
+                                          junction_path=junction_path,
+                                          aggregate_name=aggregate_name)
+                return self.format_volume(self.server.volumes.single(volume_name=fields['name']))
+            except netapp.api.APIError as e:
+                if e.errno == 17:
+                    raise KeyError("Volume {} already exists!".format(fields['name']))
+                else:
+                    raise e
 
     def create_lock(self, volume_name, host_owner):
         # There doesn't seem to be any way of implementing this. :(

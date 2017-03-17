@@ -3,16 +3,50 @@ from extensions.storage import DummyStorage, NetappStorage, StorageBackend # noq
 import uuid
 import functools
 import os
+from unittest import mock
+from contextlib import contextmanager
 
 import pytest
 import netapp.api
+import betamax
 
 
-def is_ontap_env_setup():
-    return ('ONTAP_HOST' in os.environ
-            and 'ONTAP_USERNAME' in os.environ
-            and 'ONTAP_PASSWORD' in os.environ
-            and 'ONTAP_VSERVER' in os.environ)
+DEFAULT_VOLUME_SIZE = 30000000
+
+
+def id_from_vol(v, backend):
+    if isinstance(backend, NetappStorage):
+        return "{}:{}".format(v['filer_address'], v['junction_path'])
+    else:
+        return v['name']
+
+
+def new_volume(backend):
+    name = 'nothing:/volumename'
+    new_vol = backend.create_volume(name,
+                                    name="volume_name",
+                                    size_total=DEFAULT_VOLUME_SIZE)
+    return new_vol
+
+
+def delete_volume(backend, volume_name):
+    if not isinstance(backend, NetappStorage):
+        return
+
+    server = backend.server
+    with server.with_vserver(backend.vserver):
+        server.unmount_volume(volume_name)
+        server.take_volume_offline(volume_name)
+        server.destroy_volume(volume_name)
+
+
+@contextmanager
+def ephermeral_volume(backend):
+    vol = new_volume(backend)
+    try:
+        yield vol
+    finally:
+        delete_volume(backend, vol['name'])
 
 
 def on_all_backends(func):
@@ -23,71 +57,77 @@ def on_all_backends(func):
     Will parametrise the decorated test to run once for every type of
     storage provided here.
     """
-    backends = [DummyStorage()]  # type: List[StorageBackend]
 
-    if is_ontap_env_setup():
-        server_host = os.environ['ONTAP_HOST']
-        server_username = os.environ['ONTAP_USERNAME']
-        server_password = os.environ['ONTAP_PASSWORD']
-        vserver = os.environ['ONTAP_VSERVER']
-        server = netapp.api.Server(hostname=server_host,
-                                   username=server_username,
-                                   password=server_password,
-                                   vserver=vserver)
-        backends.append(NetappStorage(netapp_server=server))
+    vserver = os.environ.get('ONTAP_VSERVER', 'vs1rac11')
+    ontap_host = os.environ.get('ONTAP_HOST', 'dbnasa-cluster-mgmt')
+    ontap_username = os.environ.get('ONTAP_USERNAME', "user-placeholder")
+    ontap_password = os.environ.get('ONTAP_PASSWORD', "password-placeholder")
+
+    netapp_server = netapp.api.Server(hostname=ontap_host,
+                                      username=ontap_username,
+                                      password=ontap_password)
+    backend = NetappStorage(netapp_server=netapp_server,
+                            vserver=vserver)
+    recorder = betamax.Betamax(backend.server.session)
 
     @functools.wraps(func)
-    @pytest.mark.parametrize("storage", backends)
+    @pytest.mark.parametrize("storage,recorder", [(DummyStorage(), mock.MagicMock()),
+                                                  (backend, recorder)])
     def backend_wrapper(*args, **kwargs):
         func(*args, **kwargs)
     return backend_wrapper
 
 
 @on_all_backends
-def test_get_no_volumes(storage):
+def test_get_no_volumes(storage, recorder):
     if not isinstance(storage, NetappStorage):
         assert storage.volumes == []
 
 
 @on_all_backends
-def test_get_nonexistent_volume(storage):
-    with pytest.raises(KeyError):
-        storage.get_volume('does-not-exist')
+def test_get_nonexistent_volume(storage, recorder):
+    with recorder.use_cassette('nonexistent_value'):
+        with pytest.raises(KeyError):
+            storage.get_volume('does-not-exist')
 
 
 @on_all_backends
-def test_create_get_volume(storage):
-    storage.create_volume('volumename',
-                          size_total=1024)
-    volume = storage.get_volume('volumename')
-    assert volume
-    assert volume['size_total'] == 1024
-    assert storage.volumes == [volume]
+def test_create_get_volume(storage, recorder):
+    with recorder.use_cassette('create_get_volume'):
+        new_vol = storage.create_volume('nothing:/volumename',
+                                        name="volume_name",
+                                        size_total=DEFAULT_VOLUME_SIZE)
+        volume = storage.get_volume('nothing:/volumename')
+        assert new_vol == volume
+        assert volume
+        assert volume['size_total'] >= DEFAULT_VOLUME_SIZE
+        assert volume['size_total'] <= DEFAULT_VOLUME_SIZE * 10
+        assert volume in storage.volumes
 
 
 @on_all_backends
-def test_create_already_existing_volume(storage):
-    storage.create_volume('volumename',
-                          size_total=1024)
-    with pytest.raises(KeyError):
-        storage.create_volume('volumename',
-                              size_total=1024)
+def test_create_already_existing_volume(storage, recorder):
+    with recorder.use_cassette('create_existing_volume'):
+        with ephermeral_volume(storage) as v:
+            id = id_from_vol(v, storage)
+            with pytest.raises(KeyError):
+                storage.create_volume(id,
+                                      name=v['name'],
+                                      size_total=DEFAULT_VOLUME_SIZE)
 
 
 @on_all_backends
-def test_restrict_volume(storage):
-    storage.create_volume('volumename',
-                          size_total=1024)
-    storage.restrict_volume('volumename')
-    storage.volumes == []
-    with pytest.raises(KeyError):
-        storage.get_volume('volumename')
+def test_restrict_volume(storage, recorder):
+    with recorder.use_cassette('restrict_volume'):
+        with ephermeral_volume(storage) as vol:
+            storage.restrict_volume(id_from_vol(vol, storage))
+            vol not in storage.volumes
 
 
 @on_all_backends
-def test_patch_volume(storage):
+def test_patch_volume(storage, recorder):
     storage.create_volume('volumename',
-                          size_total=1024)
+                          size_total=DEFAULT_VOLUME_SIZE)
     storage.patch_volume('volumename', size_total=2056)
 
     v = storage.get_volume('volumename')
@@ -96,13 +136,13 @@ def test_patch_volume(storage):
 
 
 @on_all_backends
-def test_get_no_locks(storage):
+def test_get_no_locks(storage, recorder):
     storage.create_volume('bork')
     assert storage.locks('bork') is None
 
 
 @on_all_backends
-def test_add_lock(storage):
+def test_add_lock(storage, recorder):
     storage.create_volume('volumename')
     storage.create_lock('volumename', 'db.cern.ch')
 
@@ -110,7 +150,7 @@ def test_add_lock(storage):
 
 
 @on_all_backends
-def test_remove_lock(storage):
+def test_remove_lock(storage, recorder):
     storage.create_volume('volumename')
     storage.create_lock('volumename', 'db.cern.ch')
     storage.remove_lock('volumename', 'db.cern.ch')
@@ -122,7 +162,7 @@ def test_remove_lock(storage):
 
 
 @on_all_backends
-def test_remove_lock_wrong_host(storage):
+def test_remove_lock_wrong_host(storage, recorder):
     storage.create_volume('volumename')
     storage.create_lock('volumename', 'db.cern.ch')
     storage.remove_lock('volumename', 'othermachine.cern.ch')
@@ -131,7 +171,7 @@ def test_remove_lock_wrong_host(storage):
 
 
 @on_all_backends
-def test_lock_locked(storage):
+def test_lock_locked(storage, recorder):
     storage.create_volume('volumename')
     storage.create_lock('volumename', 'db.cern.ch')
 
@@ -140,7 +180,7 @@ def test_lock_locked(storage):
 
 
 @on_all_backends
-def test_get_snapshots(storage):
+def test_get_snapshots(storage, recorder):
     volume_name = uuid.uuid1()
     storage.create_volume(volume_name=volume_name)
 
@@ -153,7 +193,7 @@ def test_get_snapshots(storage):
 
 
 @on_all_backends
-def test_add_policy(storage):
+def test_add_policy(storage, recorder):
     volume_name = uuid.uuid1()
     storage.create_volume(volume_name=volume_name)
     rules = ["host1.db.cern.ch", "*db.cern.ch", "*foo.cern.ch"]
@@ -168,7 +208,7 @@ def test_add_policy(storage):
 
 
 @on_all_backends
-def test_delete_policy(storage):
+def test_delete_policy(storage, recorder):
     volume_name = uuid.uuid1()
     storage.create_volume(volume_name=volume_name)
     rules = ["host1.db.cern.ch", "*db.cern.ch"]
@@ -182,7 +222,7 @@ def test_delete_policy(storage):
 
 
 @on_all_backends
-def test_delete_volume_policies_deleted_also(storage):
+def test_delete_volume_policies_deleted_also(storage, recorder):
     volume_name = uuid.uuid1()
     storage.create_volume(volume_name=volume_name)
     rules = ["host1.db.cern.ch", "*db.cern.ch"]
@@ -196,14 +236,14 @@ def test_delete_volume_policies_deleted_also(storage):
 
 
 @on_all_backends
-def test_add_policy_no_volume_raises_key_error(storage):
+def test_add_policy_no_volume_raises_key_error(storage, recorder):
     volume_name = uuid.uuid1()
     with pytest.raises(KeyError):
         storage.create_policy(volume_name, "a policy", rules=[])
 
 
 @on_all_backends
-def test_remove_policy_no_policy_raises_key_error(storage):
+def test_remove_policy_no_policy_raises_key_error(storage, recorder):
     volume_name = uuid.uuid1()
     storage.create_volume(volume_name)
     with pytest.raises(KeyError):
@@ -211,7 +251,7 @@ def test_remove_policy_no_policy_raises_key_error(storage):
 
 
 @on_all_backends
-def test_clone_volume(storage):
+def test_clone_volume(storage, recorder):
     volume_name = uuid.uuid1()
     storage.create_volume(volume_name=volume_name)
 
@@ -237,7 +277,7 @@ def test_clone_volume(storage):
 
 
 @on_all_backends
-def test_delete_snapshot(storage):
+def test_delete_snapshot(storage, recorder):
     volume_name = str(uuid.uuid1())
     storage.create_volume(volume_name=volume_name)
 
@@ -250,7 +290,7 @@ def test_delete_snapshot(storage):
 
 
 @on_all_backends
-def test_rollback_volume(storage):
+def test_rollback_volume(storage, recorder):
     volume_name = str(uuid.uuid1())
     storage.create_volume(volume_name=volume_name)
 
@@ -263,7 +303,7 @@ def test_rollback_volume(storage):
 
 
 @on_all_backends
-def test_ensure_policy_rule_present(storage):
+def test_ensure_policy_rule_present(storage, recorder):
     volume_name = uuid.uuid1()
     rule = "127.0.0.1/24"
     storage.create_volume(volume_name=volume_name)
@@ -291,7 +331,7 @@ def test_ensure_policy_rule_present(storage):
 
 
 @on_all_backends
-def test_ensure_policy_rule_absent(storage):
+def test_ensure_policy_rule_absent(storage, recorder):
     volume_name = str(uuid.uuid1())
     rule = "127.0.0.1/24"
     storage.create_volume(volume_name=volume_name)
@@ -308,5 +348,5 @@ def test_ensure_policy_rule_absent(storage):
 
 
 @on_all_backends
-def test_repr_doesnt_crash(storage):
+def test_repr_doesnt_crash(storage, recorder):
     assert repr(storage)
