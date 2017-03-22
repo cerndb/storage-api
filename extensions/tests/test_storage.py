@@ -22,9 +22,10 @@ def id_from_vol(v, backend):
 
 
 def new_volume(backend):
-    name = 'nothing:/volumename'
+    run_id = 42
+    name = 'nothing:/volumename_{}'.format(run_id)
     new_vol = backend.create_volume(name,
-                                    name="volume_name",
+                                    name="volume_name_{}".format(run_id),
                                     size_total=DEFAULT_VOLUME_SIZE)
     return new_vol
 
@@ -35,9 +36,12 @@ def delete_volume(backend, volume_name):
 
     server = backend.server
     with server.with_vserver(backend.vserver):
-        server.unmount_volume(volume_name)
-        server.take_volume_offline(volume_name)
-        server.destroy_volume(volume_name)
+        try:
+            server.unmount_volume(volume_name)
+            server.take_volume_offline(volume_name)
+            server.destroy_volume(volume_name)
+        except netapp.api.APIError:
+            pass
 
 
 @contextmanager
@@ -126,23 +130,32 @@ def test_restrict_volume(storage, recorder):
 
 @on_all_backends
 def test_patch_volume(storage, recorder):
-    storage.create_volume('volumename',
-                          size_total=DEFAULT_VOLUME_SIZE)
-    storage.patch_volume('volumename', size_total=2056)
+    with recorder.use_cassette('patch_volume',
+                               match_requests_on=['method', 'uri']):
+        with ephermeral_volume(storage) as vol:
+            storage.patch_volume(id_from_vol(vol, storage),
+                                 autosize_enabled=True,
+                                 max_autosize=2*DEFAULT_VOLUME_SIZE)
 
-    v = storage.get_volume('volumename')
-
-    assert v['size_total'] == 2056
+            v = storage.get_volume(id_from_vol(vol, storage))
+            assert v['autosize_enabled'] is True
+            assert v['max_autosize'] >= 2*DEFAULT_VOLUME_SIZE
+            assert v['max_autosize'] <= 3*DEFAULT_VOLUME_SIZE
 
 
 @on_all_backends
 def test_get_no_locks(storage, recorder):
-    storage.create_volume('bork')
-    assert storage.locks('bork') is None
+    with recorder.use_cassette('get_no_locks'):
+        with ephermeral_volume(storage) as vol:
+            assert storage.locks(id_from_vol(vol, storage)) is None
 
 
 @on_all_backends
 def test_add_lock(storage, recorder):
+    if isinstance(storage, NetappStorage):
+        # NetApp back-end cannot add locks
+        return
+
     storage.create_volume('volumename')
     storage.create_lock('volumename', 'db.cern.ch')
 
@@ -151,6 +164,10 @@ def test_add_lock(storage, recorder):
 
 @on_all_backends
 def test_remove_lock(storage, recorder):
+    if isinstance(storage, NetappStorage):
+        # NetApp cannot add locks
+        return
+
     storage.create_volume('volumename')
     storage.create_lock('volumename', 'db.cern.ch')
     storage.remove_lock('volumename', 'db.cern.ch')
@@ -163,6 +180,10 @@ def test_remove_lock(storage, recorder):
 
 @on_all_backends
 def test_remove_lock_wrong_host(storage, recorder):
+    if isinstance(storage, NetappStorage):
+        # NetApp cannot add locks
+        return
+
     storage.create_volume('volumename')
     storage.create_lock('volumename', 'db.cern.ch')
     storage.remove_lock('volumename', 'othermachine.cern.ch')
@@ -172,6 +193,10 @@ def test_remove_lock_wrong_host(storage, recorder):
 
 @on_all_backends
 def test_lock_locked(storage, recorder):
+    if isinstance(storage, NetappStorage):
+        # NetApp cannot add locks
+        return
+
     storage.create_volume('volumename')
     storage.create_lock('volumename', 'db.cern.ch')
 
@@ -181,15 +206,15 @@ def test_lock_locked(storage, recorder):
 
 @on_all_backends
 def test_get_snapshots(storage, recorder):
-    volume_name = uuid.uuid1()
-    storage.create_volume(volume_name=volume_name)
-
-    storage.create_snapshot(volume_name, snapshot_name="snapshot-new")
-
-    snapshots = storage.get_snapshots(volume_name)
-    assert len(snapshots) == 1
-    assert storage.get_snapshot(volume_name, "snapshot-new")['name'] == "snapshot-new"
-    assert snapshots[0]['name'] == "snapshot-new"
+    with recorder.use_cassette('get_snapshots',
+                               match_requests_on=['method', 'uri']):
+        with ephermeral_volume(storage) as vol:
+            volume_id = id_from_vol(vol, storage)
+            storage.create_snapshot(volume_id, snapshot_name="snapshot-new")
+            snapshots = storage.get_snapshots(volume_id)
+            assert len(snapshots) == 1
+            assert storage.get_snapshot(volume_id, "snapshot-new")['name'] == "snapshot-new"
+            assert snapshots[0]['name'] == "snapshot-new"
 
 
 @on_all_backends

@@ -608,6 +608,8 @@ class NetappStorage(StorageBackend):
     def __init__(self, netapp_server, vserver):
         self.vserver = vserver
         self.server = netapp_server
+        import requests
+        requests.packages.urllib3.disable_warnings()
 
     def format_volume(self, v):
         return {'size_total': v.size_total_bytes,
@@ -644,10 +646,22 @@ class NetappStorage(StorageBackend):
             node, junction_path = volume_name.split(":")
             return node, junction_path
         except ValueError:
-            log.warning("{} does not follow naming"
-                        " convention node:junction_path!"
-                        .format(volume_name))
+            log.info("{} does not follow naming"
+                     " convention node:junction_path, assume name."
+                     .format(volume_name))
             return None, volume_name
+
+    def parse_volume_name(self, volume_name_or_node_path):
+        """
+        Parse a volume name on the format name, or node:junction_path,
+        always returning a unique name.
+        """
+        node, junction_path = self.node_junction_path(volume_name_or_node_path)
+        if node is None:
+            # Name did not follow name:junction_path convention. Assume name.
+            return junction_path
+        else:
+            return self.name_from_path(junction_path)
 
     @property
     def volumes(self):
@@ -672,12 +686,15 @@ class NetappStorage(StorageBackend):
         return self.format_volume(volume)
 
     def get_policy(self, volume_name, policy_name):
+        volume_name = self.parse_volume_name(volume_name)
         return self.server.export_rules_of(policy_name)
 
     def get_snapshots(self, volume_name):
+        volume_name = self.parse_volume_name(volume_name)
         return [{'name': s} for s in self.server.snapshots_of(volume_name)]
 
     def policies(self, volume_name):
+        volume_name = self.parse_volume_name(volume_name)
         # We only have one, so return that!
         policy_name = self.get_volume(volume_name)['active_policy_name']
         rules = [r[1] for r in self.server.export_rules_of(policy_name)]
@@ -685,6 +702,7 @@ class NetappStorage(StorageBackend):
         return [response]
 
     def locks(self, volume_name):
+        volume_name = self.parse_volume_name(volume_name)
         ls = [l.client_address for l in self.server.locks_on(volume_name)]
         if not ls:
             return None
@@ -700,35 +718,46 @@ class NetappStorage(StorageBackend):
                                  junction_path, from_snapshot_name)
 
     def create_snapshot(self, volume_name, snapshot_name):
-        self.server.create_snapshot(volume_name, snapshot_name)
+        _node, junction_path = self.node_junction_path(volume_name)
+        volume_name = self.name_from_path(junction_path)
+
+        with self.server.with_vserver(self.vserver):
+            self.server.create_snapshot(volume_name, snapshot_name)
 
     def get_snapshot(self, volume_name, snapshot_name):
-        snapshots = self.server.snapshots_of(volume_name)
+        volume_name = self.parse_volume_name(volume_name)
+        snapshots = self.get_snapshots(volume_name)
         for snapshot in snapshots:
-            if snapshot == snapshot_name:
+            if snapshot['name'] == snapshot_name:
                 return snapshot
         raise ValueError("No such snapshot {}".format(snapshot_name))
 
     def remove_policy(self, volume_name, policy_name):
+        volume_name = self.parse_volume_name(volume_name)
         self.server.delete_export_policy(policy_name)
 
     def create_policy(self, volume_name, policy_name, rules):
+        volume_name = self.parse_volume_name(volume_name)
         self.server.create_export_policy(policy_name, rules=rules)
         self.server.set_volume_export_policy(volume_name, policy_name)
 
     def delete_snapshot(self, volume_name, snapshot_name):
+        volume_name = self.parse_volume_name(volume_name)
         self.server.delete_snapshot(volume_name, snapshot_name)
 
     def rollback_volume(self, volume_name, restore_snapshot_name):
+        volume_name = self.parse_volume_name(volume_name)
         self.get_snapshot(volume_name, restore_snapshot_name)
         self.server.rollback_volume_from_snapshot(volume_name, restore_snapshot_name)
 
     def ensure_policy_rule_present(self, volume_name, policy_name, rule):
+        volume_name = self.parse_volume_name(volume_name)
         rules = [r for _i, r in self.server.export_rules_of(policy_name)]
         if rule not in rules:
             self.server.add_export_rule(policy_name, rule)
 
     def ensure_policy_rule_absent(self, volume_name, policy_name, rule):
+        volume_name = self.parse_volume_name(volume_name)
         for index, stored_rule in self.server.export_rules_of(policy_name):
             if rule == stored_rule:
                 self.server.remove_export_rule(policy_name, index)
@@ -797,6 +826,7 @@ class NetappStorage(StorageBackend):
         return NotImplemented
 
     def remove_lock(self, volume_name, host_owner):
+        volume_name = self.parse_volume_name(volume_name)
         self.server.break_lock(volume_name, host_owner)
 
     def patch_volume(self, volume_name, **data):
@@ -807,13 +837,16 @@ class NetappStorage(StorageBackend):
                                       previous['autosize_increment'])
         max_autosize = data.get('max_autosize', previous['max_autosize'])
 
-        self.set_volume_autosize(volume_name, max_size_kb=max_autosize,
-                                 increment_kb=autosize_increment,
-                                 autosize_enabled=autosize_enabled)
+        with self.server.with_vserver(self.vserver):
+            self.server.set_volume_autosize(previous['name'],
+                                            max_size_bytes=max_autosize,
+                                            increment_bytes=autosize_increment,
+                                            autosize_enabled=autosize_enabled)
+
+        # FIXME: Also handle updates to reserved space!
 
     def restrict_volume(self, volume_name):
-        _node, junction_path = self.node_junction_path(volume_name)
-        name = self.name_from_path(junction_path)
+        name = self.parse_volume_name(volume_name)
         with self.server.with_vserver(self.vserver):
             self.server.restrict_volume(name)
 

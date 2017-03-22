@@ -1,0 +1,551 @@
+{
+  "http_interactions": [
+    {
+      "recorded_at": "2017-03-22T15:14:23",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\"><aggr-get-iter><desired-attributes><aggregate-name/><aggregate-space-attributes><size-used/><size-available/></aggregate-space-attributes><nodes/></desired-attributes></aggr-get-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "325",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><attributes-list><aggr-attributes><aggr-fs-attributes><block-type>64_bit</block-type><fsid>1728096101</fsid><type>aggr</type></aggr-fs-attributes><aggr-inode-attributes><files-private-used>511</files-private-used><files-total>31142</files-total><files-used>96</files-used><inodefile-private-capacity>31142</inodefile-private-capacity><inodefile-public-capacity>31142</inodefile-public-capacity><maxfiles-available>31142</maxfiles-available><maxfiles-possible>206120568</maxfiles-possible><maxfiles-used>96</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity></aggr-inode-attributes><aggr-ownership-attributes><cluster>rac11</cluster><home-id>1574383555</home-id><home-name>dbnasa1111</home-name><owner-id>1574383555</owner-id><owner-name>dbnasa1111</owner-name></aggr-ownership-attributes><aggr-performance-attributes><free-space-realloc>off</free-space-realloc><max-write-alloc-blocks>0</max-write-alloc-blocks></aggr-performance-attributes><aggr-raid-attributes><aggregate-type>hdd</aggregate-type><checksum-status>active</checksum-status><checksum-style>block</checksum-style><disk-count>3</disk-count><ha-policy>cfo</ha-policy><has-local-root>true</has-local-root><has-partner-root>false</has-partner-root><is-checksum-enabled>true</is-checksum-enabled><is-encrypted>false</is-encrypted><is-hybrid>false</is-hybrid><is-hybrid-enabled>false</is-hybrid-enabled><is-inconsistent>false</is-inconsistent><is-mirrored>false</is-mirrored><is-root-aggregate>true</is-root-aggregate><mirror-status>unmirrored</mirror-status><mount-state>online</mount-state><plex-count>1</plex-count><plexes><plex-attributes><is-online>true</is-online><is-resyncing>false</is-resyncing><plex-name>/aggr0_rac1111/plex0</plex-name><plex-status>normal,active</plex-status><pool>0</pool><raidgroups><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr0_rac1111/plex0/rg0</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes></raidgroups><resyncing-percentage>0</resyncing-percentage></plex-attributes></plexes><raid-lost-write-state>on</raid-lost-write-state><raid-size>14</raid-size><raid-status>raid_dp, normal</raid-status><raid-type>raid_dp</raid-type><state>online</state><uses-shared-disks>false</uses-shared-disks></aggr-raid-attributes><aggr-snaplock-attributes><is-snaplock>false</is-snaplock></aggr-snaplock-attributes><aggr-snapshot-attributes><files-total>0</files-total><files-used>0</files-used><is-snapshot-auto-create-enabled>false</is-snapshot-auto-create-enabled><is-snapshot-auto-delete-enabled>true</is-snapshot-auto-delete-enabled><maxfiles-available>0</maxfiles-available><maxfiles-possible>0</maxfiles-possible><maxfiles-used>0</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity><percent-used-capacity>0</percent-used-capacity><size-available>39991730176</size-available><size-total>39991730176</size-total><size-used>0</size-used><snapshot-reserve-percent>5</snapshot-reserve-percent></aggr-snapshot-attributes><aggr-space-attributes><hybrid-cache-size-total>0</hybrid-cache-size-total><percent-used-capacity>95</percent-used-capacity><physical-used>36039569408</physical-used><physical-used-percent>5</physical-used-percent><size-available>36813090816</size-available><size-total>759842889728</size-total><size-used>723029798912</size-used><total-reserved-space>0</total-reserved-space></aggr-space-attributes><aggr-volume-count-attributes><flexvol-count>1</flexvol-count></aggr-volume-count-attributes><aggregate-name>aggr0_rac1111</aggregate-name><aggregate-uuid>3f5aa9f8-2b0d-4659-a145-3e1288709c8a</aggregate-uuid><autobalance-state>ineligible</autobalance-state><nodes><node-name>dbnasa1111</node-name></nodes></aggr-attributes><aggr-attributes><aggr-fs-attributes><block-type>64_bit</block-type><fsid>1659305006</fsid><type>aggr</type></aggr-fs-attributes><aggr-inode-attributes><files-private-used>511</files-private-used><files-total>31142</files-total><files-used>96</files-used><inodefile-private-capacity>31142</inodefile-private-capacity><inodefile-public-capacity>31142</inodefile-public-capacity><maxfiles-available>31142</maxfiles-available><maxfiles-possible>206120568</maxfiles-possible><maxfiles-used>96</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity></aggr-inode-attributes><aggr-ownership-attributes><cluster>rac11</cluster><home-id>1574032673</home-id><home-name>dbnasa1112</home-name><owner-id>1574032673</owner-id><owner-name>dbnasa1112</owner-name></aggr-ownership-attributes><aggr-performance-attributes><free-space-realloc>off</free-space-realloc><max-write-alloc-blocks>0</max-write-alloc-blocks></aggr-performance-attributes><aggr-raid-attributes><aggregate-type>hdd</aggregate-type><checksum-status>active</checksum-status><checksum-style>block</checksum-style><disk-count>3</disk-count><ha-policy>cfo</ha-policy><has-local-root>true</has-local-root><has-partner-root>false</has-partner-root><is-checksum-enabled>true</is-checksum-enabled><is-encrypted>false</is-encrypted><is-hybrid>false</is-hybrid><is-hybrid-enabled>false</is-hybrid-enabled><is-inconsistent>false</is-inconsistent><is-mirrored>false</is-mirrored><is-root-aggregate>true</is-root-aggregate><mirror-status>unmirrored</mirror-status><mount-state>online</mount-state><plex-count>1</plex-count><plexes><plex-attributes><is-online>true</is-online><is-resyncing>false</is-resyncing><plex-name>/aggr0_rac1112/plex0</plex-name><plex-status>normal,active</plex-status><pool>0</pool><raidgroups><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr0_rac1112/plex0/rg0</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes></raidgroups><resyncing-percentage>0</resyncing-percentage></plex-attributes></plexes><raid-lost-write-state>on</raid-lost-write-state><raid-size>14</raid-size><raid-status>raid_dp, normal</raid-status><raid-type>raid_dp</raid-type><state>online</state><uses-shared-disks>false</uses-shared-disks></aggr-raid-attributes><aggr-snaplock-attributes><is-snaplock>false</is-snaplock></aggr-snaplock-attributes><aggr-snapshot-attributes><files-total>0</files-total><files-used>0</files-used><is-snapshot-auto-create-enabled>false</is-snapshot-auto-create-enabled><is-snapshot-auto-delete-enabled>true</is-snapshot-auto-delete-enabled><maxfiles-available>0</maxfiles-available><maxfiles-possible>0</maxfiles-possible><maxfiles-used>0</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity><percent-used-capacity>0</percent-used-capacity><size-available>39991730176</size-available><size-total>39991730176</size-total><size-used>0</size-used><snapshot-reserve-percent>5</snapshot-reserve-percent></aggr-snapshot-attributes><aggr-space-attributes><hybrid-cache-size-total>0</hybrid-cache-size-total><percent-used-capacity>95</percent-used-capacity><physical-used>30048116736</physical-used><physical-used-percent>4</physical-used-percent><size-available>36813365248</size-available><size-total>759842889728</size-total><size-used>723029524480</size-used><total-reserved-space>0</total-reserved-space></aggr-space-attributes><aggr-volume-count-attributes><flexvol-count>1</flexvol-count></aggr-volume-count-attributes><aggregate-name>aggr0_rac1112</aggregate-name><aggregate-uuid>aec86327-4f4f-4b56-8c51-e09750e51979</aggregate-uuid><autobalance-state>ineligible</autobalance-state><nodes><node-name>dbnasa1112</node-name></nodes></aggr-attributes><aggr-attributes><aggr-fs-attributes><block-type>64_bit</block-type><fsid>1671256947</fsid><type>aggr</type></aggr-fs-attributes><aggr-inode-attributes><files-private-used>511</files-private-used><files-total>31142</files-total><files-used>96</files-used><inodefile-private-capacity>31142</inodefile-private-capacity><inodefile-public-capacity>31142</inodefile-public-capacity><maxfiles-available>31142</maxfiles-available><maxfiles-possible>206120568</maxfiles-possible><maxfiles-used>96</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity></aggr-inode-attributes><aggr-ownership-attributes><cluster>rac11</cluster><home-id>1574216017</home-id><home-name>dbnasa1131</home-name><owner-id>1574216017</owner-id><owner-name>dbnasa1131</owner-name></aggr-ownership-attributes><aggr-performance-attributes><free-space-realloc>off</free-space-realloc><max-write-alloc-blocks>0</max-write-alloc-blocks></aggr-performance-attributes><aggr-raid-attributes><aggregate-type>hdd</aggregate-type><checksum-status>active</checksum-status><checksum-style>block</checksum-style><disk-count>3</disk-count><ha-policy>cfo</ha-policy><has-local-root>true</has-local-root><has-partner-root>false</has-partner-root><is-checksum-enabled>true</is-checksum-enabled><is-encrypted>false</is-encrypted><is-hybrid>false</is-hybrid><is-hybrid-enabled>false</is-hybrid-enabled><is-inconsistent>false</is-inconsistent><is-mirrored>false</is-mirrored><is-root-aggregate>true</is-root-aggregate><mirror-status>unmirrored</mirror-status><mount-state>online</mount-state><plex-count>1</plex-count><plexes><plex-attributes><is-online>true</is-online><is-resyncing>false</is-resyncing><plex-name>/aggr0_rac1131/plex0</plex-name><plex-status>normal,active</plex-status><pool>0</pool><raidgroups><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr0_rac1131/plex0/rg0</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes></raidgroups><resyncing-percentage>0</resyncing-percentage></plex-attributes></plexes><raid-lost-write-state>on</raid-lost-write-state><raid-size>14</raid-size><raid-status>raid_dp, normal</raid-status><raid-type>raid_dp</raid-type><state>online</state><uses-shared-disks>false</uses-shared-disks></aggr-raid-attributes><aggr-snaplock-attributes><is-snaplock>false</is-snaplock></aggr-snaplock-attributes><aggr-snapshot-attributes><files-total>0</files-total><files-used>0</files-used><is-snapshot-auto-create-enabled>false</is-snapshot-auto-create-enabled><is-snapshot-auto-delete-enabled>true</is-snapshot-auto-delete-enabled><maxfiles-available>0</maxfiles-available><maxfiles-possible>0</maxfiles-possible><maxfiles-used>0</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity><percent-used-capacity>0</percent-used-capacity><size-available>39991730176</size-available><size-total>39991730176</size-total><size-used>0</size-used><snapshot-reserve-percent>5</snapshot-reserve-percent></aggr-snapshot-attributes><aggr-space-attributes><hybrid-cache-size-total>0</hybrid-cache-size-total><percent-used-capacity>95</percent-used-capacity><physical-used>31419826176</physical-used><physical-used-percent>4</physical-used-percent><size-available>36813320192</size-available><size-total>759842889728</size-total><size-used>723029569536</size-used><total-reserved-space>0</total-reserved-space></aggr-space-attributes><aggr-volume-count-attributes><flexvol-count>1</flexvol-count></aggr-volume-count-attributes><aggregate-name>aggr0_rac1131</aggregate-name><aggregate-uuid>1bb655fc-dcf3-43cc-9324-88ce13f0a740</aggregate-uuid><autobalance-state>ineligible</autobalance-state><nodes><node-name>dbnasa1131</node-name></nodes></aggr-attributes><aggr-attributes><aggr-fs-attributes><block-type>64_bit</block-type><fsid>1762305880</fsid><type>aggr</type></aggr-fs-attributes><aggr-inode-attributes><files-private-used>511</files-private-used><files-total>31142</files-total><files-used>96</files-used><inodefile-private-capacity>31142</inodefile-private-capacity><inodefile-public-capacity>31142</inodefile-public-capacity><maxfiles-available>31142</maxfiles-available><maxfiles-possible>206120568</maxfiles-possible><maxfiles-used>96</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity></aggr-inode-attributes><aggr-ownership-attributes><cluster>rac11</cluster><home-id>1573969209</home-id><home-name>dbnasa1132</home-name><owner-id>1573969209</owner-id><owner-name>dbnasa1132</owner-name></aggr-ownership-attributes><aggr-performance-attributes><free-space-realloc>off</free-space-realloc><max-write-alloc-blocks>0</max-write-alloc-blocks></aggr-performance-attributes><aggr-raid-attributes><aggregate-type>hdd</aggregate-type><checksum-status>active</checksum-status><checksum-style>block</checksum-style><disk-count>3</disk-count><ha-policy>cfo</ha-policy><has-local-root>true</has-local-root><has-partner-root>false</has-partner-root><is-checksum-enabled>true</is-checksum-enabled><is-encrypted>false</is-encrypted><is-hybrid>false</is-hybrid><is-hybrid-enabled>false</is-hybrid-enabled><is-inconsistent>false</is-inconsistent><is-mirrored>false</is-mirrored><is-root-aggregate>true</is-root-aggregate><mirror-status>unmirrored</mirror-status><mount-state>online</mount-state><plex-count>1</plex-count><plexes><plex-attributes><is-online>true</is-online><is-resyncing>false</is-resyncing><plex-name>/aggr0_rac1132/plex0</plex-name><plex-status>normal,active</plex-status><pool>0</pool><raidgroups><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr0_rac1132/plex0/rg0</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes></raidgroups><resyncing-percentage>0</resyncing-percentage></plex-attributes></plexes><raid-lost-write-state>on</raid-lost-write-state><raid-size>14</raid-size><raid-status>raid_dp, normal</raid-status><raid-type>raid_dp</raid-type><state>online</state><uses-shared-disks>false</uses-shared-disks></aggr-raid-attributes><aggr-snaplock-attributes><is-snaplock>false</is-snaplock></aggr-snaplock-attributes><aggr-snapshot-attributes><files-total>0</files-total><files-used>0</files-used><is-snapshot-auto-create-enabled>false</is-snapshot-auto-create-enabled><is-snapshot-auto-delete-enabled>true</is-snapshot-auto-delete-enabled><maxfiles-available>0</maxfiles-available><maxfiles-possible>0</maxfiles-possible><maxfiles-used>0</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity><percent-used-capacity>0</percent-used-capacity><size-available>39991730176</size-available><size-total>39991730176</size-total><size-used>0</size-used><snapshot-reserve-percent>5</snapshot-reserve-percent></aggr-snapshot-attributes><aggr-space-attributes><hybrid-cache-size-total>0</hybrid-cache-size-total><percent-used-capacity>95</percent-used-capacity><physical-used>29652566016</physical-used><physical-used-percent>4</physical-used-percent><size-available>36813176832</size-available><size-total>759842889728</size-total><size-used>723029712896</size-used><total-reserved-space>0</total-reserved-space></aggr-space-attributes><aggr-volume-count-attributes><flexvol-count>1</flexvol-count></aggr-volume-count-attributes><aggregate-name>aggr0_rac1132</aggregate-name><aggregate-uuid>d8aca3a1-1f80-4c3b-9470-e6678ea5ad2f</aggregate-uuid><autobalance-state>ineligible</autobalance-state><nodes><node-name>dbnasa1132</node-name></nodes></aggr-attributes><aggr-attributes><aggr-fs-attributes><block-type>64_bit</block-type><fsid>1987144487</fsid><type>aggr</type></aggr-fs-attributes><aggr-inode-attributes><files-private-used>930</files-private-used><files-total>31142</files-total><files-used>96</files-used><inodefile-private-capacity>31142</inodefile-private-capacity><inodefile-public-capacity>31142</inodefile-public-capacity><maxfiles-available>31142</maxfiles-available><maxfiles-possible>2040109444</maxfiles-possible><maxfiles-used>96</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity></aggr-inode-attributes><aggr-ownership-attributes><cluster>rac11</cluster><home-id>1574383555</home-id><home-name>dbnasa1111</home-name><owner-id>1574383555</owner-id><owner-name>dbnasa1111</owner-name></aggr-ownership-attributes><aggr-performance-attributes><free-space-realloc>off</free-space-realloc><max-write-alloc-blocks>0</max-write-alloc-blocks></aggr-performance-attributes><aggr-raid-attributes><aggregate-type>hdd</aggregate-type><checksum-status>active</checksum-status><checksum-style>block</checksum-style><disk-count>68</disk-count><ha-policy>sfo</ha-policy><has-local-root>false</has-local-root><has-partner-root>false</has-partner-root><is-checksum-enabled>true</is-checksum-enabled><is-encrypted>false</is-encrypted><is-hybrid>false</is-hybrid><is-hybrid-enabled>false</is-hybrid-enabled><is-inconsistent>false</is-inconsistent><is-mirrored>false</is-mirrored><is-root-aggregate>false</is-root-aggregate><mirror-status>unmirrored</mirror-status><mount-state>online</mount-state><plex-count>1</plex-count><plexes><plex-attributes><is-online>true</is-online><is-resyncing>false</is-resyncing><plex-name>/aggr1_rac1111/plex0</plex-name><plex-status>normal,active</plex-status><pool>0</pool><raidgroups><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1111/plex0/rg0</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1111/plex0/rg1</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1111/plex0/rg2</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1111/plex0/rg3</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes></raidgroups><resyncing-percentage>0</resyncing-percentage></plex-attributes></plexes><raid-lost-write-state>on</raid-lost-write-state><raid-size>17</raid-size><raid-status>raid_dp, normal</raid-status><raid-type>raid_dp</raid-type><state>online</state><uses-shared-disks>false</uses-shared-disks></aggr-raid-attributes><aggr-snaplock-attributes><is-snaplock>false</is-snaplock></aggr-snaplock-attributes><aggr-snapshot-attributes><files-total>0</files-total><files-used>0</files-used><is-snapshot-auto-create-enabled>false</is-snapshot-auto-create-enabled><is-snapshot-auto-delete-enabled>true</is-snapshot-auto-delete-enabled><maxfiles-available>0</maxfiles-available><maxfiles-possible>0</maxfiles-possible><maxfiles-used>0</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity><percent-used-capacity>0</percent-used-capacity><size-available>0</size-available><size-total>0</size-total><size-used>0</size-used><snapshot-reserve-percent>0</snapshot-reserve-percent></aggr-snapshot-attributes><aggr-space-attributes><hybrid-cache-size-total>0</hybrid-cache-size-total><percent-used-capacity>10</percent-used-capacity><physical-used>3841287917568</physical-used><physical-used-percent>8</physical-used-percent><size-available>43245328678912</size-available><size-total>47990076604416</size-total><size-used>4744747925504</size-used><total-reserved-space>0</total-reserved-space></aggr-space-attributes><aggr-volume-count-attributes><flexvol-count>39</flexvol-count><flexvol-count-not-online>22</flexvol-count-not-online></aggr-volume-count-attributes><aggregate-name>aggr1_rac1111</aggregate-name><aggregate-uuid>1cde44f9-5e1d-4aa9-990a-3e662fd745ba</aggregate-uuid><autobalance-state>ineligible</autobalance-state><nodes><node-name>dbnasa1111</node-name></nodes></aggr-attributes><aggr-attributes><aggr-fs-attributes><block-type>64_bit</block-type><fsid>1736310895</fsid><type>aggr</type></aggr-fs-attributes><aggr-inode-attributes><files-private-used>720</files-private-used><files-total>31142</files-total><files-used>96</files-used><inodefile-private-capacity>31142</inodefile-private-capacity><inodefile-public-capacity>31142</inodefile-public-capacity><maxfiles-available>31142</maxfiles-available><maxfiles-possible>2040109444</maxfiles-possible><maxfiles-used>96</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity></aggr-inode-attributes><aggr-ownership-attributes><cluster>rac11</cluster><home-id>1574032673</home-id><home-name>dbnasa1112</home-name><owner-id>1574032673</owner-id><owner-name>dbnasa1112</owner-name></aggr-ownership-attributes><aggr-performance-attributes><free-space-realloc>off</free-space-realloc><max-write-alloc-blocks>0</max-write-alloc-blocks></aggr-performance-attributes><aggr-raid-attributes><aggregate-type>hdd</aggregate-type><checksum-status>active</checksum-status><checksum-style>block</checksum-style><disk-count>68</disk-count><ha-policy>sfo</ha-policy><has-local-root>false</has-local-root><has-partner-root>false</has-partner-root><is-checksum-enabled>true</is-checksum-enabled><is-encrypted>false</is-encrypted><is-hybrid>false</is-hybrid><is-hybrid-enabled>false</is-hybrid-enabled><is-inconsistent>false</is-inconsistent><is-mirrored>false</is-mirrored><is-root-aggregate>false</is-root-aggregate><mirror-status>unmirrored</mirror-status><mount-state>online</mount-state><plex-count>1</plex-count><plexes><plex-attributes><is-online>true</is-online><is-resyncing>false</is-resyncing><plex-name>/aggr1_rac1112/plex0</plex-name><plex-status>normal,active</plex-status><pool>0</pool><raidgroups><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1112/plex0/rg0</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1112/plex0/rg1</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1112/plex0/rg2</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1112/plex0/rg3</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes></raidgroups><resyncing-percentage>0</resyncing-percentage></plex-attributes></plexes><raid-lost-write-state>on</raid-lost-write-state><raid-size>17</raid-size><raid-status>raid_dp, normal</raid-status><raid-type>raid_dp</raid-type><state>online</state><uses-shared-disks>false</uses-shared-disks></aggr-raid-attributes><aggr-snaplock-attributes><is-snaplock>false</is-snaplock></aggr-snaplock-attributes><aggr-snapmirror-attributes><ls-snapmirror-destinations>1</ls-snapmirror-destinations></aggr-snapmirror-attributes><aggr-snapshot-attributes><files-total>0</files-total><files-used>0</files-used><is-snapshot-auto-create-enabled>false</is-snapshot-auto-create-enabled><is-snapshot-auto-delete-enabled>true</is-snapshot-auto-delete-enabled><maxfiles-available>0</maxfiles-available><maxfiles-possible>0</maxfiles-possible><maxfiles-used>0</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity><percent-used-capacity>0</percent-used-capacity><size-available>0</size-available><size-total>0</size-total><size-used>0</size-used><snapshot-reserve-percent>0</snapshot-reserve-percent></aggr-snapshot-attributes><aggr-space-attributes><hybrid-cache-size-total>0</hybrid-cache-size-total><percent-used-capacity>2</percent-used-capacity><physical-used>192704479232</physical-used><physical-used-percent>0</physical-used-percent><size-available>47055939297280</size-available><size-total>47990076604416</size-total><size-used>934137307136</size-used><total-reserved-space>0</total-reserved-space></aggr-space-attributes><aggr-volume-count-attributes><flexvol-count>18</flexvol-count></aggr-volume-count-attributes><aggregate-name>aggr1_rac1112</aggregate-name><aggregate-uuid>e837f3ce-edbc-4814-8dae-48e55e0d696d</aggregate-uuid><autobalance-state>ineligible</autobalance-state><nodes><node-name>dbnasa1112</node-name></nodes></aggr-attributes><aggr-attributes><aggr-fs-attributes><block-type>64_bit</block-type><fsid>1195265322</fsid><type>aggr</type></aggr-fs-attributes><aggr-inode-attributes><files-private-used>663</files-private-used><files-total>31142</files-total><files-used>96</files-used><inodefile-private-capacity>31142</inodefile-private-capacity><inodefile-public-capacity>31142</inodefile-public-capacity><maxfiles-available>31142</maxfiles-available><maxfiles-possible>2040109444</maxfiles-possible><maxfiles-used>96</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity></aggr-inode-attributes><aggr-ownership-attributes><cluster>rac11</cluster><home-id>1574216017</home-id><home-name>dbnasa1131</home-name><owner-id>1574216017</owner-id><owner-name>dbnasa1131</owner-name></aggr-ownership-attributes><aggr-performance-attributes><free-space-realloc>off</free-space-realloc><max-write-alloc-blocks>0</max-write-alloc-blocks></aggr-performance-attributes><aggr-raid-attributes><aggregate-type>hdd</aggregate-type><checksum-status>active</checksum-status><checksum-style>block</checksum-style><disk-count>68</disk-count><ha-policy>sfo</ha-policy><has-local-root>false</has-local-root><has-partner-root>false</has-partner-root><is-checksum-enabled>true</is-checksum-enabled><is-encrypted>false</is-encrypted><is-hybrid>false</is-hybrid><is-hybrid-enabled>false</is-hybrid-enabled><is-inconsistent>false</is-inconsistent><is-mirrored>false</is-mirrored><is-root-aggregate>false</is-root-aggregate><mirror-status>unmirrored</mirror-status><mount-state>online</mount-state><plex-count>1</plex-count><plexes><plex-attributes><is-online>true</is-online><is-resyncing>false</is-resyncing><plex-name>/aggr1_rac1131/plex0</plex-name><plex-status>normal,active</plex-status><pool>0</pool><raidgroups><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1131/plex0/rg0</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1131/plex0/rg1</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1131/plex0/rg2</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1131/plex0/rg3</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes></raidgroups><resyncing-percentage>0</resyncing-percentage></plex-attributes></plexes><raid-lost-write-state>on</raid-lost-write-state><raid-size>17</raid-size><raid-status>raid_dp, normal</raid-status><raid-type>raid_dp</raid-type><state>online</state><uses-shared-disks>false</uses-shared-disks></aggr-raid-attributes><aggr-snaplock-attributes><is-snaplock>false</is-snaplock></aggr-snaplock-attributes><aggr-snapmirror-attributes><ls-snapmirror-destinations>1</ls-snapmirror-destinations></aggr-snapmirror-attributes><aggr-snapshot-attributes><files-total>0</files-total><files-used>0</files-used><is-snapshot-auto-create-enabled>false</is-snapshot-auto-create-enabled><is-snapshot-auto-delete-enabled>true</is-snapshot-auto-delete-enabled><maxfiles-available>0</maxfiles-available><maxfiles-possible>0</maxfiles-possible><maxfiles-used>0</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity><percent-used-capacity>0</percent-used-capacity><size-available>0</size-available><size-total>0</size-total><size-used>0</size-used><snapshot-reserve-percent>0</snapshot-reserve-percent></aggr-snapshot-attributes><aggr-space-attributes><hybrid-cache-size-total>0</hybrid-cache-size-total><percent-used-capacity>5</percent-used-capacity><physical-used>152718364672</physical-used><physical-used-percent>0</physical-used-percent><size-available>45480650264576</size-available><size-total>47990076604416</size-total><size-used>2509426339840</size-used><total-reserved-space>0</total-reserved-space></aggr-space-attributes><aggr-volume-count-attributes><flexvol-count>16</flexvol-count></aggr-volume-count-attributes><aggregate-name>aggr1_rac1131</aggregate-name><aggregate-uuid>df7fdf6b-17b4-45b0-8f39-5c6638618c72</aggregate-uuid><autobalance-state>ineligible</autobalance-state><nodes><node-name>dbnasa1131</node-name></nodes></aggr-attributes><aggr-attributes><aggr-fs-attributes><block-type>64_bit</block-type><fsid>1114503945</fsid><type>aggr</type></aggr-fs-attributes><aggr-inode-attributes><files-private-used>724</files-private-used><files-total>31142</files-total><files-used>96</files-used><inodefile-private-capacity>31142</inodefile-private-capacity><inodefile-public-capacity>31142</inodefile-public-capacity><maxfiles-available>31142</maxfiles-available><maxfiles-possible>2040109444</maxfiles-possible><maxfiles-used>96</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity></aggr-inode-attributes><aggr-ownership-attributes><cluster>rac11</cluster><home-id>1573969209</home-id><home-name>dbnasa1132</home-name><owner-id>1573969209</owner-id><owner-name>dbnasa1132</owner-name></aggr-ownership-attributes><aggr-performance-attributes><free-space-realloc>off</free-space-realloc><max-write-alloc-blocks>0</max-write-alloc-blocks></aggr-performance-attributes><aggr-raid-attributes><aggregate-type>hdd</aggregate-type><checksum-status>active</checksum-status><checksum-style>block</checksum-style><disk-count>68</disk-count><ha-policy>sfo</ha-policy><has-local-root>false</has-local-root><has-partner-root>false</has-partner-root><is-checksum-enabled>true</is-checksum-enabled><is-encrypted>false</is-encrypted><is-hybrid>false</is-hybrid><is-hybrid-enabled>false</is-hybrid-enabled><is-inconsistent>false</is-inconsistent><is-mirrored>false</is-mirrored><is-root-aggregate>false</is-root-aggregate><mirror-status>unmirrored</mirror-status><mount-state>online</mount-state><plex-count>1</plex-count><plexes><plex-attributes><is-online>true</is-online><is-resyncing>false</is-resyncing><plex-name>/aggr1_rac1132/plex0</plex-name><plex-status>normal,active</plex-status><pool>0</pool><raidgroups><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1132/plex0/rg0</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1132/plex0/rg1</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1132/plex0/rg2</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes><raidgroup-attributes><checksum-style>block</checksum-style><is-cache-tier>false</is-cache-tier><is-recomputing-parity>false</is-recomputing-parity><is-reconstructing>false</is-reconstructing><raidgroup-name>/aggr1_rac1132/plex0/rg3</raidgroup-name><recomputing-parity-percentage>0</recomputing-parity-percentage><reconstruction-percentage>0</reconstruction-percentage></raidgroup-attributes></raidgroups><resyncing-percentage>0</resyncing-percentage></plex-attributes></plexes><raid-lost-write-state>on</raid-lost-write-state><raid-size>17</raid-size><raid-status>raid_dp, normal</raid-status><raid-type>raid_dp</raid-type><state>online</state><uses-shared-disks>false</uses-shared-disks></aggr-raid-attributes><aggr-snaplock-attributes><is-snaplock>false</is-snaplock></aggr-snaplock-attributes><aggr-snapmirror-attributes><ls-snapmirror-destinations>1</ls-snapmirror-destinations></aggr-snapmirror-attributes><aggr-snapshot-attributes><files-total>0</files-total><files-used>0</files-used><is-snapshot-auto-create-enabled>false</is-snapshot-auto-create-enabled><is-snapshot-auto-delete-enabled>true</is-snapshot-auto-delete-enabled><maxfiles-available>0</maxfiles-available><maxfiles-possible>0</maxfiles-possible><maxfiles-used>0</maxfiles-used><percent-inode-used-capacity>0</percent-inode-used-capacity><percent-used-capacity>0</percent-used-capacity><size-available>0</size-available><size-total>0</size-total><size-used>0</size-used><snapshot-reserve-percent>0</snapshot-reserve-percent></aggr-snapshot-attributes><aggr-space-attributes><hybrid-cache-size-total>0</hybrid-cache-size-total><percent-used-capacity>1</percent-used-capacity><physical-used>122112483328</physical-used><physical-used-percent>0</physical-used-percent><size-available>47348531929088</size-available><size-total>47990076604416</size-total><size-used>641544675328</size-used><total-reserved-space>0</total-reserved-space></aggr-space-attributes><aggr-volume-count-attributes><flexvol-count>22</flexvol-count><flexvol-count-not-online>6</flexvol-count-not-online></aggr-volume-count-attributes><aggregate-name>aggr1_rac1132</aggregate-name><aggregate-uuid>4bb7a1a5-ff94-4063-a466-ab18ebcf7da1</aggregate-uuid><autobalance-state>ineligible</autobalance-state><nodes><node-name>dbnasa1132</node-name></nodes></aggr-attributes></attributes-list><num-records>8</num-records></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:23 GMT",
+          "Keep-Alive": "timeout=5, max=100",
+          "Server": "libzapid-httpd",
+          "Transfer-Encoding": "chunked"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:25",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\" vfiler=\"vs1rac11\"><volume-create><volume>volume_name_42</volume><containing-aggr-name>aggr1_rac1132</containing-aggr-name><size>30000000</size><junction-path>/volumename_42</junction-path><percentage-snapshot-reserve>0</percentage-snapshot-reserve></volume-create></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "406",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"/></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Length": "192",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:23 GMT",
+          "Keep-Alive": "timeout=5, max=99",
+          "Server": "libzapid-httpd"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:25",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\" vfiler=\"vs1rac11\"><sis-enable><path>/vol/volume_name_42</path></sis-enable></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "217",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"/></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Length": "192",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:24 GMT",
+          "Keep-Alive": "timeout=5, max=98",
+          "Server": "libzapid-httpd"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:25",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\" vfiler=\"vs1rac11\"><sis-set-config><enable-compression>true</enable-compression><enable-inline-compression>true</enable-inline-compression><path>/vol/volume_name_42</path></sis-set-config></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "329",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"/></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Length": "192",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:24 GMT",
+          "Keep-Alive": "timeout=5, max=97",
+          "Server": "libzapid-httpd"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:25",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\" vfiler=\"vs1rac11\"><volume-get-iter><desired-attributes><volume-attributes><volume-id-attributes><name/><uuid/><junction-path/><containing-aggregate-name/><node/><owning-vserver-name/><creation-time/></volume-id-attributes><volume-space-attributes><size-total/><size-used/><percentage-snapshot-reserve/><percentage-snapshot-reserve-used/></volume-space-attributes><volume-autosize-attributes><is-enabled/><maximum-size/><increment-size/></volume-autosize-attributes><volume-state-attributes><state/></volume-state-attributes><volume-export-attributes><policy/></volume-export-attributes></volume-attributes></desired-attributes><query><volume-attributes><volume-id-attributes><name>volume_name_42</name></volume-id-attributes></volume-attributes></query></volume-get-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "913",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><attributes-list><volume-attributes><volume-autosize-attributes><increment-size>1499136</increment-size><is-enabled>false</is-enabled><maximum-size>36003840</maximum-size></volume-autosize-attributes><volume-export-attributes><policy>default</policy></volume-export-attributes><volume-id-attributes><containing-aggregate-name>aggr1_rac1132</containing-aggregate-name><creation-time>1490195663</creation-time><junction-path>/volumename_42</junction-path><name>volume_name_42</name><node>dbnasa1132</node><owning-vserver-name>vs1rac11</owning-vserver-name><uuid>3b22814a-0f12-11e7-8bd0-00a09815d04a</uuid></volume-id-attributes><volume-space-attributes><percentage-snapshot-reserve>0</percentage-snapshot-reserve><percentage-snapshot-reserve-used>0</percentage-snapshot-reserve-used><size-total>30003200</size-total><size-used>155648</size-used></volume-space-attributes><volume-state-attributes><state>online</state></volume-state-attributes></volume-attributes></attributes-list><num-records>1</num-records></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:25 GMT",
+          "Keep-Alive": "timeout=5, max=96",
+          "Server": "libzapid-httpd",
+          "Transfer-Encoding": "chunked"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:25",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\" vfiler=\"vs1rac11\"><sis-get-iter><desired-attributes><sis-status-info><is-compression-enabled/><is-inline-compression-enabled/></sis-status-info></desired-attributes><query><sis-status-info><path>/vol/volume_name_42</path><vserver>vs1rac11</vserver></sis-status-info></query></sis-get-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "431",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><attributes-list><sis-status-info><is-compression-enabled>true</is-compression-enabled><is-inline-compression-enabled>true</is-inline-compression-enabled><path>/vol/volume_name_42</path><vserver>vs1rac11</vserver></sis-status-info></attributes-list><num-records>1</num-records></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:25 GMT",
+          "Keep-Alive": "timeout=5, max=95",
+          "Server": "libzapid-httpd",
+          "Transfer-Encoding": "chunked"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:26",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\"><volume-get-iter><desired-attributes><volume-attributes><volume-id-attributes><name/><uuid/><junction-path/><containing-aggregate-name/><node/><owning-vserver-name/><creation-time/></volume-id-attributes><volume-space-attributes><size-total/><size-used/><percentage-snapshot-reserve/><percentage-snapshot-reserve-used/></volume-space-attributes><volume-autosize-attributes><is-enabled/><maximum-size/><increment-size/></volume-autosize-attributes><volume-state-attributes><state/></volume-state-attributes><volume-export-attributes><policy/></volume-export-attributes></volume-attributes></desired-attributes><query><volume-attributes><volume-id-attributes><junction-path>/volumename_42</junction-path></volume-id-attributes></volume-attributes></query></volume-get-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "913",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><attributes-list><volume-attributes><volume-autosize-attributes><increment-size>1499136</increment-size><is-enabled>false</is-enabled><maximum-size>36003840</maximum-size></volume-autosize-attributes><volume-export-attributes><policy>default</policy></volume-export-attributes><volume-id-attributes><containing-aggregate-name>aggr1_rac1132</containing-aggregate-name><creation-time>1490195663</creation-time><junction-path>/volumename_42</junction-path><name>volume_name_42</name><node>dbnasa1132</node><owning-vserver-name>vs1rac11</owning-vserver-name><uuid>3b22814a-0f12-11e7-8bd0-00a09815d04a</uuid></volume-id-attributes><volume-space-attributes><percentage-snapshot-reserve>0</percentage-snapshot-reserve><percentage-snapshot-reserve-used>0</percentage-snapshot-reserve-used><size-total>30003200</size-total><size-used>155648</size-used></volume-space-attributes><volume-state-attributes><state>online</state></volume-state-attributes></volume-attributes></attributes-list><num-records>1</num-records></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:25 GMT",
+          "Keep-Alive": "timeout=5, max=94",
+          "Server": "libzapid-httpd",
+          "Transfer-Encoding": "chunked"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:27",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\"><sis-get-iter><desired-attributes><sis-status-info><is-compression-enabled/><is-inline-compression-enabled/></sis-status-info></desired-attributes><query><sis-status-info><path>/vol/volume_name_42</path><vserver>vs1rac11</vserver></sis-status-info></query></sis-get-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "413",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><attributes-list><sis-status-info><is-compression-enabled>true</is-compression-enabled><is-inline-compression-enabled>true</is-inline-compression-enabled><path>/vol/volume_name_42</path><vserver>vs1rac11</vserver></sis-status-info></attributes-list><num-records>1</num-records></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:26 GMT",
+          "Keep-Alive": "timeout=5, max=93",
+          "Server": "libzapid-httpd",
+          "Transfer-Encoding": "chunked"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:27",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\" vfiler=\"vs1rac11\"><volume-autosize-set><volume>volume_name_42</volume><is-enabled>true</is-enabled><increment-size>1499136</increment-size><maximum-size>60000000</maximum-size></volume-autosize-set></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "340",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"/></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Length": "192",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:26 GMT",
+          "Keep-Alive": "timeout=5, max=92",
+          "Server": "libzapid-httpd"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:28",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\"><volume-get-iter><desired-attributes><volume-attributes><volume-id-attributes><name/><uuid/><junction-path/><containing-aggregate-name/><node/><owning-vserver-name/><creation-time/></volume-id-attributes><volume-space-attributes><size-total/><size-used/><percentage-snapshot-reserve/><percentage-snapshot-reserve-used/></volume-space-attributes><volume-autosize-attributes><is-enabled/><maximum-size/><increment-size/></volume-autosize-attributes><volume-state-attributes><state/></volume-state-attributes><volume-export-attributes><policy/></volume-export-attributes></volume-attributes></desired-attributes><query><volume-attributes><volume-id-attributes><junction-path>/volumename_42</junction-path></volume-id-attributes></volume-attributes></query></volume-get-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "913",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><attributes-list><volume-attributes><volume-autosize-attributes><increment-size>1499136</increment-size><is-enabled>true</is-enabled><maximum-size>60002304</maximum-size></volume-autosize-attributes><volume-export-attributes><policy>default</policy></volume-export-attributes><volume-id-attributes><containing-aggregate-name>aggr1_rac1132</containing-aggregate-name><creation-time>1490195663</creation-time><junction-path>/volumename_42</junction-path><name>volume_name_42</name><node>dbnasa1132</node><owning-vserver-name>vs1rac11</owning-vserver-name><uuid>3b22814a-0f12-11e7-8bd0-00a09815d04a</uuid></volume-id-attributes><volume-space-attributes><percentage-snapshot-reserve>0</percentage-snapshot-reserve><percentage-snapshot-reserve-used>0</percentage-snapshot-reserve-used><size-total>30003200</size-total><size-used>155648</size-used></volume-space-attributes><volume-state-attributes><state>online</state></volume-state-attributes></volume-attributes></attributes-list><num-records>1</num-records></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:26 GMT",
+          "Keep-Alive": "timeout=5, max=91",
+          "Server": "libzapid-httpd",
+          "Transfer-Encoding": "chunked"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:28",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\"><sis-get-iter><desired-attributes><sis-status-info><is-compression-enabled/><is-inline-compression-enabled/></sis-status-info></desired-attributes><query><sis-status-info><path>/vol/volume_name_42</path><vserver>vs1rac11</vserver></sis-status-info></query></sis-get-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "413",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><attributes-list><sis-status-info><is-compression-enabled>true</is-compression-enabled><is-inline-compression-enabled>true</is-inline-compression-enabled><path>/vol/volume_name_42</path><vserver>vs1rac11</vserver></sis-status-info></attributes-list><num-records>1</num-records></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:27 GMT",
+          "Keep-Alive": "timeout=5, max=90",
+          "Server": "libzapid-httpd",
+          "Transfer-Encoding": "chunked"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:28",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\" vfiler=\"vs1rac11\"><volume-unmount><volume-name>volume_name_42</volume-name></volume-unmount></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "234",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"/></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Length": "192",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:27 GMT",
+          "Keep-Alive": "timeout=5, max=89",
+          "Server": "libzapid-httpd"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:31",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\" vfiler=\"vs1rac11\"><volume-modify-iter><attributes><volume-attributes><volume-state-attributes><state>offline</state></volume-state-attributes></volume-attributes></attributes><query><volume-attributes><volume-id-attributes><name>volume_name_42</name></volume-id-attributes></volume-attributes></query></volume-modify-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "464",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><success-list><volume-modify-iter-info><volume-key><volume-attributes><volume-id-attributes><name>volume_name_42</name><owning-vserver-name>vs1rac11</owning-vserver-name></volume-id-attributes></volume-attributes></volume-key></volume-modify-iter-info></success-list><failure-list></failure-list><num-failed>0</num-failed><num-succeeded>1</num-succeeded></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:27 GMT",
+          "Keep-Alive": "timeout=5, max=88",
+          "Server": "libzapid-httpd",
+          "Transfer-Encoding": "chunked"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-22T15:14:34",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp nmsdk_app=\"netapp-api-python\" xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\" vfiler=\"vs1rac11\"><volume-destroy><name>volume_name_42</name></volume-destroy></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "220",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"/></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Length": "192",
+          "Content-Type": "text/xml",
+          "Date": "Wed, 22 Mar 2017 15:14:30 GMT",
+          "Keep-Alive": "timeout=5, max=87",
+          "Server": "libzapid-httpd"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    }
+  ],
+  "recorded_with": "betamax/0.8.0"
+}
