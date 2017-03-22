@@ -23,6 +23,8 @@ settings.load_profile(os.getenv(u'HYPOTHESIS_PROFILE', 'dev'))
 def pytest_addoption(parser):
     parser.addoption("--runslow", action="store_true",
                      help="run slow tests")
+    parser.addoption("--betamax-record-mode", action="store", default="never",
+                     help="Use betamax recording option (once, new_episodes, never)")
 
 
 def pytest_runtest_setup(item):
@@ -33,7 +35,6 @@ def pytest_runtest_setup(item):
 with betamax.Betamax.configure() as config:
     config.cassette_library_dir = 'tests/cassettes'
     config.default_cassette_options['serialize_with'] = 'prettyjson'
-    config.default_cassette_options['record_mode'] = 'once'
     config.default_cassette_options['match_requests_on'] = ['uri', 'method']
     # Replace the base64-encoded username:password string in the
     # basicauth headers with a placeholder to avoid exposing cleartext
