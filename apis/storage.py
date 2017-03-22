@@ -193,6 +193,7 @@ class Volume(Resource):
                           "clone of `from_volume` named `volume_name`, in the "
                           "state at `from_snapshot`."))
     @api.expect(optional_from_snapshot, validate=True)
+    @api.marshal_with(volume, description="The newly created volume (if created), otherwise nothing")
     @in_group(api, ADMIN_GROUP)
     def post(self, subsystem, volume_name):
         assert "/snapshots" not in volume_name
