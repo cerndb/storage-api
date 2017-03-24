@@ -361,6 +361,7 @@ class Export(Resource):
             return {'policy_name': policy,
                     'rules': rules}
 
+    # FIXME: make this a PUT with no content just setting the policy to name
     @api.doc(description="Grant hosts matching a given pattern access to the given volume")
     @api.response(201, description="The provided access rules were added")
     @api.response(404, description="There is no such volume")
@@ -382,7 +383,8 @@ class Export(Resource):
             backend(subsystem).remove_policy(volume_name, policy)
         return '', 204
 
-
+# FIXME: add a get:able resource for all policies
+# FIXME: make this not depend on volumes!
 @api.route('/<string:subsystem>/volumes/<path:volume_name>/export/<string:policy>/<path:rule>')
 @api.param('subsystem', SUBSYSTEM_DESCRIPTION)
 @api.param('volume_name', VOLUME_NAME_DESCRIPTION)

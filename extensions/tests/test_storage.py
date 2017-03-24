@@ -35,13 +35,12 @@ def delete_volume(backend, volume_name):
         return
 
     server = backend.server
-    with server.with_vserver(backend.vserver):
-        try:
-            server.unmount_volume(volume_name)
-            server.take_volume_offline(volume_name)
-            server.destroy_volume(volume_name)
-        except netapp.api.APIError:
-            pass
+    try:
+        server.unmount_volume(volume_name)
+        server.take_volume_offline(volume_name)
+        server.destroy_volume(volume_name)
+    except netapp.api.APIError:
+        pass
 
 
 @contextmanager
@@ -69,9 +68,9 @@ def on_all_backends(func):
 
     netapp_server = netapp.api.Server(hostname=ontap_host,
                                       username=ontap_username,
-                                      password=ontap_password)
-    backend = NetappStorage(netapp_server=netapp_server,
-                            vserver=vserver)
+                                      password=ontap_password,
+                                      vserver=vserver)
+    backend = NetappStorage(netapp_server=netapp_server)
     recorder = betamax.Betamax(backend.server.session)
 
     @functools.wraps(func)
@@ -217,72 +216,44 @@ def test_get_snapshots(storage, recorder):
 
 
 @on_all_backends
-def test_add_policy(storage, recorder):
-    rules = ["host1.db.cern.ch", "*db.cern.ch", "*foo.cern.ch"]
+def test_set_policy(storage, recorder):
+    rules = ["host1.db.cern.ch", "db.cern.ch", "foo.cern.ch"]
 
-    with recorder.use_cassette('add_policy'):
+    with recorder.use_cassette('set_policy'):
         with ephermeral_volume(storage) as vol:
             volume_id = id_from_vol(vol, storage)
-            storage.create_policy(volume_id, "a policy", rules)
-            policies = storage.policies(volume_id)
+            storage.create_policy("a_policy_400", rules)
+            storage.set_policy(volume_name=volume_id,
+                               policy_name="a_policy_400")
 
-            assert len(policies) == 1
-            assert policies[0][1] == rules
-            assert storage.get_policy(volume_id, "a policy") == (policies[0][1])
+            vol_after = storage.get_volume(volume_id)
+            assert vol_after['active_policy_name'] == "a_policy_400"
+
+        storage.remove_policy("a_policy_400")
 
 
 @on_all_backends
 def test_delete_policy(storage, recorder):
-    rules = ["host1.db.cern.ch", "*db.cern.ch"]
+    rules = ["host1.db.cern.ch", "db.cern.ch"]
+    policy_name = "a_policy_924"
 
-    with recorder.use_cassette('delete_policy',
-                               match_requests_on=['body',
-                                                  'method',
-                                                  'uri']):
-        with ephermeral_volume(storage) as vol:
-            volume_id = id_from_vol(vol, storage)
-            storage.create_policy(volume_id, "a policy", rules)
-            storage.remove_policy(volume_id, "a policy")
+    with recorder.use_cassette('delete_policy'):
+        storage.create_policy(policy_name, rules)
+        assert policy_name in [p['name'] for p in storage.policies]
+        storage.remove_policy(policy_name)
+        assert policy_name not in [p['name'] for p in storage.policies]
 
-            assert len(storage.policies(volume_id)) == 0
-
-            storage.create_policy(volume_id, "a policy", rules)
-            assert len(storage.policies(volume_id)) == 1
-
-
-@on_all_backends
-def test_delete_volume_policies_deleted_also(storage, recorder):
-    if isinstance(storage, NetappStorage):
-        # Restriction doesn't quite work this way on NetApp
-        return
-
-    volume_name = uuid.uuid1()
-    storage.create_volume(volume_name=volume_name)
-    rules = ["host1.db.cern.ch", "*db.cern.ch"]
-    policy_name = "a policy"
-
-    storage.create_policy(volume_name, policy_name, rules)
-    storage.restrict_volume(volume_name)
-
-    storage.create_volume(volume_name=volume_name)
-    assert len(storage.policies(volume_name)) == 0
-
-
-@on_all_backends
-def test_add_policy_no_volume_raises_key_error(storage, recorder):
-    volume_name = "novolumeexists"
-    with recorder.use_cassette('add_policy_nonexistent'):
-        with pytest.raises(KeyError):
-            storage.create_policy(volume_name, "a policy", rules=[])
+        storage.create_policy(policy_name, rules)
+        assert policy_name in [p['name'] for p in storage.policies]
+        storage.remove_policy(policy_name)
+        assert policy_name not in [p['name'] for p in storage.policies]
 
 
 @on_all_backends
 def test_remove_policy_no_policy_raises_key_error(storage, recorder):
     with recorder.use_cassette('remove_nonexistent_policy'):
-        with ephermeral_volume(storage) as vol:
-            volume_id = id_from_vol(vol, storage)
-            with pytest.raises(KeyError):
-                storage.remove_policy(volume_id, "a policy")
+        with pytest.raises(KeyError):
+            storage.remove_policy("a_policy_that_doesnt_exist")
 
 
 @on_all_backends
@@ -319,7 +290,7 @@ def test_clone_volume(storage, recorder):
 def test_delete_snapshot(storage, recorder):
     snapshot_name = "snapshot123"
 
-    with recorder.use_cassette('remove_nonexistent_policy'):
+    with recorder.use_cassette('remove_snapshot'):
         with ephermeral_volume(storage) as vol:
             volume_id = id_from_vol(vol, storage)
 
@@ -351,50 +322,49 @@ def test_rollback_volume(storage, recorder):
 @on_all_backends
 def test_ensure_policy_rule_present(storage, recorder):
     rule = "127.0.0.1"
+    policy_name = "policy126"
 
     with recorder.use_cassette('ensure_policy_rule_present'):
-        with ephermeral_volume(storage) as vol:
-            volume_id = id_from_vol(vol, storage)
-            storage.create_volume(volume_name=volume_id)
-            storage.create_policy(volume_name=volume_id, policy_name="policy",
-                                  rules=[])
+        storage.create_policy(policy_name=policy_name,
+                              rules=[])
 
-            storage.ensure_policy_rule_absent(volume_id,
-                                              policy_name="policy",
-                                              rule=rule)
+        storage.ensure_policy_rule_absent(policy_name=policy_name,
+                                          rule=rule)
 
-            storage.ensure_policy_rule_present(volume_id,
-                                               policy_name="policy",
-                                               rule=rule)
+        storage.ensure_policy_rule_present(policy_name=policy_name,
+                                           rule=rule)
 
-            all_policies = storage.get_policy(volume_id, policy_name="policy")
+        all_policies = storage.get_policy(policy_name=policy_name)
 
-            assert all_policies == [rule]
+        assert all_policies == [rule]
 
-            for r in 4 * [rule]:
-                storage.ensure_policy_rule_present(volume_id,
-                                                   policy_name="policy",
-                                                   rule=r)
+        for r in 4 * [rule]:
+            storage.ensure_policy_rule_present(policy_name=policy_name,
+                                               rule=r)
 
-            assert storage.get_policy(volume_id, policy_name="policy") == [rule]
+        assert storage.get_policy(policy_name=policy_name) == [rule]
+
+        storage.remove_policy(policy_name)
 
 
 @on_all_backends
 def test_ensure_policy_rule_absent(storage, recorder):
-    rule = "127.0.0.1/24"
-    with recorder.use_cassette('ensure_policy_rule_absent'):
-        with ephermeral_volume(storage) as vol:
-            volume_name = id_from_vol(vol, storage)
-            storage.create_policy(volume_name=volume_name, policy_name="policy",
+    rule = "127.0.0.1"
+    policy_name = "a_policy_53"
+    try:
+        with recorder.use_cassette('ensure_policy_rule_absent'):
+            storage.create_policy(policy_name=policy_name,
                                   rules=[rule])
 
-            assert rule in storage.get_policy(volume_name, policy_name="policy")
+            assert rule in storage.get_policy(policy_name=policy_name)
 
             for _ in range(1, 3):
-                storage.ensure_policy_rule_absent(volume_name, policy_name="policy",
+                storage.ensure_policy_rule_absent(policy_name=policy_name,
                                                   rule=rule)
 
-            assert storage.get_policy(volume_name, policy_name="policy") == []
+            assert storage.get_policy(policy_name=policy_name) == []
+    finally:
+        storage.remove_policy(policy_name=policy_name)
 
 
 @on_all_backends

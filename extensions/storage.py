@@ -244,9 +244,9 @@ class StorageBackend(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
-    def policies(self, volume_name):
+    def policies(self):
         """
-        Return a list of export policies for the given volume, as a list
+        Return a list of export policies for the given back-end, as a list
         of name/value tuples.
 
         Example::
@@ -264,7 +264,7 @@ class StorageBackend(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
-    def get_policy(self, volume_name, policy_name):
+    def get_policy(self, policy_name):
         """
         Return a (potentially empty) list of export policies in the form
         of strings representing IP numbers, with possible masks
@@ -276,20 +276,31 @@ class StorageBackend(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
-    def create_policy(self, volume_name, policy_name, rules):
+    def set_policy(self, volume_name, policy_name):
+        """
+        Set a policy
+
+        Raises:
+          KeyError: if volume_name does not exist
+          ValueError: if policy_name does not exist
+        """
+
+        return NotImplemented
+
+    @abstractmethod
+    def create_policy(self, policy_name, rules):
         """
         Add a new policy with a set of rules to a given volume
 
         Raises:
             ValueError: if there is already a policy with that name
-            KeyError: if there is no such volume
         """
         return NotImplemented
 
     @abstractmethod
-    def remove_policy(self, volume_name, policy_name):
+    def remove_policy(self, policy_name):
         """
-        Remove a policy. After removal, it must be possible to create an
+        Remove a policy. After removal, it must be possible to create a
         new policy with the same name.
 
         Raises:
@@ -369,27 +380,27 @@ class StorageBackend(metaclass=ABCMeta):
         return NotImplemented
 
     @abstractmethod
-    def ensure_policy_rule_present(self, volume_name, policy_name, rule):
+    def ensure_policy_rule_present(self, policy_name, rule):
         """
         Idempotently ensure that a given export policy (as represented
         by an IP with optional mask) is present in the rules of a given
         policy. If it is not present it will be added.
 
         Raises:
-            KeyError: if no such volume or policy exists.
+            KeyError: if no such policy exists.
         """
 
         return NotImplemented
 
     @abstractmethod
-    def ensure_policy_rule_absent(self, volume_name, policy_name, rule):
+    def ensure_policy_rule_absent(self, policy_name, rule):
         """
         Idempotently ensure that a given export policy (as represented
         by an IP with optional mask) is absent in the rules of a given
         policy. Will delete it if present, otherwise give no warning.
 
         Raises:
-            KeyError: if no such volume or policy exists.
+            KeyError: if no such policy exists.
         """
 
         return NotImplemented
@@ -450,6 +461,7 @@ class DummyStorage(StorageBackend):
         self.locks_store = {}  # type: Dict[str, str]
         self.rules_store = {}  # type: Dict[str, str]
         self.snapshots_store = {}  # type: Dict[str, Dict[str, List[str]]]
+        self.policies_store = {}  # type: Dict[str, List[str]]
 
     @property
     def volumes(self):
@@ -498,7 +510,6 @@ class DummyStorage(StorageBackend):
 
         self.vols[volume_name] = data
         self.locks_store.pop(volume_name, None)
-        self.rules_store[volume_name] = {}
         self.snapshots_store[volume_name] = {}
         return self.vols[volume_name]
 
@@ -528,26 +539,30 @@ class DummyStorage(StorageBackend):
             if host_owner == self.locks_store[volume_name]:
                 self.locks_store.pop(volume_name)
 
-    def policies(self, volume_name):
-        with annotate_exception(KeyError, vol_404(volume_name)):
-            return list(self.rules_store[volume_name].items())
+    @property
+    def policies(self):
+        return [{'name': name, 'rules': rules}
+                for name, rules in self.rules_store.items()]
 
-    def get_policy(self, volume_name, policy_name):
+    def get_policy(self, policy_name):
+        return self.rules_store[policy_name]
+
+    def set_policy(self, volume_name, policy_name):
         self.raise_if_volume_absent(volume_name)
+        if policy_name not in self.rules_store:
+            raise ValueError("No such policy: {}".format(policy_name))
 
-        return self.rules_store[volume_name][policy_name]
+        self.vols[volume_name]['active_policy_name'] = policy_name
 
-    def create_policy(self, volume_name, policy_name, rules):
-        log.info("Adding policy {} with rules {} on volume {}"
-                 .format(policy_name, rules, volume_name))
-        self.raise_if_volume_absent(volume_name)
-        self.rules_store[volume_name][policy_name] = list(OrderedSet(rules))
+    def create_policy(self, policy_name, rules):
+        log.info("Adding policy {} with rules {}"
+                 .format(policy_name, rules))
+        self.rules_store[policy_name] = list(OrderedSet(rules))
 
-    def remove_policy(self, volume_name, policy_name):
-        log.info("Removing policy {} from volume {}"
-                 .format(policy_name, volume_name))
-        self.raise_if_volume_absent(volume_name)
-        self.rules_store[volume_name].pop(policy_name)
+    def remove_policy(self, policy_name):
+        log.info("Removing policy {}"
+                 .format(policy_name))
+        self.rules_store.pop(policy_name)
 
     def clone_volume(self, clone_volume_name,
                      from_volume_name, from_snapshot_name):
@@ -588,15 +603,13 @@ class DummyStorage(StorageBackend):
                  .format(volume_name, restore_snapshot_name))
         self.raise_if_snapshot_absent(volume_name, restore_snapshot_name)
 
-    def ensure_policy_rule_present(self, volume_name, policy_name, rule):
-        self.raise_if_volume_absent(volume_name)
-        if rule not in self.rules_store[volume_name][policy_name]:
-            self.rules_store[volume_name][policy_name].append(rule)
+    def ensure_policy_rule_present(self, policy_name, rule):
+        if rule not in self.rules_store[policy_name]:
+            self.rules_store[policy_name].append(rule)
 
-    def ensure_policy_rule_absent(self, volume_name, policy_name, rule):
-        self.raise_if_volume_absent(volume_name)
-        stored_rules = self.rules_store[volume_name][policy_name]
-        self.rules_store[volume_name][policy_name] = list(filter(
+    def ensure_policy_rule_absent(self, policy_name, rule):
+        stored_rules = self.rules_store[policy_name]
+        self.rules_store[policy_name] = list(filter(
             lambda x: x != rule, stored_rules))
 
 
@@ -605,8 +618,11 @@ class NetappStorage(StorageBackend):
     A Back-end for a NetApp storage system.
     """
 
-    def __init__(self, netapp_server, vserver):
-        self.vserver = vserver
+    def __init__(self, netapp_server):
+        """
+        netapp_server is assumed to be configured to a vserver.
+        """
+
         self.server = netapp_server
         import requests
         requests.packages.urllib3.disable_warnings()
@@ -617,6 +633,10 @@ class NetappStorage(StorageBackend):
                 'filer_address': v.node_name,
                 'aggregate_name': v.containing_aggregate_name,
                 **v.__dict__}
+
+    def format_policy(self, p):
+        return {'name': p.name,
+                'rules': list(p.rules)}
 
     def name_from_path(self, junction_path):
         """
@@ -685,21 +705,23 @@ class NetappStorage(StorageBackend):
                 raise KeyError
         return self.format_volume(volume)
 
-    def get_policy(self, volume_name, policy_name):
+    def get_policy(self, policy_name):
+        rules = [r[1] for r in self.server.export_rules_of(policy_name)]
+        return rules
+
+    def set_policy(self, volume_name, policy_name):
         volume_name = self.parse_volume_name(volume_name)
-        return self.server.export_rules_of(policy_name)
+
+        self.server.set_volume_export_policy(volume_name=volume_name,
+                                             policy_name=policy_name)
 
     def get_snapshots(self, volume_name):
         volume_name = self.parse_volume_name(volume_name)
         return [{'name': s} for s in self.server.snapshots_of(volume_name)]
 
-    def policies(self, volume_name):
-        volume_name = self.parse_volume_name(volume_name)
-        # We only have one, so return that!
-        policy_name = self.get_volume(volume_name)['active_policy_name']
-        rules = [r[1] for r in self.server.export_rules_of(policy_name)]
-        response = (policy_name, rules)
-        return [response]
+    @property
+    def policies(self):
+        return [self.format_policy(p) for p in self.server.export_policies]
 
     def locks(self, volume_name):
         volume_name = self.parse_volume_name(volume_name)
@@ -721,8 +743,7 @@ class NetappStorage(StorageBackend):
         _node, junction_path = self.node_junction_path(volume_name)
         volume_name = self.name_from_path(junction_path)
 
-        with self.server.with_vserver(self.vserver):
-            self.server.create_snapshot(volume_name, snapshot_name)
+        self.server.create_snapshot(volume_name, snapshot_name)
 
     def get_snapshot(self, volume_name, snapshot_name):
         volume_name = self.parse_volume_name(volume_name)
@@ -732,32 +753,39 @@ class NetappStorage(StorageBackend):
                 return snapshot
         raise ValueError("No such snapshot {}".format(snapshot_name))
 
-    def remove_policy(self, volume_name, policy_name):
-        volume_name = self.parse_volume_name(volume_name)
-        self.server.delete_export_policy(policy_name)
+    def remove_policy(self, policy_name):
+        try:
+            self.server.delete_export_policy(policy_name)
+        except netapp.api.APIError as e:
+            if e.errno == 15661:
+                raise KeyError("Policy doesn't exist {}".format(policy_name))
+            else:
+                raise e
 
-    def create_policy(self, volume_name, policy_name, rules):
-        volume_name = self.parse_volume_name(volume_name)
+    def create_policy(self, policy_name, rules):
         self.server.create_export_policy(policy_name, rules=rules)
-        self.server.set_volume_export_policy(volume_name, policy_name)
 
     def delete_snapshot(self, volume_name, snapshot_name):
         volume_name = self.parse_volume_name(volume_name)
-        self.server.delete_snapshot(volume_name, snapshot_name)
+        try:
+            self.server.delete_snapshot(volume_name, snapshot_name)
+        except netapp.api.APIError as e:
+            if e.errno == 15661:
+                raise KeyError("No such snapshot {}".format(snapshot_name))
+            else:
+                raise e
 
     def rollback_volume(self, volume_name, restore_snapshot_name):
         volume_name = self.parse_volume_name(volume_name)
         self.get_snapshot(volume_name, restore_snapshot_name)
         self.server.rollback_volume_from_snapshot(volume_name, restore_snapshot_name)
 
-    def ensure_policy_rule_present(self, volume_name, policy_name, rule):
-        volume_name = self.parse_volume_name(volume_name)
+    def ensure_policy_rule_present(self, policy_name, rule):
         rules = [r for _i, r in self.server.export_rules_of(policy_name)]
         if rule not in rules:
             self.server.add_export_rule(policy_name, rule)
 
-    def ensure_policy_rule_absent(self, volume_name, policy_name, rule):
-        volume_name = self.parse_volume_name(volume_name)
+    def ensure_policy_rule_absent(self, policy_name, rule):
         for index, stored_rule in self.server.export_rules_of(policy_name):
             if rule == stored_rule:
                 self.server.remove_export_rule(policy_name, index)
@@ -790,9 +818,12 @@ class NetappStorage(StorageBackend):
             log.info("Aggregate not provided,"
                      " using the one with the most free space...")
             # sorted sorts ascending by default.
-            aggregates = sorted(self.server.aggregates,
-                                key=lambda a: a.bytes_available,
-                                reverse=True)
+            with self.server.with_vserver(None):
+                # Switch to cluster-mode for this operation
+                aggregates = sorted(self.server.aggregates,
+                                    key=lambda a: a.bytes_available,
+                                    reverse=True)
+
             not_aggr0 = functools.partial(re.compile("(?!^aggr0.*)").match)
 
             for aggregate in aggregates:
@@ -808,18 +839,17 @@ class NetappStorage(StorageBackend):
 
         assert aggregate_name, "Could not find a suitable aggregate!"
 
-        with self.server.with_vserver(self.vserver):
-            try:
-                self.server.create_volume(name=fields['name'],
-                                          size_bytes=fields['size_total'],
-                                          junction_path=junction_path,
-                                          aggregate_name=aggregate_name)
-                return self.format_volume(self.server.volumes.single(volume_name=fields['name']))
-            except netapp.api.APIError as e:
-                if e.errno == 17:
-                    raise KeyError("Volume {} already exists!".format(fields['name']))
-                else:
-                    raise e
+        try:
+            self.server.create_volume(name=fields['name'],
+                                      size_bytes=fields['size_total'],
+                                      junction_path=junction_path,
+                                      aggregate_name=aggregate_name)
+            return self.format_volume(self.server.volumes.single(volume_name=fields['name']))
+        except netapp.api.APIError as e:
+            if e.errno == 17:
+                raise KeyError("Volume {} already exists!".format(fields['name']))
+            else:
+                raise e
 
     def create_lock(self, volume_name, host_owner):
         # There doesn't seem to be any way of implementing this. :(
@@ -837,21 +867,19 @@ class NetappStorage(StorageBackend):
                                       previous['autosize_increment'])
         max_autosize = data.get('max_autosize', previous['max_autosize'])
 
-        with self.server.with_vserver(self.vserver):
-            self.server.set_volume_autosize(previous['name'],
-                                            max_size_bytes=max_autosize,
-                                            increment_bytes=autosize_increment,
-                                            autosize_enabled=autosize_enabled)
+        self.server.set_volume_autosize(previous['name'],
+                                        max_size_bytes=max_autosize,
+                                        increment_bytes=autosize_increment,
+                                        autosize_enabled=autosize_enabled)
 
         # FIXME: Also handle updates to reserved space!
 
     def restrict_volume(self, volume_name):
         name = self.parse_volume_name(volume_name)
-        with self.server.with_vserver(self.vserver):
-            self.server.restrict_volume(name)
+        self.server.restrict_volume(name)
 
-            for volume in self.server.volumes.filter(name=name):
-                return self.format_volume(volume)
+        for volume in self.server.volumes.filter(name=name):
+            return self.format_volume(volume)
 
 # I don't know if this does anything, but it may be necessary for, uh,
 # some reason?
