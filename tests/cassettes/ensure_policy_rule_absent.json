@@ -1,0 +1,317 @@
+{
+  "http_interactions": [
+    {
+      "recorded_at": "2017-03-24T15:22:47",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp xmlns=\"http://www.netapp.com/filer/admin\" nmsdk_app=\"netapp-api-python\" version=\"1.0\" vfiler=\"vs1rac11\"><export-policy-create><policy-name>a_policy_53</policy-name><return-record>true</return-record></export-policy-create></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "278",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><result><export-policy-info><policy-id>21474836676</policy-id><policy-name>a_policy_53</policy-name><vserver>vs1rac11</vserver></export-policy-info></result></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Length": "358",
+          "Content-Type": "text/xml",
+          "Date": "Fri, 24 Mar 2017 15:22:46 GMT",
+          "Keep-Alive": "timeout=5, max=100",
+          "Server": "libzapid-httpd"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-24T15:22:47",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp xmlns=\"http://www.netapp.com/filer/admin\" nmsdk_app=\"netapp-api-python\" version=\"1.0\" vfiler=\"vs1rac11\"><export-rule-create><policy-name>a_policy_53</policy-name><client-match>127.0.0.1</client-match><rule-index>1</rule-index><ro-rule><security-flavor>sys</security-flavor></ro-rule><rw-rule><security-flavor>sys</security-flavor></rw-rule><anonymous-user-id>0</anonymous-user-id><protocol><access-protocol>nfs</access-protocol></protocol><super-user-security><security-flavor>sys</security-flavor></super-user-security></export-rule-create></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "597",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"/></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Length": "192",
+          "Content-Type": "text/xml",
+          "Date": "Fri, 24 Mar 2017 15:22:46 GMT",
+          "Keep-Alive": "timeout=5, max=99",
+          "Server": "libzapid-httpd"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-24T15:22:47",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp xmlns=\"http://www.netapp.com/filer/admin\" nmsdk_app=\"netapp-api-python\" version=\"1.0\" vfiler=\"vs1rac11\"><export-rule-get-iter><desired-attributes><export-rule-info><rule-index/><client-match/></export-rule-info></desired-attributes><query><export-rule-info><policy-name>a_policy_53</policy-name></export-rule-info></query></export-rule-get-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "401",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><attributes-list><export-rule-info><client-match>127.0.0.1</client-match><policy-name>a_policy_53</policy-name><rule-index>1</rule-index><vserver-name>vs1rac11</vserver-name></export-rule-info></attributes-list><num-records>1</num-records></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Type": "text/xml",
+          "Date": "Fri, 24 Mar 2017 15:22:46 GMT",
+          "Keep-Alive": "timeout=5, max=98",
+          "Server": "libzapid-httpd",
+          "Transfer-Encoding": "chunked"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-24T15:22:47",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp xmlns=\"http://www.netapp.com/filer/admin\" nmsdk_app=\"netapp-api-python\" version=\"1.0\" vfiler=\"vs1rac11\"><export-rule-get-iter><desired-attributes><export-rule-info><rule-index/><client-match/></export-rule-info></desired-attributes><query><export-rule-info><policy-name>a_policy_53</policy-name></export-rule-info></query></export-rule-get-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "401",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><attributes-list><export-rule-info><client-match>127.0.0.1</client-match><policy-name>a_policy_53</policy-name><rule-index>1</rule-index><vserver-name>vs1rac11</vserver-name></export-rule-info></attributes-list><num-records>1</num-records></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Type": "text/xml",
+          "Date": "Fri, 24 Mar 2017 15:22:46 GMT",
+          "Keep-Alive": "timeout=5, max=97",
+          "Server": "libzapid-httpd",
+          "Transfer-Encoding": "chunked"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-24T15:22:47",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp xmlns=\"http://www.netapp.com/filer/admin\" nmsdk_app=\"netapp-api-python\" version=\"1.0\" vfiler=\"vs1rac11\"><export-rule-destroy><policy-name>a_policy_53</policy-name><rule-index>1</rule-index></export-rule-destroy></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "267",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"/></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Length": "192",
+          "Content-Type": "text/xml",
+          "Date": "Fri, 24 Mar 2017 15:22:46 GMT",
+          "Keep-Alive": "timeout=5, max=96",
+          "Server": "libzapid-httpd"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-24T15:22:47",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp xmlns=\"http://www.netapp.com/filer/admin\" nmsdk_app=\"netapp-api-python\" version=\"1.0\" vfiler=\"vs1rac11\"><export-rule-get-iter><desired-attributes><export-rule-info><rule-index/><client-match/></export-rule-info></desired-attributes><query><export-rule-info><policy-name>a_policy_53</policy-name></export-rule-info></query></export-rule-get-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "401",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><num-records>0</num-records></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Length": "229",
+          "Content-Type": "text/xml",
+          "Date": "Fri, 24 Mar 2017 15:22:46 GMT",
+          "Keep-Alive": "timeout=5, max=95",
+          "Server": "libzapid-httpd"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-24T15:22:47",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp xmlns=\"http://www.netapp.com/filer/admin\" nmsdk_app=\"netapp-api-python\" version=\"1.0\" vfiler=\"vs1rac11\"><export-rule-get-iter><desired-attributes><export-rule-info><rule-index/><client-match/></export-rule-info></desired-attributes><query><export-rule-info><policy-name>a_policy_53</policy-name></export-rule-info></query></export-rule-get-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "401",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><num-records>0</num-records></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Length": "229",
+          "Content-Type": "text/xml",
+          "Date": "Fri, 24 Mar 2017 15:22:46 GMT",
+          "Keep-Alive": "timeout=5, max=94",
+          "Server": "libzapid-httpd"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    },
+    {
+      "recorded_at": "2017-03-24T15:22:47",
+      "request": {
+        "body": {
+          "encoding": "utf-8",
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp xmlns=\"http://www.netapp.com/filer/admin\" nmsdk_app=\"netapp-api-python\" version=\"1.0\" vfiler=\"vs1rac11\"><export-rule-get-iter><desired-attributes><export-rule-info><rule-index/><client-match/></export-rule-info></desired-attributes><query><export-rule-info><policy-name>a_policy_53</policy-name></export-rule-info></query></export-rule-get-iter></netapp>"
+        },
+        "headers": {
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Authorization": "Basic <ONTAP-AUTH>",
+          "Connection": "keep-alive",
+          "Content-Length": "401",
+          "Content-type": "application/xml",
+          "User-Agent": "python-requests/2.13.0"
+        },
+        "method": "POST",
+        "uri": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      },
+      "response": {
+        "body": {
+          "encoding": "ISO-8859-1",
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results status=\"passed\"><num-records>0</num-records></results></netapp>"
+        },
+        "headers": {
+          "Connection": "Keep-Alive",
+          "Content-Length": "229",
+          "Content-Type": "text/xml",
+          "Date": "Fri, 24 Mar 2017 15:22:46 GMT",
+          "Keep-Alive": "timeout=5, max=93",
+          "Server": "libzapid-httpd"
+        },
+        "status": {
+          "code": 200,
+          "message": "OK"
+        },
+        "url": "https://dbnasa-cluster-mgmt:443/servlets/netapp.servlets.admin.XMLrequest_filer"
+      }
+    }
+  ],
+  "recorded_with": "betamax/0.8.0"
+}
