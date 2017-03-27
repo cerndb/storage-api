@@ -29,7 +29,9 @@ log.addHandler(logging.NullHandler())
 
 
 VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
-                           "Must not contain leading /")
+                           "Must not contain leading /. On NetApp back-ends,"
+                           " this may either be the name of a volume, or"
+                           " node_name:/junction/path.")
 
 SUBSYSTEM_MAPPING = {'netapp': 'NetappStorage',
                      'ceph': 'DummyStorage',
@@ -86,26 +88,47 @@ policy_rule_list_field = fields.List(fields.String(
     example="10.10.10.1/24",
     min_length=1))
 
-volume_writable_model = api.model('VolumeWritable', {
+volume_write_model = api.model('VolumeWrite', {
     'autosize_enabled': fields.Boolean(),
     'autosize_increment': fields.Integer(),
     'max_autosize': fields.Integer(),
+    'active_policy_name': fields.String(min_length=1),
+    'percentage_snapshot_reserve': fields.Integer(),
+    'compression_enabled': fields.Boolean(),
+    'inline_compression': fields.Boolean(),
     })
 
-volume = api.inherit('Volume', volume_writable_model, {
-    'name': fields.String(min_length=1,
-                          description=VOLUME_NAME_DESCRIPTION,
-                          example="foo/bar/baz",
-                          ),
+volume_create_model = api.inherit('VolumeCreate', volume_write_model, {
+    'name': fields.String(
+        min_length=1,
+        description="The internal name of the volume",
+        example="volume_name",
+    ),
+    'size_total': fields.Integer(
+        description=("The total size of the volume, "
+                     " in bytes. If creating, the size"
+                     " of the volume.")
+    ),
+    'aggregate_name': fields.String(
+        min_length=1, required=False,
+        description=("If applicable, the"
+                     " aggregate to place the volume in"
+                     " (NetApp only). If not provided, will"
+                     " use the one with the most free"
+                     " space.")
+    ),
+})
+
+volume_read_model = api.inherit('VolumeRead', volume_create_model, {
     'size_used': fields.Integer(),
     'uuid': fields.String(min_length=1),
-    'active_policy_name': fields.String(min_length=1),
-    'aggregate_name': fields.String(min_length=1),
-    'state': fields.String(min_length=1, ),
-    'size_total': fields.Integer(),
+    'state': fields.String(min_length=1),
     'filer_address': fields.String(min_length=1),
     'junction_path': fields.String(min_length=1),
+    'creation_time': fields.DateTime(dt_format='rfc822'),
+    'percentage_snapshot_reserve_used': fields.Integer(),
     })
+
 
 lock_model = api.model('Lock', {
     'host': fields.String(min_length=1, required=True,
@@ -113,36 +136,31 @@ lock_model = api.model('Lock', {
 })
 
 export_policy_model = api.model('Export Policy', {
-    'policy_name': fields.String(min_length=1,
-                                 example="allow_cluster_x"),
+    'name': fields.String(min_length=1,
+                          example="allow_cluster_x"),
     'rules': policy_rule_list_field
     })
 
 snapshot_model = api.model('Snapshot', {
     'name': fields.String(),
-    'autosize_enabled': fields.Boolean(),
-    'autosize_increment': fields.Integer(),
-    'max_autosize': fields.Integer(),
     })
 
-optional_from_snapshot = api.inherit(
+volume_create_w_snapshot_model = api.inherit(
     'OptionalFromSnapshot',
-    volume_writable_model,
+    volume_create_model,
     {
-        'name': fields.String(min_length=1,
-                              description=VOLUME_NAME_DESCRIPTION,
-                              example="my_volume"),
-        'aggregate_name': fields.String(min_length=1),
-        'size_total': fields.Integer(),
         'from_snapshot':
         fields.String(
             required=False,
-            description=("The snapshot name to create from/restore")),
+            description=("The snapshot name to create from/restore")
+        ),
         'from_volume':
-        fields.String(required=False,
-                      description=("When cloning a volume, use this volume"
-                                   " as basis for the snapshot to start"
-                                   " from"))})
+        fields.String(
+            required=False,
+            description=("When cloning a volume, use this volume"
+                         " as basis for the snapshot to start"
+                         " from"),
+        )})
 
 snapshot_put_model = api.model('SnapshotPut', {
     'purge_old_if_needed': fields.Boolean(
@@ -164,7 +182,7 @@ def default_error_handler(error):    # pragma: no cover
 class AllVolumes(Resource):
     @api.doc(description="Get a list of all volumes",
              id='get_volumes')
-    @api.marshal_with(volume, as_list=True)
+    @api.marshal_with(volume_read_model, as_list=True)
     def get(self, subsystem):
         return backend(subsystem).volumes
 
@@ -174,16 +192,17 @@ class AllVolumes(Resource):
 @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 class Volume(Resource):
 
-    @api.marshal_with(volume, description="The volume named volume_name")
+    @api.marshal_with(volume_read_model, description="The volume named volume_name")
     @api.doc(description="Get a specific volume by name")
     @api.response(404, description="No such volume exists")
+    @api.response(201, description="A new volume was created")
     def get(self, subsystem, volume_name):
         assert "/snapshots" not in volume_name
         log.info("GET for {}".format(volume_name))
         with keyerror_is_404():
             return backend(subsystem).get_volume(volume_name)
 
-    @api.doc(body=optional_from_snapshot,
+    @api.doc(body=volume_create_w_snapshot_model,
              description=("Create a new volume with the given details. "
                           " If `from_snapshot` is a snapshot and `volume_name`"
                           " already refers to an existing volume, roll back "
@@ -192,32 +211,32 @@ class Volume(Resource):
                           "and `volume_name` doesn't already exist, create a "
                           "clone of `from_volume` named `volume_name`, in the "
                           "state at `from_snapshot`."))
-    @api.expect(optional_from_snapshot, validate=True)
-    @api.marshal_with(volume, description="The newly created volume (if created), otherwise nothing")
+    @api.expect(volume_create_w_snapshot_model, validate=True)
+    @api.marshal_with(volume_read_model,
+                      description=("The newly created volume"
+                                   " (if created), otherwise nothing"))
     @in_group(api, ADMIN_GROUP)
     def post(self, subsystem, volume_name):
-        assert "/snapshots" not in volume_name
-        data = marshal(apis.api.payload, optional_from_snapshot)
+        data = marshal(apis.api.payload, volume_create_w_snapshot_model)
 
         if data['from_volume'] and data['from_snapshot']:
             with keyerror_is_404(), valueerror_is_400():
-                backend(subsystem).clone_volume(volume_name, data['from_volume'],
-                                                data['from_snapshot'])
-            return '', 201
+                new_vol = backend(subsystem).clone_volume(volume_name, data['from_volume'],
+                                                          data['from_snapshot'])
 
         elif data['from_snapshot']:
-
             with keyerror_is_404():
-                backend(subsystem).rollback_volume(
+                new_vol = backend(subsystem).rollback_volume(
                     volume_name,
                     restore_snapshot_name=data['from_snapshot'])
         else:
             with valueerror_is_400(), keyerror_is_400():
-                return backend(subsystem).create_volume(
+                new_vol = backend(subsystem).create_volume(
                     volume_name,
                     **dict_without(dict(data),
                                    'from_snapshot',
                                    'from_volume'))
+        return new_vol, 201
 
     @api.doc(description=("Restrict the volume named *volume_name*"
                           " but do not actually delete it"))
@@ -231,11 +250,10 @@ class Volume(Resource):
         return '', 204
 
     @api.doc(description="Partially update volume_name")
-    @api.expect(volume_writable_model, validate=True)
+    @api.expect(volume_write_model, validate=True)
     @in_group(api, ADMIN_GROUP)
     def patch(self, subsystem, volume_name):
-        assert "/snapshots" not in volume_name
-        data = filter_none(marshal(apis.api.payload, volume_writable_model))
+        data = filter_none(marshal(apis.api.payload, volume_write_model))
         log.info("PATCH with payload {}".format(str(data)))
         if data:
             with keyerror_is_404():
@@ -329,25 +347,20 @@ class Locks(Resource):
         return '', 204
 
 
-@api.route('/<string:subsystem>/volumes/<path:volume_name>/export')
+@api.route('/<string:subsystem>/export')
 @api.param('subsystem', SUBSYSTEM_DESCRIPTION)
-@api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 class AllExports(Resource):
     @api.marshal_with(export_policy_model,
-                      description="The current ACL for the given volume",
+                      description="The full policy",
                       as_list=True)
-    @api.doc(description="Get the full ACL for the volume")
+    @api.doc(description="Get all ACLs present on the back-end")
     @in_group(api, ADMIN_GROUP)
-    def get(self, subsystem, volume_name):
-        with keyerror_is_404():
-            return [{'policy_name': policy,
-                     'rules': rules} for policy, rules in
-                    backend(subsystem).policies(volume_name)]
+    def get(self, subsystem):
+            return backend(subsystem).policies
 
 
-@api.route('/<string:subsystem>/volumes/<path:volume_name>/export/<string:policy>')
+@api.route('/<string:subsystem>/export/<string:policy>')
 @api.param('subsystem', SUBSYSTEM_DESCRIPTION)
-@api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 @api.param('policy', "The policy to operate on")
 class Export(Resource):
 
@@ -355,54 +368,50 @@ class Export(Resource):
                       description="Get the rules of a specific policy")
     @api.doc(description="Display the rules of a given policy")
     @in_group(api, ADMIN_GROUP)
-    def get(self, subsystem, volume_name, policy):
+    def get(self, subsystem, policy):
         with keyerror_is_404():
-            rules = backend(subsystem).get_policy(volume_name, policy)
-            return {'policy_name': policy,
+            rules = backend(subsystem).get_policy(policy)
+            return {'name': policy,
                     'rules': rules}
 
-    # FIXME: make this a PUT with no content just setting the policy to name
     @api.doc(description="Grant hosts matching a given pattern access to the given volume")
     @api.response(201, description="The provided access rules were added")
-    @api.response(404, description="There is no such volume")
     @api.response(400, description="A policy with that name already exists")
     @api.expect(policy_rule_write_model, validate=True)
     @in_group(api, ADMIN_GROUP)
-    def post(self, subsystem, volume_name, policy):
+    def post(self, subsystem, policy):
         rules = marshal(apis.api.payload, policy_rule_write_model)['rules']
         with keyerror_is_404(), valueerror_is_400():
-            backend(subsystem).create_policy(volume_name, policy, rules)
+            backend(subsystem).create_policy(policy, rules)
         return '', 201
 
     @api.doc(description=("Delete the entire policy"))
     @api.response(204, description="Successfully deleted the policy")
     @api.response(404, description="No such policy exists")
     @in_group(api, ADMIN_GROUP)
-    def delete(self, subsystem, volume_name, policy):
+    def delete(self, subsystem, policy):
         with keyerror_is_404():
-            backend(subsystem).remove_policy(volume_name, policy)
+            backend(subsystem).remove_policy(policy)
         return '', 204
 
-# FIXME: add a get:able resource for all policies
-# FIXME: make this not depend on volumes!
-@api.route('/<string:subsystem>/volumes/<path:volume_name>/export/<string:policy>/<path:rule>')
+
+@api.route('/<string:subsystem>/export/<string:policy>/<path:rule>')
 @api.param('subsystem', SUBSYSTEM_DESCRIPTION)
-@api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 @api.param('policy', "The policy to operate on")
 @api.param('rule', "The policy rule to operate on")
 class ExportRule(Resource):
 
-    @api.doc(description="Grant hosts matching a given pattern access to the given volume")
-    @api.response(201, description="The provided access rule was added")
+    @api.doc(description="Grant hosts matching a given pattern access to the given resource")
+    @api.response(201, description="The provided access rule was added or already present")
     @in_group(api, ADMIN_GROUP)
-    def put(self, subsystem, volume_name, policy, rule):
-        backend(subsystem).ensure_policy_rule_present(volume_name, policy, rule)
+    def put(self, subsystem, policy, rule):
+        backend(subsystem).ensure_policy_rule_present(policy, rule)
         return '', 201
 
     @api.doc(description=("Delete rule from policy"))
-    @api.response(204, description="Successfully deleted the rule")
-    @api.response(404, description="No such policy, rule or volume exists")
+    @api.response(204, description="Successfully deleted the rule, or rule did not exist")
+    @api.response(404, description="No such policy exists")
     @in_group(api, ADMIN_GROUP)
-    def delete(self, subsystem, volume_name, policy, rule):
-        backend(subsystem).ensure_policy_rule_absent(volume_name, policy, rule)
+    def delete(self, subsystem, policy, rule):
+        backend(subsystem).ensure_policy_rule_absent(policy, rule)
         return '', 204

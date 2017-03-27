@@ -30,25 +30,37 @@ import flask
 import netapp.api
 
 log = logging.getLogger(__name__)
-SCHEMAS = [('volume',
-            {'name': {'type': 'string', 'minlength': 1,
-                      'required': True},
-             'uuid': {'type': 'string', 'minlength': 1,
+SCHEMAS = [('volume', {
+    'name': {'type': 'string', 'minlength': 1,
+             'required': True},
+
+    'uuid': {'type': 'string', 'minlength': 1,
+             'required': False},
+    'active_policy_name': {'type': 'string', 'minlength': 1,
+                           'required': False},
+    'junction_path': {'type': 'string', 'minlength': 1,
                       'required': False},
-             'active_policy_name': {'type': 'string', 'minlength': 1,
-                                    'required': False},
-             'junction_path': {'type': 'string', 'minlength': 1,
-                               'required': False},
-             'aggregate_name': {'type': 'string', 'minlength': 1,
-                                'required': False},
-             'state': {'type': 'string', 'minlength': 1,
+    'aggregate_name': {'type': 'string', 'minlength': 1,
                        'required': False},
-             'size_used': {'type': 'integer', 'min': 0,
-                           'required': True},
-             'size_total': {'type': 'integer', 'min': 0,
-                            'required': True},
-             'filer_address': {'type': 'string', 'minlength': 1,
-                               'required': True}})]
+    'state': {'type': 'string', 'minlength': 1,
+              'required': False},
+    'size_used': {'type': 'integer', 'min': 0,
+                  'required': True},
+    'size_total': {'type': 'integer', 'min': 0,
+                   'required': True},
+    'filer_address': {'type': 'string', 'minlength': 1,
+                      'required': True},
+    'creation_time': {'type': 'datetime',
+                      'required': False},
+    'compression_enabled': {'type': 'boolean',
+                            'required': False},
+    'inline_compression': {'type': 'boolean',
+                           'required': False},
+    'percentage_snapshot_reserve': {'type': 'integer',
+                                    'required': False},
+    'percentage_snapshot_reserve_used': {'type': 'integer',
+                                         'required': False},
+})]
 
 cerberus.schema_registry.extend(SCHEMAS)
 
@@ -337,8 +349,6 @@ class StorageBackend(metaclass=ABCMeta):
     def get_snapshot(self, volume_name, snapshot_name):
         """
         Get the data associated with the snapshot.
-
-        FIXME: describe the contents of a snapshot?
 
         Back-ends are allowed to add additional keys.
 
@@ -706,6 +716,8 @@ class NetappStorage(StorageBackend):
         return self.format_volume(volume)
 
     def get_policy(self, policy_name):
+        if policy_name not in [p['name'] for p in self.policies]:
+            raise KeyError("No such policy exists: '{}'".format(policy_name))
         rules = [r[1] for r in self.server.export_rules_of(policy_name)]
         return rules
 
@@ -758,7 +770,7 @@ class NetappStorage(StorageBackend):
             self.server.delete_export_policy(policy_name)
         except netapp.api.APIError as e:
             if e.errno == 15661:
-                raise KeyError("Policy doesn't exist {}".format(policy_name))
+                raise KeyError("Policy doesn't exist: '{}'".format(policy_name))
             else:
                 raise e
 
@@ -873,6 +885,9 @@ class NetappStorage(StorageBackend):
                                         autosize_enabled=autosize_enabled)
 
         # FIXME: Also handle updates to reserved space!
+        # FIXME: Also change policies
+        # FIXME: Also change compression status
+        # FIXME: Also change snapshot reserve space
 
     def restrict_volume(self, volume_name):
         name = self.parse_volume_name(volume_name)
