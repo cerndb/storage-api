@@ -1,12 +1,15 @@
+import extensions
+
 import json
 from contextlib import contextmanager
 import os
+import netapp.api
 
 import requests
 from flask_testing import LiveServerTestCase
-
 from jsonschema import RefResolver
 from swagger_spec_validator import validator20
+import betamax
 
 
 _DEFAULT_HEADERS = {'Content-Type': 'application/json',
@@ -15,39 +18,67 @@ _DEFAULT_HEADERS = {'Content-Type': 'application/json',
 
 class LiveTests(LiveServerTestCase):
 
-    def create_app(self):
+    def cassette_name(self, method):
+        class_name = self.described_class
+        return '_'.join([class_name, method])
+
+    @property
+    def described_class(self):
+        class_name = self.__class__.__name__
+        return class_name[4:]
+
+    def create_app(self, ):
+        global counter
         from app import app
         app.config['TESTING'] = True
         app.config['LIVESERVER_PORT'] = 8943
         app.config['LIVESERVER_TIMEOUT'] = 10
         app.debug = True
+
+        # Re-initialise a betamax:ed NetApp back-end:
+        ONTAP_VSERVER = os.environ.get('ONTAP_VSERVER', 'vs1rac11')
+        server_host = os.environ.get('ONTAP_HOST', 'dbnasa-cluster-mgmt')
+        server_username = os.environ.get('ONTAP_USERNAME', "user-placeholder")
+        server_password = os.environ.get('ONTAP_PASSWORD', "password-placeholder")
+
+        s = netapp.api.Server(hostname=server_host, username=server_username,
+                              password=server_password,
+                              vserver=ONTAP_VSERVER)
+        self.recorder = betamax.Betamax(s.session)
+        print(s.session)
+        backend = extensions.NetappStorage(netapp_server=s)
+        backend.init_app(app)
+
         return app
 
     def hard_delete_volume(self, volume_name):
-        import netapp.api
         ONTAP_VSERVER = os.environ.get('ONTAP_VSERVER', 'vs1rac11')
         server_host = os.environ.get('ONTAP_HOST', 'db-51195')
         server_username = os.environ.get('ONTAP_USERNAME', "user-placeholder")
         server_password = os.environ.get('ONTAP_PASSWORD', "password-placeholder")
+
         s = netapp.api.Server(hostname=server_host, username=server_username,
                               password=server_password)
 
-        with s.with_vserver(ONTAP_VSERVER):
-            try:
-                s.unmount_volume(volume_name)
-                s.take_volume_offline(volume_name)
-            finally:
-                s.destroy_volume(volume_name)
+        recorder = betamax.Betamax(s.session)
+
+        with recorder.use_cassette('hard_delete'):
+            with s.with_vserver(ONTAP_VSERVER):
+                try:
+                    s.unmount_volume(volume_name)
+                    s.take_volume_offline(volume_name)
+                finally:
+                    s.destroy_volume(volume_name)
 
     def login_session(self):
         login_url = self.get_server_url() + "/login"
-        s = requests.Session()
-        s.get(login_url)
-        return s
+        self.s = requests.Session()
+        self.s.get(login_url)
+        return self.s
 
     @contextmanager
-    def perform(self, session, operation, relative_url, payload=None):
-        result = getattr(session, operation)(
+    def perform(self, operation, relative_url, payload=None):
+        result = getattr(self.s, operation)(
             self.get_server_url() + relative_url,
             headers=_DEFAULT_HEADERS,
             data=payload)
@@ -78,7 +109,7 @@ class LiveTests(LiveServerTestCase):
 
         r1 = s.post(url + "/ceph/volumes/bork", data=json.dumps({}),
                     headers=_DEFAULT_HEADERS)
-        assert r1.status_code == 200
+        assert r1.status_code == 201
         r = s.get(url + "/ceph/volumes/bork/locks")
 
         assert r.status_code == 200
@@ -86,10 +117,10 @@ class LiveTests(LiveServerTestCase):
     def test_netapp_get_volumes(self):
         url = self.get_server_url()
         s = self.login_session()
-        r1 = s.get(url + "/netapp/volumes")
-        assert r1.status_code == 200
-        result = r1.json()
-        assert result
+        with self.recorder.use_cassette('get_volumes'):
+            r1 = s.get(url + "/netapp/volumes")
+            assert r1.status_code == 200
+            result = r1.json()
 
     def test_netapp_get_specific_volume(self):
         url = self.get_server_url()
@@ -97,26 +128,27 @@ class LiveTests(LiveServerTestCase):
 
         NUM_COMPARISONS = 5
 
-        for cmp_no, volume in enumerate(s.get(url + "/netapp/volumes").json()):
-            by_name = s.get("{}/netapp/volumes/{}:{}"
-                            .format(url, volume['filer_address'],
-                                    volume['junction_path'])).json()
-            print(volume)
-            assert by_name == volume
-            if cmp_no >= NUM_COMPARISONS:
-                break
+        with self.recorder.use_cassette('get_specific'):
+            for cmp_no, volume in enumerate(s.get(url + "/netapp/volumes").json()):
+                by_name = s.get("{}/netapp/volumes/{}:{}"
+                                .format(url, volume['filer_address'],
+                                        volume['junction_path'])).json()
+                print(volume)
+                assert by_name == volume
+                if cmp_no >= NUM_COMPARISONS:
+                    break
 
     def test_netapp_create_delete_volume(self):
         s = self.login_session()
         url = self.get_server_url()
         with self.perform(
-                s, 'post',
+                'post',
                 "/netapp/volumes/nothing:/test_volume_api_system_test_13",
                 payload=json.dumps({'name': 'my_test_volume_api_system_test_13',
-                                    'size_total': 20972})) as (r, code):
+                                    'size_total': 20971520})) as (r, code):
 
             try:
-                assert code == 200
+                assert code == 201
                 all_names = [v['name'] for v in
                              s.get(url + "/netapp/volumes").json()]
                 assert r['name'] in all_names
@@ -129,8 +161,10 @@ class LiveTests(LiveServerTestCase):
                 assert r['name'] not in [v['name'] for v in
                                          s.get(url + "/netapp/volumes").json()]
             finally:
-                self.hard_delete_volume(volume_name=r['name'])
-
+                try:
+                    self.hard_delete_volume(volume_name=r['name'])
+                except Exception:
+                    pass
 
     def test_openapi_spec_validity(self):
         url = self.get_server_url() + '/swagger.json'

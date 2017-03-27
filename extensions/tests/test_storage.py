@@ -24,9 +24,13 @@ def id_from_vol(v, backend):
 def new_volume(backend):
     run_id = 42
     name = 'nothing:/volumename_{}'.format(run_id)
-    new_vol = backend.create_volume(name,
-                                    name="volume_name_{}".format(run_id),
-                                    size_total=DEFAULT_VOLUME_SIZE)
+    try:
+        new_vol = backend.create_volume(name,
+                                        name="volume_name_{}".format(run_id),
+                                        size_total=DEFAULT_VOLUME_SIZE)
+    except KeyError:
+        new_vol = backend.get_volume(name)
+
     return new_vol
 
 
@@ -129,8 +133,7 @@ def test_restrict_volume(storage, recorder):
 
 @on_all_backends
 def test_patch_volume(storage, recorder):
-    with recorder.use_cassette('patch_volume',
-                               match_requests_on=['method', 'uri']):
+    with recorder.use_cassette('patch_volume'):
         with ephermeral_volume(storage) as vol:
             storage.patch_volume(id_from_vol(vol, storage),
                                  autosize_enabled=True,
@@ -324,7 +327,8 @@ def test_ensure_policy_rule_present(storage, recorder):
     rule = "127.0.0.1"
     policy_name = "policy126"
 
-    with recorder.use_cassette('ensure_policy_rule_present'):
+    with recorder.use_cassette('ensure_policy_rule_present',
+                               match_requests_on=['method', 'uri', 'body']):
         storage.create_policy(policy_name=policy_name,
                               rules=[])
 
@@ -364,7 +368,10 @@ def test_ensure_policy_rule_absent(storage, recorder):
 
             assert storage.get_policy(policy_name=policy_name) == []
     finally:
-        storage.remove_policy(policy_name=policy_name)
+        try:
+            storage.remove_policy(policy_name=policy_name)
+        except KeyError:
+            pass
 
 
 @on_all_backends

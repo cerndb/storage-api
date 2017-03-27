@@ -55,6 +55,8 @@ params_vol_ns_auth = compose_decorators(params_volume_names,
                                         params_namespaces,
                                         params_auth_status,
                                         params_vol_presence)
+params_ns_auth = compose_decorators(params_namespaces,
+                                    params_auth_status)
 
 
 @composite
@@ -148,7 +150,7 @@ def init_vols_from_params(client, namespace, auth, vol_exists, volume_name):
         delete_code, _ = _delete(client, volume_resource)
         if volume_exists:
             post_code, _ = _post(client, volume_resource)
-            assert post_code == 200
+            assert post_code == 201
         else:
             assert _get(client, volume_resource)[0] == 404
 
@@ -177,8 +179,9 @@ def test_post_to_existing_volume_errors(client, namespace):
     resource = '/{}/volumes/{}'.format(namespace, volume_name)
     with user_set(client):
         post_code, post_response = _post(client, resource, data={})
-        assert post_code == 200
-        assert not post_response
+        assert post_code == 201
+        assert post_response
+        assert 'name' in post_response
         post_code, post_response = _post(client, resource, data={})
     assert post_code == 400
 
@@ -209,8 +212,9 @@ def test_post_new_volume(client, namespace, auth, vol_exists, volume_name):
         if not volume_exists:
             assert get_code == 404
     elif not volume_exists:
-        assert post_code == 200
-        assert not post_response
+        assert post_code == 201
+        assert post_response
+        assert 'name' in post_response
         assert get_code == 200
         assert 'errors' not in stored_resource
         assert stored_resource['name'] == volume_name
@@ -312,7 +316,7 @@ def test_rollback_from_snapshot(client, namespace):
                                        data={'from_snapshot':
                                              snapshot_name})
 
-    assert post_code == 200
+    assert post_code == 201
     # No way of verifying that the volume was actually restored.
 
 
@@ -567,25 +571,19 @@ def test_lock_volume_idempotent(client, namespace, volume_name):
     assert get_result == [{'host': host}]
 
 
-@params_vol_ns_auth
-def test_get_acl(client, namespace, auth, vol_exists, volume_name):
-    volume, volume_exists, authorised = init_vols_from_params(client,
-                                                              namespace,
-                                                              auth,
-                                                              vol_exists,
-                                                              volume_name)
+@params_ns_auth
+def test_get_acl(client, namespace, auth):
+    authorised = auth == "authorised"
+
     if authorised:
         with user_set(client):
-            get_code, get_result = _get(client, volume + "/export")
+            get_code, get_result = _get(client, "{}/export".format(namespace))
     else:
-        get_code, get_result = _get(client, volume + "/export")
+        get_code, get_result = _get(client, "{}/export".format(namespace))
 
     # Assertions:
     if not authorised:
         assert get_code == 403
-    elif not volume_exists:
-        # No volume => 404
-        assert get_code == 404
     else:
         # Exists and authorised => 200 OK + data
         assert get_code == 200
@@ -595,15 +593,11 @@ def test_get_acl(client, namespace, auth, vol_exists, volume_name):
 
 
 @given(policy_name=policy_name_strings())
-@params_vol_ns_auth
-def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
+@params_ns_auth
+def test_put_acl(client, namespace, auth, policy_name):
+    authorised = auth == "authorised"
 
-    volume, volume_exists, authorised = init_vols_from_params(client,
-                                                              namespace,
-                                                              auth,
-                                                              vol_exists,
-                                                              volume_name)
-    policy = '{}/export/{}'.format(volume, policy_name)
+    policy = '{}/export/{}'.format(namespace, policy_name)
     rules = ["host1.db.cern.ch", "*db.cern.ch", "*foo.cern.ch"]
 
     with maybe_authorised(client, authorised):
@@ -611,44 +605,29 @@ def test_put_acl(client, namespace, auth, vol_exists, volume_name, policy_name):
 
     with user_set(client):
         get_code, get_result = _get(client, policy)
-        _, get_all = _get(client, volume + "/export")
+        _, get_all = _get(client, namespace + "/export")
 
     # Assertions:
     if not authorised:
         assert post_code == 403
-    elif not volume_exists:
-        # No volume => 404
-        assert post_code == 404
     else:
         assert post_code == 201
         assert get_code == 200
 
         assert get_result
-        assert get_result['policy_name'] == policy_name
+        assert get_result['name'] == policy_name
         assert get_result['rules'] == rules
-        assert len(get_all) == 1
-        assert get_all[0] == get_result
+        assert get_result in get_all
 
 
 @given(policy_name=policy_name_strings())
 @params_policy_presence
-@params_vol_ns_auth
-def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
-                    volume_name, policy_name):
-
+@params_ns_auth
+def test_delete_acl(client, namespace, auth, policy_status, policy_name):
+    authorised = auth == "authorised"
     policy_exists = policy_status == "policy_present"
 
-    if vol_exists == "vol_absent" and policy_exists:
-        # This cannot ever happen
-        return
-
-    volume, volume_exists, authorised = init_vols_from_params(client,
-                                                              namespace,
-                                                              auth,
-                                                              vol_exists,
-                                                              volume_name)
-
-    policy = '{}/export/{}'.format(volume, policy_name)
+    policy = '{}/export/{}'.format(namespace, policy_name)
 
     rules = []  # type: List[str]
 
@@ -663,13 +642,13 @@ def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
         del_code, _del_result = _delete(client, policy)
     with user_set(client):
         get_code, _get_result = _get(client, policy)
-        _, get_all = _get(client, volume + "/export")
+        _, get_all = _get(client, namespace + "/export")
 
     if not authorised:
         assert del_code == 403
         if policy_exists:
             assert get_code == 200
-    elif not volume_exists or not policy_exists:
+    elif not policy_exists:
         assert del_code == 404
     else:
         assert del_code == 204
@@ -679,22 +658,11 @@ def test_delete_acl(client, namespace, auth, vol_exists, policy_status,
 
 @given(policy_name=policy_name_strings())
 @params_policy_presence
-@params_vol_ns_auth
-def test_put_export_rule(client, namespace, auth, vol_exists, policy_status,
-                         volume_name, policy_name):
-
+@params_ns_auth
+def test_put_export_rule(client, namespace, auth, policy_status, policy_name):
+    authorised = auth == "authorised"
     policy_exists = policy_status == "policy_present"
-
-    if vol_exists == "vol_absent" and policy_exists:
-        # This cannot ever happen
-        return
-
-    volume, volume_exists, authorised = init_vols_from_params(client,
-                                                              namespace,
-                                                              auth,
-                                                              vol_exists,
-                                                              volume_name)
-    policy = '{}/export/{}'.format(volume, policy_name)
+    policy = '{}/export/{}'.format(namespace, policy_name)
 
     rules = ["127.0.0.1", "10.10.10.1/24"]
     put_codes = []
@@ -719,7 +687,7 @@ def test_put_export_rule(client, namespace, auth, vol_exists, policy_status,
         if policy_exists:
             # No changes recorded
             assert get_result['rules'] == []
-    elif not volume_exists or not policy_exists:
+    elif not policy_exists:
         assert all(filter(lambda c: c == 404, put_codes))
     else:
         assert all(filter(lambda c: c == 204, put_codes))
@@ -729,21 +697,11 @@ def test_put_export_rule(client, namespace, auth, vol_exists, policy_status,
 
 @given(policy_name=policy_name_strings())
 @params_policy_presence
-@params_vol_ns_auth
-def test_delete_export_rule(client, namespace, auth, vol_exists, policy_status,
-                            volume_name, policy_name):
+@params_ns_auth
+def test_delete_export_rule(client, namespace, auth,  policy_status, policy_name):
+    authorised = auth == "authorised"
     policy_exists = policy_status == "policy_present"
-
-    if vol_exists == "vol_absent" and policy_exists:
-        # This cannot ever happen
-        return
-
-    volume, volume_exists, authorised = init_vols_from_params(client,
-                                                              namespace,
-                                                              auth,
-                                                              vol_exists,
-                                                              volume_name)
-    policy = '{}/export/{}'.format(volume, policy_name)
+    policy = '{}/export/{}'.format(namespace, policy_name)
 
     rules = ["127.0.0.1", "10.10.10.1/24"]
     delete_codes = []
@@ -769,7 +727,7 @@ def test_delete_export_rule(client, namespace, auth, vol_exists, policy_status,
         if policy_exists:
             # No changes recorded
             assert get_result['rules'] == rules
-    elif not volume_exists or not policy_exists:
+    elif not policy_exists:
         assert all(filter(lambda c: c == 404, delete_codes))
     else:
         assert all(filter(lambda c: c == 201, delete_codes))
