@@ -449,3 +449,114 @@ def test_netapp_create_volume_jp_missing(storage, recorder):
     with pytest.raises(ValueError):
         storage.create_volume("volume_name_test_32",
                               size_total=DEFAULT_VOLUME_SIZE)
+
+
+@on_all_backends
+def test_netapp_create_volume_w_snapshot_reserve(storage, recorder):
+    if not isinstance(storage, NetappStorage):
+        # Only applies to netapp
+        return
+
+    with recorder.use_cassette('netapp_create_snapshot_reserve'):
+        PERCENT_RESERVED = 20
+
+        try:
+            new_vol = storage.create_volume(
+                "volume_name_test_32",
+                junction_path="/volume_name_test",
+                percentage_snapshot_reserve=PERCENT_RESERVED,
+                size_total=DEFAULT_VOLUME_SIZE)
+            assert new_vol['percentage_snapshot_reserve'] == PERCENT_RESERVED
+        finally:
+            delete_volume(storage, new_vol['name'])
+
+
+@on_all_backends
+def test_netapp_update_snapshot_reserve(storage, recorder):
+    PERCENT_RESERVED = 27
+
+    if not isinstance(storage, NetappStorage):
+        # Only applies to netapp
+        return
+
+    with recorder.use_cassette('netapp_update_snapshot_reserve'):
+        with ephermeral_volume(storage) as vol:
+            storage.patch_volume(volume_name=vol['name'],
+                                 percentage_snapshot_reserve=PERCENT_RESERVED)
+
+            updated_volume = storage.get_volume(vol['name'])
+            assert (updated_volume['percentage_snapshot_reserve']
+                    == PERCENT_RESERVED)
+
+
+@on_all_backends
+def test_netapp_update_volume_compression(storage, recorder):
+    if not isinstance(storage, NetappStorage):
+        # Only applies to netapp
+        return
+
+    with recorder.use_cassette('netapp_update_compression_settings'):
+        with ephermeral_volume(storage) as vol:
+            new_compression = not(vol['compression_enabled'])
+            new_inline_compression = not(vol['inline_compression'])
+            storage.patch_volume(volume_name=vol['name'],
+                                 compression_enabled=new_compression,
+                                 inline_compression=new_inline_compression)
+
+            updated_volume = storage.get_volume(vol['name'])
+            assert (updated_volume['compression_enabled']
+                    == new_compression)
+            assert (updated_volume['inline_compression']
+                    == new_inline_compression)
+
+
+@on_all_backends
+def test_netapp_create_volume_w_compression(storage, recorder):
+    if not isinstance(storage, NetappStorage):
+        # Only applies to netapp
+        return
+
+    with recorder.use_cassette('netapp_create_vol_w_compression'):
+        try:
+            new_vol = storage.create_volume(
+                "volume_name_test_32",
+                junction_path="/volume_name_test",
+                compression_enabled=True,
+                inline_compression=True,
+                size_total=DEFAULT_VOLUME_SIZE)
+            assert new_vol['compression_enabled'] is True
+            assert new_vol['inline_compression'] is True
+        finally:
+            delete_volume(storage, new_vol['name'])
+
+        try:
+            new_vol = storage.create_volume(
+                "volume_name_test_32",
+                junction_path="/volume_name_test",
+                compression_enabled=False,
+                inline_compression=False,
+                size_total=DEFAULT_VOLUME_SIZE)
+            assert new_vol['compression_enabled'] is False
+            assert new_vol['inline_compression'] is False
+        finally:
+            delete_volume(storage, new_vol['name'])
+
+
+@on_all_backends
+def test_all_policies_formatting_bug(storage, recorder):
+    rules = ["host1.db.cern.ch", "db.cern.ch", "foo.cern.ch"]
+
+    with recorder.use_cassette('all_policies_formatting_bug'):
+        try:
+            storage.create_policy("a_policy_400", rules)
+            found = False
+            for policy in storage.policies:
+                if policy['name'] == "a_policy_400":
+                    assert rules == policy['rules']
+                    found = True
+                    break
+
+            assert found
+
+        finally:
+            storage.remove_policy("a_policy_400")

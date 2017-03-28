@@ -119,6 +119,23 @@ def normalised_with(schema_name: str,
     return validator_decorator
 
 
+def patch_and_diff(previous, new):
+    """
+    Replace all keys in previous with their values in new, returning a
+    list of keys for which the values changed and the updated previous.
+    """
+    changed_keys = []
+    for k, v in new.items():
+        if k in previous:
+            if previous[k] != v:
+                previous[k] = v
+                changed_keys.append(k)
+        else:
+            previous[k] = v
+            changed_keys.append(k)
+    return changed_keys, previous
+
+
 @contextmanager
 def annotate_exception(exception, annotation):
     """
@@ -646,7 +663,7 @@ class NetappStorage(StorageBackend):
 
     def format_policy(self, p):
         return {'name': p.name,
-                'rules': list(p.rules)}
+                'rules': [r[1] for r in p.rules]}
 
     def name_from_path(self, junction_path):
         """
@@ -843,6 +860,19 @@ class NetappStorage(StorageBackend):
             raise ValueError("Must provide size_total for NetApp!")
 
         aggregate_name = None
+        snapshot_reserve = fields.get('percentage_snapshot_reserve', None)
+        compression = fields.get('compression_enabled', None)
+        inline_compression = fields.get('inline_compression', None)
+
+        # None-patch the keys with default values.
+        # This is needed, because the front-end gives us None if no
+        # value was provided by the user.
+        if snapshot_reserve is None:
+            snapshot_reserve = 0
+        if compression is None:
+            compression = True
+        if inline_compression is None:
+            inline_compression = True
 
         if fields.get('aggregate_name', None):
             aggregate_name = fields['aggregate_name']
@@ -873,10 +903,14 @@ class NetappStorage(StorageBackend):
         assert aggregate_name, "Could not find a suitable aggregate!"
 
         try:
-            self.server.create_volume(name=volume_name,
-                                      size_bytes=fields['size_total'],
-                                      junction_path=junction_path,
-                                      aggregate_name=aggregate_name)
+            self.server.create_volume(
+                name=volume_name,
+                size_bytes=fields['size_total'],
+                junction_path=junction_path,
+                percentage_snapshot_reserve=snapshot_reserve,
+                compression=compression,
+                inline_compression=inline_compression,
+                aggregate_name=aggregate_name)
             return self.format_volume(
                 self.server.volumes.single(volume_name=volume_name))
         except netapp.api.APIError as e:
@@ -895,21 +929,37 @@ class NetappStorage(StorageBackend):
 
     def patch_volume(self, volume_name, **data):
         previous = self.get_volume(volume_name)
-        autosize_enabled = data.get('autosize_enabled',
-                                    previous['autosize_enabled'])
-        autosize_increment = data.get('autosize_increment',
-                                      previous['autosize_increment'])
-        max_autosize = data.get('max_autosize', previous['max_autosize'])
 
-        self.server.set_volume_autosize(previous['name'],
-                                        max_size_bytes=max_autosize,
-                                        increment_bytes=autosize_increment,
-                                        autosize_enabled=autosize_enabled)
+        changed_keys, updated_volume = patch_and_diff(previous, data)
 
-        # FIXME: Also handle updates to reserved space!
+        # Autosize:
+        autosize_key = re.compile('autosize').match
+
+        if any(autosize_key(k) for k in changed_keys):
+            log.info("Updating autosize...")
+            self.server.set_volume_autosize(
+                previous['name'],
+                max_size_bytes=updated_volume['max_autosize'],
+                increment_bytes=updated_volume['autosize_increment'],
+                autosize_enabled=updated_volume['autosize_enabled'])
+
+        # Snapshot reserve space
+        if 'percentage_snapshot_reserve' in changed_keys:
+            log.info("Updating snapshot reserve space...")
+            self.server.set_volume_snapshot_reserve(
+                previous['name'],
+                reserve_percent=updated_volume['percentage_snapshot_reserve'])
+
+        # Compression
+        if any(re.match('compression', k) for k in changed_keys):
+            log.info("Updating compression...")
+            self.server.set_compression(
+                volume_name=previous['name'],
+                enabled=updated_volume['compression_enabled'],
+                inline=updated_volume['inline_compression'])
+
         # FIXME: Also change policies
-        # FIXME: Also change compression status
-        # FIXME: Also change snapshot reserve space
+        # FIXME: Resize volumes
 
     def restrict_volume(self, volume_name):
         name = self.parse_volume_name(volume_name)
