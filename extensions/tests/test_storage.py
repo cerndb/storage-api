@@ -328,7 +328,7 @@ def test_ensure_policy_rule_present(storage, recorder):
     policy_name = "policy126"
 
     with recorder.use_cassette('ensure_policy_rule_present',
-                               match_requests_on=['method', 'uri', 'body']):
+                               match_requests_on=['method', 'uri']):
         storage.create_policy(policy_name=policy_name,
                               rules=[])
 
@@ -377,3 +377,75 @@ def test_ensure_policy_rule_absent(storage, recorder):
 @on_all_backends
 def test_repr_doesnt_crash(storage, recorder):
     assert repr(storage)
+
+
+@on_all_backends
+def test_netapp_name_jp_both_work(storage, recorder):
+    if not isinstance(storage, NetappStorage):
+        # Only applies to netapp
+        return
+
+    with recorder.use_cassette('jp_equals_name_node'):
+        with ephermeral_volume(storage) as vol:
+            node_colon_jp = id_from_vol(vol, storage)
+            from_jp_name = storage.get_volume(node_colon_jp)
+            from_name_only = storage.get_volume(vol['name'])
+            assert from_jp_name == from_name_only
+
+
+@on_all_backends
+def test_netapp_create_volume_no_node(storage, recorder):
+    if not isinstance(storage, NetappStorage):
+        # Only applies to netapp
+        return
+
+    with recorder.use_cassette('tricky_netapp_create_no_node'):
+        try:
+            new_vol = storage.create_volume(':/volumename',
+                                            name="volume_name",
+                                            size_total=DEFAULT_VOLUME_SIZE)
+            volume = storage.get_volume(new_vol['name'])
+            assert new_vol == volume
+            assert volume in storage.volumes
+            assert 'filer_address' in new_vol
+        finally:
+            delete_volume(storage, new_vol['name'])
+
+
+@on_all_backends
+def test_netapp_create_volume_as_name(storage, recorder):
+    if not isinstance(storage, NetappStorage):
+        # Only applies to netapp
+        return
+
+    with recorder.use_cassette('tricky_netapp_create_as_name'):
+        try:
+            new_vol = storage.create_volume("volume_name_test_32",
+                                            junction_path="/volume_name_test",
+                                            size_total=DEFAULT_VOLUME_SIZE)
+            assert new_vol['junction_path'] == "/volume_name_test"
+            assert new_vol['name'] == "volume_name_test_32"
+        finally:
+            delete_volume(storage, new_vol['name'])
+
+
+@on_all_backends
+def test_netapp_create_volume_name_missing(storage, recorder):
+    if not isinstance(storage, NetappStorage):
+        # Only applies to netapp
+        return
+
+    with pytest.raises(ValueError):
+        storage.create_volume(':/volumename',
+                              size_total=DEFAULT_VOLUME_SIZE)
+
+
+@on_all_backends
+def test_netapp_create_volume_jp_missing(storage, recorder):
+    if not isinstance(storage, NetappStorage):
+        # Only applies to netapp
+        return
+
+    with pytest.raises(ValueError):
+        storage.create_volume("volume_name_test_32",
+                              size_total=DEFAULT_VOLUME_SIZE)

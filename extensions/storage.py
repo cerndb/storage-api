@@ -706,11 +706,16 @@ class NetappStorage(StorageBackend):
 
     @normalised_with('volume', allow_unknown=True)
     def get_volume(self, volume_name):
-        _node, junction_path = self.node_junction_path(volume_name)
+        node, junction_path = self.node_junction_path(volume_name)
         try:
-            volume = next(self.server.volumes.filter(
-                junction_path=junction_path))
-        except StopIteration:
+            if node is not None:
+                volume = next(self.server.volumes.filter(
+                    junction_path=junction_path, node=node))
+            else:
+                # Just a name was provided, not a node:junction_path
+                volume_name = junction_path
+                volume = self.server.volumes.single(volume_name=volume_name)
+        except (StopIteration, IndexError):
             with annotate_exception(KeyError, vol_404(volume_name)):
                 raise KeyError
         return self.format_volume(volume)
@@ -806,18 +811,34 @@ class NetappStorage(StorageBackend):
     @normalised_with('volume', allow_unknown=True)
     def create_volume(self, volume_name, **fields):
         """
-        Important note: the volume "name" for NetApp is in actuality its
-        node name and junction path, separated by colon.
+        Important note: the volume "name" for NetApp is either a name,
+        or a node name and junction path separated by colon. Please note
+        that the node name is ignored, as the user cannot set the node
+        name on creation.
 
-        Therefore, an *actual* name must be provided as a data field
-        ('name')
+        If creating a volume from a junction path, an *actual* name must
+        be provided as a data field ('name') (and vice versa -- if
+        creating with a name, junction path must be provided).
         """
         # Fixme: optionally include autosize_enabled etc
 
-        _node, junction_path = self.node_junction_path(volume_name)
+        node, junction_path = self.node_junction_path(volume_name)
 
-        if not fields.get('name', None):
-            raise ValueError("Must provide explicit name for NetApp!")
+        if node:
+            log.warning("Ignoring provided node name '{}' for volume creation"
+                        .format(node))
+
+        if node is None:
+            # Only name was given, get junction path from fields
+            volume_name = junction_path
+            junction_path = fields.get('junction_path', None)
+        else:
+            volume_name = fields.get('name', None)
+
+        if not volume_name:
+            raise ValueError("Must provide a volume name for NetApp back-ends!")
+        if not junction_path:
+            raise ValueError("Must provide a junction path for NetApp back-ends!")
         if not fields.get('size_total', None):
             raise ValueError("Must provide size_total for NetApp!")
 
@@ -852,14 +873,15 @@ class NetappStorage(StorageBackend):
         assert aggregate_name, "Could not find a suitable aggregate!"
 
         try:
-            self.server.create_volume(name=fields['name'],
+            self.server.create_volume(name=volume_name,
                                       size_bytes=fields['size_total'],
                                       junction_path=junction_path,
                                       aggregate_name=aggregate_name)
-            return self.format_volume(self.server.volumes.single(volume_name=fields['name']))
+            return self.format_volume(
+                self.server.volumes.single(volume_name=volume_name))
         except netapp.api.APIError as e:
             if e.errno == 17:
-                raise KeyError("Volume {} already exists!".format(fields['name']))
+                raise KeyError("Volume {} already exists!".format(volume_name))
             else:
                 raise e
 
