@@ -101,10 +101,10 @@ def test_get_nonexistent_volume(storage, recorder):
 @on_all_backends
 def test_create_get_volume(storage, recorder):
     with recorder.use_cassette('create_get_volume'):
-        new_vol = storage.create_volume('nothing:/volumename',
+        new_vol = storage.create_volume(':/volumename',
                                         name="volume_name",
                                         size_total=DEFAULT_VOLUME_SIZE)
-        volume = storage.get_volume('nothing:/volumename')
+        volume = storage.get_volume(id_from_vol(new_vol, storage))
         assert new_vol == volume
         assert volume
         assert volume['size_total'] >= DEFAULT_VOLUME_SIZE
@@ -409,7 +409,7 @@ def test_netapp_create_volume_no_node(storage, recorder):
             assert volume in storage.volumes
             assert 'filer_address' in new_vol
         finally:
-            delete_volume(storage, new_vol['name'])
+            delete_volume(storage, "volume_name")
 
 
 @on_all_backends
@@ -560,3 +560,56 @@ def test_all_policies_formatting_bug(storage, recorder):
 
         finally:
             storage.remove_policy("a_policy_400")
+
+
+@on_all_backends
+def test_netapp_create_volume_w_policy(storage, recorder):
+    if not isinstance(storage, NetappStorage):
+        # Only applies to netapp
+        return
+
+    policy_name = "test_32_policy"
+    with recorder.use_cassette('netapp_create_vol_w_policy'):
+        try:
+            storage.create_policy(policy_name, [])
+            new_vol = storage.create_volume(
+                "volume_name_test_32",
+                junction_path="/volume_name_test",
+                active_policy_name=policy_name,
+                size_total=DEFAULT_VOLUME_SIZE)
+            assert new_vol['active_policy_name'] == policy_name
+        finally:
+            delete_volume(storage, "volume_name_test_32")
+            storage.remove_policy(policy_name)
+
+
+@on_all_backends
+def test_netapp_update_volume_policy(storage, recorder):
+    if not isinstance(storage, NetappStorage):
+        # Only applies to netapp
+        return
+
+    policy_name = "test_32_policy"
+    with recorder.use_cassette('netapp_update_volume_policy'):
+        storage.create_policy(policy_name, [])
+        try:
+            with ephermeral_volume(storage) as vol:
+                storage.patch_volume(volume_name=vol['name'],
+                                     active_policy_name=policy_name)
+
+                updated_volume = storage.get_volume(vol['name'])
+                assert updated_volume['active_policy_name'] == policy_name
+        finally:
+            storage.remove_policy(policy_name)
+
+
+@on_all_backends
+def test_resize_volume(storage, recorder):
+    with recorder.use_cassette('resize_volume'):
+        with ephermeral_volume(storage) as vol:
+            new_size = vol['size_total'] * 2
+            storage.patch_volume(volume_name=vol['name'],
+                                 size_total=new_size)
+
+            updated_volume = storage.get_volume(vol['name'])
+            assert updated_volume['size_total'] == new_size
