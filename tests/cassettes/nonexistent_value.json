@@ -1,18 +1,18 @@
 {
   "http_interactions": [
     {
-      "recorded_at": "2017-03-24T12:53:26",
+      "recorded_at": "2017-03-28T14:57:42",
       "request": {
         "body": {
           "encoding": "utf-8",
-          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp xmlns=\"http://www.netapp.com/filer/admin\" version=\"1.0\" nmsdk_app=\"netapp-api-python\" vfiler=\"vs1rac11\"><volume-get-iter><desired-attributes><volume-attributes><volume-id-attributes><name/><uuid/><junction-path/><containing-aggregate-name/><node/><owning-vserver-name/><creation-time/></volume-id-attributes><volume-space-attributes><size-total/><size-used/><percentage-snapshot-reserve/><percentage-snapshot-reserve-used/></volume-space-attributes><volume-autosize-attributes><is-enabled/><maximum-size/><increment-size/></volume-autosize-attributes><volume-state-attributes><state/></volume-state-attributes><volume-export-attributes><policy/></volume-export-attributes></volume-attributes></desired-attributes><query><volume-attributes><volume-id-attributes><junction-path>does-not-exist</junction-path></volume-id-attributes></volume-attributes></query></volume-get-iter></netapp>"
+          "string": "<?xml version='1.0' encoding='UTF-8'?>\n<netapp xmlns=\"http://www.netapp.com/filer/admin\" nmsdk_app=\"netapp-api-python\" version=\"1.0\" vfiler=\"vs1rac11\"><volume-get-iter><desired-attributes><volume-attributes><volume-id-attributes><name/><uuid/><junction-path/><containing-aggregate-name/><node/><owning-vserver-name/><creation-time/></volume-id-attributes><volume-space-attributes><size-total/><size-used/><percentage-snapshot-reserve/><percentage-snapshot-reserve-used/></volume-space-attributes><volume-autosize-attributes><is-enabled/><maximum-size/><increment-size/></volume-autosize-attributes><volume-state-attributes><state/></volume-state-attributes><volume-export-attributes><policy/></volume-export-attributes></volume-attributes></desired-attributes><query><volume-attributes><volume-id-attributes><name>does-not-exist</name></volume-id-attributes></volume-attributes></query></volume-get-iter></netapp>"
         },
         "headers": {
           "Accept": "*/*",
           "Accept-Encoding": "gzip, deflate",
           "Authorization": "Basic <ONTAP-AUTH>",
           "Connection": "keep-alive",
-          "Content-Length": "931",
+          "Content-Length": "913",
           "Content-type": "application/xml",
           "User-Agent": "python-requests/2.13.0"
         },
@@ -28,7 +28,7 @@
           "Connection": "Keep-Alive",
           "Content-Length": "229",
           "Content-Type": "text/xml",
-          "Date": "Fri, 24 Mar 2017 12:53:25 GMT",
+          "Date": "Tue, 28 Mar 2017 14:57:41 GMT",
           "Keep-Alive": "timeout=5, max=100",
           "Server": "libzapid-httpd"
         },

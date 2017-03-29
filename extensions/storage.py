@@ -738,7 +738,7 @@ class NetappStorage(StorageBackend):
         return self.format_volume(volume)
 
     def get_policy(self, policy_name):
-        if policy_name not in [p['name'] for p in self.policies]:
+        if policy_name not in [p.name for p in self.server.export_policies]:
             raise KeyError("No such policy exists: '{}'".format(policy_name))
         rules = [r[1] for r in self.server.export_rules_of(policy_name)]
         return rules
@@ -863,6 +863,7 @@ class NetappStorage(StorageBackend):
         snapshot_reserve = fields.get('percentage_snapshot_reserve', None)
         compression = fields.get('compression_enabled', None)
         inline_compression = fields.get('inline_compression', None)
+        export_policy_name = fields.get('active_policy_name', None)
 
         # None-patch the keys with default values.
         # This is needed, because the front-end gives us None if no
@@ -910,6 +911,7 @@ class NetappStorage(StorageBackend):
                 percentage_snapshot_reserve=snapshot_reserve,
                 compression=compression,
                 inline_compression=inline_compression,
+                export_policy_name=export_policy_name,
                 aggregate_name=aggregate_name)
             return self.format_volume(
                 self.server.volumes.single(volume_name=volume_name))
@@ -958,8 +960,18 @@ class NetappStorage(StorageBackend):
                 enabled=updated_volume['compression_enabled'],
                 inline=updated_volume['inline_compression'])
 
-        # FIXME: Also change policies
-        # FIXME: Resize volumes
+        # Active export policy
+        if 'active_policy_name' in changed_keys:
+            log.info("Updating policy name...")
+            self.server.set_volume_export_policy(
+                previous['name'],
+                policy_name=updated_volume['active_policy_name'])
+
+        # Resize volume
+        if 'size_total' in changed_keys:
+            log.info("Resizing volume...")
+            self.server.resize_volume(volume_name=previous['name'],
+                                      new_size=updated_volume['size_total'])
 
     def restrict_volume(self, volume_name):
         name = self.parse_volume_name(volume_name)
