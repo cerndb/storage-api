@@ -97,6 +97,7 @@ volume_write_model = api.model('VolumeWrite', {
     'percentage_snapshot_reserve': fields.Integer(),
     'compression_enabled': fields.Boolean(),
     'inline_compression': fields.Boolean(),
+    'caching_policy': fields.String(),
     })
 
 volume_create_model = api.inherit('VolumeCreate', volume_write_model, {

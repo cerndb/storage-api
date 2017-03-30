@@ -23,15 +23,11 @@ def id_from_vol(v, backend):
 
 def new_volume(backend):
     run_id = 42
-    name = 'nothing:/volumename_{}'.format(run_id)
-    try:
-        new_vol = backend.create_volume(name,
-                                        name="volume_name_{}".format(run_id),
-                                        size_total=DEFAULT_VOLUME_SIZE)
-    except KeyError:
-        new_vol = backend.get_volume(name)
+    name = ':/volumename_{}'.format(run_id)
 
-    return new_vol
+    return backend.create_volume(name,
+                                 name="volume_name_{}".format(run_id),
+                                 size_total=DEFAULT_VOLUME_SIZE)
 
 
 def delete_volume(backend, volume_name):
@@ -613,3 +609,14 @@ def test_resize_volume(storage, recorder):
 
             updated_volume = storage.get_volume(vol['name'])
             assert updated_volume['size_total'] == new_size
+
+
+@on_all_backends
+def test_has_caching_policy(storage, recorder):
+    if not isinstance(storage, NetappStorage):
+        # Only applies to netapp
+        return
+
+    with recorder.use_cassette('has_caching_policy'):
+        with ephermeral_volume(storage) as vol:
+            assert 'caching_policy' in vol

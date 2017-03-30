@@ -60,6 +60,9 @@ SCHEMAS = [('volume', {
                                     'required': False},
     'percentage_snapshot_reserve_used': {'type': 'integer',
                                          'required': False},
+    'caching_policy': {'type': 'string',
+                       'required': False,
+                       'nullable': True},
 })]
 
 cerberus.schema_registry.extend(SCHEMAS)
@@ -972,6 +975,13 @@ class NetappStorage(StorageBackend):
             log.info("Resizing volume...")
             self.server.resize_volume(volume_name=previous['name'],
                                       new_size=updated_volume['size_total'])
+
+        # Caching policy
+        if 'caching_policy' in changed_keys:
+            log.info("Setting caching policy...")
+            self.server.set_volume_caching_policy(
+                volume_name=previous['name'],
+                policy_name=updated_volume['caching_policy'])
 
     def restrict_volume(self, volume_name):
         name = self.parse_volume_name(volume_name)
