@@ -10,12 +10,15 @@ from flask_testing import LiveServerTestCase
 from jsonschema import RefResolver
 from swagger_spec_validator import validator20
 import betamax
+import pytest
 
 
 _DEFAULT_HEADERS = {'Content-Type': 'application/json',
                     'Accept': 'application/json'}
 
 
+@pytest.mark.skipif('ONTAP_HOST' not in os.environ,
+                    reason="Requires a live filer")
 class LiveTests(LiveServerTestCase):
 
     def cassette_name(self, method):
@@ -27,27 +30,26 @@ class LiveTests(LiveServerTestCase):
         class_name = self.__class__.__name__
         return class_name[4:]
 
-    def create_app(self, ):
-        global counter
+    def create_app(self):
         from app import app
         app.config['TESTING'] = True
         app.config['LIVESERVER_PORT'] = 8943
         app.config['LIVESERVER_TIMEOUT'] = 10
         app.debug = True
 
-        # Re-initialise a betamax:ed NetApp back-end:
         ONTAP_VSERVER = os.environ.get('ONTAP_VSERVER', 'vs1rac11')
-        server_host = os.environ.get('ONTAP_HOST', 'dbnasa-cluster-mgmt')
+        server_host = os.environ.get('ONTAP_HOST', 'db-51195')
         server_username = os.environ.get('ONTAP_USERNAME', "user-placeholder")
         server_password = os.environ.get('ONTAP_PASSWORD', "password-placeholder")
 
         s = netapp.api.Server(hostname=server_host, username=server_username,
                               password=server_password,
                               vserver=ONTAP_VSERVER)
-        self.recorder = betamax.Betamax(s.session)
-        print(s.session)
-        backend = extensions.NetappStorage(netapp_server=s)
-        backend.init_app(app)
+
+        # This magic, apparently, doesn't work. At all.
+        self.backend = extensions.NetappStorage(netapp_server=s)
+        self.recorder = betamax.Betamax(self.backend.server.session)
+        self.backend.init_app(app)
 
         return app
 
