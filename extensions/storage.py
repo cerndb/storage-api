@@ -455,6 +455,7 @@ class StorageBackend(metaclass=ABCMeta):
             app.extensions = {}
 
         class_name = self.__class__.__name__
+        log.info("Initialising storage back-end {}".format(class_name))
         app.extensions[class_name] = self
 
 
