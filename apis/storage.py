@@ -20,6 +20,7 @@ from functools import partial
 
 from flask_restplus import Namespace, Resource, fields, marshal
 from flask import current_app
+from netapp.api import APIError
 
 api = Namespace('/',
                 description='Storage operations')
@@ -169,6 +170,16 @@ snapshot_put_model = api.model('SnapshotPut', {
 
 policy_rule_write_model = api.model('PolicyRule',
                                     {'rules': policy_rule_list_field})
+
+
+@api.errorhandler(APIError)
+def handle_netapp_exception(error):
+    '''Return the error message from the filer and 500 status code'''
+    return_message = {'message': error.msg, "errno": error.errno}
+    if current_app.debug:
+        return_message['failing_query'] = str(error.failing_query)
+
+    return return_message, 500
 
 
 @api.errorhandler
