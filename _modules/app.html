@@ -182,9 +182,9 @@
     <span class="n">netapp_vserver</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;ONTAP_VSERVER&#39;</span><span class="p">]</span>
     <span class="n">server</span> <span class="o">=</span> <span class="n">netapp</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Server</span><span class="p">(</span><span class="n">hostname</span><span class="o">=</span><span class="n">netapp_host</span><span class="p">,</span>
                                <span class="n">username</span><span class="o">=</span><span class="n">netapp_username</span><span class="p">,</span>
-                               <span class="n">password</span><span class="o">=</span><span class="n">netapp_password</span><span class="p">)</span>
-    <span class="n">extensions</span><span class="o">.</span><span class="n">NetappStorage</span><span class="p">(</span><span class="n">netapp_server</span><span class="o">=</span><span class="n">server</span><span class="p">,</span>
-                             <span class="n">vserver</span><span class="o">=</span><span class="n">netapp_vserver</span><span class="p">)</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+                               <span class="n">password</span><span class="o">=</span><span class="n">netapp_password</span><span class="p">,</span>
+                               <span class="n">vserver</span><span class="o">=</span><span class="n">netapp_vserver</span><span class="p">)</span>
+    <span class="n">extensions</span><span class="o">.</span><span class="n">NetappStorage</span><span class="p">(</span><span class="n">netapp_server</span><span class="o">=</span><span class="n">server</span><span class="p">)</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
     <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Set up NetApp backend&quot;</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
     <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;NetApp environment variables not configured, back-end inactive&quot;</span><span class="p">)</span>

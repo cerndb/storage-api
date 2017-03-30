@@ -161,27 +161,43 @@
 <span class="kn">from</span> <span class="nn">ordered_set</span> <span class="k">import</span> <span class="n">OrderedSet</span>
 <span class="kn">import</span> <span class="nn">cerberus</span>
 <span class="kn">import</span> <span class="nn">flask</span>
+<span class="kn">import</span> <span class="nn">netapp.api</span>
 
 <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
-<span class="n">SCHEMAS</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span>
-            <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-                      <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-             <span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="n">SCHEMAS</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+
+    <span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+             <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+    <span class="s1">&#39;active_policy_name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                           <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+    <span class="s1">&#39;junction_path&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
                       <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
-             <span class="s1">&#39;active_policy_name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-                                    <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
-             <span class="s1">&#39;junction_path&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-                               <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
-             <span class="s1">&#39;aggregate_name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-                                <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
-             <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s1">&#39;aggregate_name&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
                        <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
-             <span class="s1">&#39;size_used&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                           <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-             <span class="s1">&#39;size_total&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-                            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
-             <span class="s1">&#39;filer_address&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-                               <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}})]</span>
+    <span class="s1">&#39;state&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+              <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+    <span class="s1">&#39;size_used&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                  <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s1">&#39;size_total&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                   <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s1">&#39;filer_address&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span> <span class="s1">&#39;minlength&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                      <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+    <span class="s1">&#39;creation_time&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;datetime&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+    <span class="s1">&#39;compression_enabled&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+    <span class="s1">&#39;inline_compression&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;boolean&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+    <span class="s1">&#39;percentage_snapshot_reserve&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+    <span class="s1">&#39;percentage_snapshot_reserve_used&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;integer&#39;</span><span class="p">,</span>
+                                         <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+    <span class="s1">&#39;caching_policy&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;string&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;required&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                       <span class="s1">&#39;nullable&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span>
+<span class="p">})]</span>
 
 <span class="n">cerberus</span><span class="o">.</span><span class="n">schema_registry</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">SCHEMAS</span><span class="p">)</span>
 
@@ -238,6 +254,23 @@
 
         <span class="k">return</span> <span class="n">inner_wrapper</span>
     <span class="k">return</span> <span class="n">validator_decorator</span></div>
+
+
+<div class="viewcode-block" id="patch_and_diff"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.patch_and_diff">[docs]</a><span class="k">def</span> <span class="nf">patch_and_diff</span><span class="p">(</span><span class="n">previous</span><span class="p">,</span> <span class="n">new</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Replace all keys in previous with their values in new, returning a</span>
+<span class="sd">    list of keys for which the values changed and the updated previous.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">changed_keys</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">new</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">previous</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">previous</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">!=</span> <span class="n">v</span><span class="p">:</span>
+                <span class="n">previous</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="n">changed_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">previous</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="n">changed_keys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">changed_keys</span><span class="p">,</span> <span class="n">previous</span></div>
 
 
 <span class="nd">@contextmanager</span>
@@ -334,6 +367,9 @@
 <span class="sd">            ValueError: if the data is malformed</span>
 <span class="sd">            KeyError: if the volume already exists</span>
 
+<span class="sd">        Returns:</span>
+<span class="sd">            The created volume.</span>
+
 <span class="sd">        Back-ends are allowed to add implementation-specific elements.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
@@ -374,9 +410,9 @@
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="StorageBackend.policies"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.policies">[docs]</a>    <span class="k">def</span> <span class="nf">policies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
+<div class="viewcode-block" id="StorageBackend.policies"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.policies">[docs]</a>    <span class="k">def</span> <span class="nf">policies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return a list of export policies for the given volume, as a list</span>
+<span class="sd">        Return a list of export policies for the given back-end, as a list</span>
 <span class="sd">        of name/value tuples.</span>
 
 <span class="sd">        Example::</span>
@@ -394,7 +430,7 @@
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="StorageBackend.get_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.get_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
+<div class="viewcode-block" id="StorageBackend.get_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.get_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a (potentially empty) list of export policies in the form</span>
 <span class="sd">        of strings representing IP numbers, with possible masks</span>
@@ -406,20 +442,31 @@
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="StorageBackend.create_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.create_policy">[docs]</a>    <span class="k">def</span> <span class="nf">create_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+<div class="viewcode-block" id="StorageBackend.set_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.set_policy">[docs]</a>    <span class="k">def</span> <span class="nf">set_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set a policy</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">          KeyError: if volume_name does not exist</span>
+<span class="sd">          ValueError: if policy_name does not exist</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">NotImplemented</span></div>
+
+    <span class="nd">@abstractmethod</span>
+<div class="viewcode-block" id="StorageBackend.create_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.create_policy">[docs]</a>    <span class="k">def</span> <span class="nf">create_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a new policy with a set of rules to a given volume</span>
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: if there is already a policy with that name</span>
-<span class="sd">            KeyError: if there is no such volume</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="StorageBackend.remove_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.remove_policy">[docs]</a>    <span class="k">def</span> <span class="nf">remove_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
+<div class="viewcode-block" id="StorageBackend.remove_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.remove_policy">[docs]</a>    <span class="k">def</span> <span class="nf">remove_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Remove a policy. After removal, it must be possible to create an</span>
+<span class="sd">        Remove a policy. After removal, it must be possible to create a</span>
 <span class="sd">        new policy with the same name.</span>
 
 <span class="sd">        Raises:</span>
@@ -456,8 +503,6 @@
 <div class="viewcode-block" id="StorageBackend.get_snapshot"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.get_snapshot">[docs]</a>    <span class="k">def</span> <span class="nf">get_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">snapshot_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the data associated with the snapshot.</span>
-
-<span class="sd">        FIXME: describe the contents of a snapshot?</span>
 
 <span class="sd">        Back-ends are allowed to add additional keys.</span>
 
@@ -499,27 +544,27 @@
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="StorageBackend.ensure_policy_rule_present"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.ensure_policy_rule_present">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_policy_rule_present</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+<div class="viewcode-block" id="StorageBackend.ensure_policy_rule_present"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.ensure_policy_rule_present">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_policy_rule_present</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Idempotently ensure that a given export policy (as represented</span>
 <span class="sd">        by an IP with optional mask) is present in the rules of a given</span>
 <span class="sd">        policy. If it is not present it will be added.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            KeyError: if no such volume or policy exists.</span>
+<span class="sd">            KeyError: if no such policy exists.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
     <span class="nd">@abstractmethod</span>
-<div class="viewcode-block" id="StorageBackend.ensure_policy_rule_absent"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.ensure_policy_rule_absent">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_policy_rule_absent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+<div class="viewcode-block" id="StorageBackend.ensure_policy_rule_absent"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.StorageBackend.ensure_policy_rule_absent">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_policy_rule_absent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Idempotently ensure that a given export policy (as represented</span>
 <span class="sd">        by an IP with optional mask) is absent in the rules of a given</span>
 <span class="sd">        policy. Will delete it if present, otherwise give no warning.</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            KeyError: if no such volume or policy exists.</span>
+<span class="sd">            KeyError: if no such policy exists.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
@@ -544,6 +589,7 @@
             <span class="n">app</span><span class="o">.</span><span class="n">extensions</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="n">class_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Initialising storage back-end </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">class_name</span><span class="p">))</span>
         <span class="n">app</span><span class="o">.</span><span class="n">extensions</span><span class="p">[</span><span class="n">class_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span></div></div>
 
 
@@ -580,6 +626,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">locks_store</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[str, str]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[str, str]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">snapshots_store</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[str, Dict[str, List[str]]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">policies_store</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[str, List[str]]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">volumes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -628,8 +675,8 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">vols</span><span class="p">[</span><span class="n">volume_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">locks_store</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">snapshots_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">snapshots_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vols</span><span class="p">[</span><span class="n">volume_name</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="DummyStorage.locks"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.locks">[docs]</a>    <span class="k">def</span> <span class="nf">locks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">raise_if_volume_absent</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
@@ -657,26 +704,30 @@
             <span class="k">if</span> <span class="n">host_owner</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">locks_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">locks_store</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DummyStorage.policies"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.policies">[docs]</a>    <span class="k">def</span> <span class="nf">policies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
-        <span class="k">with</span> <span class="n">annotate_exception</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="n">vol_404</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)):</span>
-            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">())</span></div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">policies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s1">&#39;rules&#39;</span><span class="p">:</span> <span class="n">rules</span><span class="p">}</span>
+                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">rules</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
 
-<div class="viewcode-block" id="DummyStorage.get_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.get_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
+<div class="viewcode-block" id="DummyStorage.get_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.get_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">policy_name</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="DummyStorage.set_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.set_policy">[docs]</a>    <span class="k">def</span> <span class="nf">set_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">raise_if_volume_absent</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">policy_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No such policy: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">policy_name</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">][</span><span class="n">policy_name</span><span class="p">]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vols</span><span class="p">[</span><span class="n">volume_name</span><span class="p">][</span><span class="s1">&#39;active_policy_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">policy_name</span></div>
 
-<div class="viewcode-block" id="DummyStorage.create_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.create_policy">[docs]</a>    <span class="k">def</span> <span class="nf">create_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Adding policy </span><span class="si">{}</span><span class="s2"> with rules </span><span class="si">{}</span><span class="s2"> on volume </span><span class="si">{}</span><span class="s2">&quot;</span>
-                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">policy_name</span><span class="p">,</span> <span class="n">rules</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">raise_if_volume_absent</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">][</span><span class="n">policy_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">OrderedSet</span><span class="p">(</span><span class="n">rules</span><span class="p">))</span></div>
+<div class="viewcode-block" id="DummyStorage.create_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.create_policy">[docs]</a>    <span class="k">def</span> <span class="nf">create_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Adding policy </span><span class="si">{}</span><span class="s2"> with rules </span><span class="si">{}</span><span class="s2">&quot;</span>
+                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">policy_name</span><span class="p">,</span> <span class="n">rules</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">policy_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">OrderedSet</span><span class="p">(</span><span class="n">rules</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="DummyStorage.remove_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.remove_policy">[docs]</a>    <span class="k">def</span> <span class="nf">remove_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Removing policy </span><span class="si">{}</span><span class="s2"> from volume </span><span class="si">{}</span><span class="s2">&quot;</span>
-                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">policy_name</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">raise_if_volume_absent</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">policy_name</span><span class="p">)</span></div>
+<div class="viewcode-block" id="DummyStorage.remove_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.remove_policy">[docs]</a>    <span class="k">def</span> <span class="nf">remove_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Removing policy </span><span class="si">{}</span><span class="s2">&quot;</span>
+                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">policy_name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">policy_name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DummyStorage.clone_volume"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.clone_volume">[docs]</a>    <span class="k">def</span> <span class="nf">clone_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clone_volume_name</span><span class="p">,</span>
                      <span class="n">from_volume_name</span><span class="p">,</span> <span class="n">from_snapshot_name</span><span class="p">):</span>
@@ -717,15 +768,13 @@
                  <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="n">restore_snapshot_name</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">raise_if_snapshot_absent</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="n">restore_snapshot_name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DummyStorage.ensure_policy_rule_present"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.ensure_policy_rule_present">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_policy_rule_present</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">raise_if_volume_absent</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">rule</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">][</span><span class="n">policy_name</span><span class="p">]:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">][</span><span class="n">policy_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div>
+<div class="viewcode-block" id="DummyStorage.ensure_policy_rule_present"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.ensure_policy_rule_present">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_policy_rule_present</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">rule</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">policy_name</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">policy_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DummyStorage.ensure_policy_rule_absent"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.ensure_policy_rule_absent">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_policy_rule_absent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">raise_if_volume_absent</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
-        <span class="n">stored_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">][</span><span class="n">policy_name</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">volume_name</span><span class="p">][</span><span class="n">policy_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span>
+<div class="viewcode-block" id="DummyStorage.ensure_policy_rule_absent"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.DummyStorage.ensure_policy_rule_absent">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_policy_rule_absent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+        <span class="n">stored_rules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">policy_name</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_store</span><span class="p">[</span><span class="n">policy_name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span>
             <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">rule</span><span class="p">,</span> <span class="n">stored_rules</span><span class="p">))</span></div></div>
 
 
@@ -734,9 +783,14 @@
 <span class="sd">    A Back-end for a NetApp storage system.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">netapp_server</span><span class="p">,</span> <span class="n">vserver</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">vserver</span> <span class="o">=</span> <span class="n">vserver</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">netapp_server</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        netapp_server is assumed to be configured to a vserver.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">server</span> <span class="o">=</span> <span class="n">netapp_server</span>
+        <span class="kn">import</span> <span class="nn">requests</span>
+        <span class="n">requests</span><span class="o">.</span><span class="n">packages</span><span class="o">.</span><span class="n">urllib3</span><span class="o">.</span><span class="n">disable_warnings</span><span class="p">()</span>
 
 <div class="viewcode-block" id="NetappStorage.format_volume"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.format_volume">[docs]</a>    <span class="k">def</span> <span class="nf">format_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;size_total&#39;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">size_total_bytes</span><span class="p">,</span>
@@ -744,6 +798,10 @@
                 <span class="s1">&#39;filer_address&#39;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">node_name</span><span class="p">,</span>
                 <span class="s1">&#39;aggregate_name&#39;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">containing_aggregate_name</span><span class="p">,</span>
                 <span class="o">**</span><span class="n">v</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="NetappStorage.format_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.format_policy">[docs]</a>    <span class="k">def</span> <span class="nf">format_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                <span class="s1">&#39;rules&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">p</span><span class="o">.</span><span class="n">rules</span><span class="p">]}</span></div>
 
 <div class="viewcode-block" id="NetappStorage.name_from_path"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.name_from_path">[docs]</a>    <span class="k">def</span> <span class="nf">name_from_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">junction_path</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -773,41 +831,72 @@
             <span class="n">node</span><span class="p">,</span> <span class="n">junction_path</span> <span class="o">=</span> <span class="n">volume_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">node</span><span class="p">,</span> <span class="n">junction_path</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> does not follow naming&quot;</span>
-                        <span class="s2">&quot; convention node:junction_path!&quot;</span>
-                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">volume_name</span><span class="p">))</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> does not follow naming&quot;</span>
+                     <span class="s2">&quot; convention node:junction_path, assume name.&quot;</span>
+                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">volume_name</span><span class="p">))</span>
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">volume_name</span></div>
+
+<div class="viewcode-block" id="NetappStorage.parse_volume_name"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.parse_volume_name">[docs]</a>    <span class="k">def</span> <span class="nf">parse_volume_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name_or_node_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a volume name on the format name, or node:junction_path,</span>
+<span class="sd">        always returning a unique name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node</span><span class="p">,</span> <span class="n">junction_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_junction_path</span><span class="p">(</span><span class="n">volume_name_or_node_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Name did not follow name:junction_path convention. Assume name.</span>
+            <span class="k">return</span> <span class="n">junction_path</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_from_path</span><span class="p">(</span><span class="n">junction_path</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">volumes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Explicitly ignores volumes belonging to aggr0 and volumes that</span>
+<span class="sd">        are restricted.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">format_volume</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">volumes</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^aggr0.*&quot;</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">containing_aggregate_name</span><span class="p">)]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;^aggr0.*&quot;</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">containing_aggregate_name</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="n">v</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s1">&#39;restricted&#39;</span><span class="p">]</span>
 
     <span class="nd">@normalised_with</span><span class="p">(</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="n">allow_unknown</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <div class="viewcode-block" id="NetappStorage.get_volume"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.get_volume">[docs]</a>    <span class="k">def</span> <span class="nf">get_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
-        <span class="n">_node</span><span class="p">,</span> <span class="n">junction_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_junction_path</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
+        <span class="n">node</span><span class="p">,</span> <span class="n">junction_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_junction_path</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">volume</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
-                <span class="n">junction_path</span><span class="o">=</span><span class="n">junction_path</span><span class="p">))</span>
-        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">volume</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+                    <span class="n">junction_path</span><span class="o">=</span><span class="n">junction_path</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Just a name was provided, not a node:junction_path</span>
+                <span class="n">volume_name</span> <span class="o">=</span> <span class="n">junction_path</span>
+                <span class="n">volume</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">single</span><span class="p">(</span><span class="n">volume_name</span><span class="o">=</span><span class="n">volume_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">StopIteration</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
             <span class="k">with</span> <span class="n">annotate_exception</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="n">vol_404</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)):</span>
                 <span class="k">raise</span> <span class="ne">KeyError</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_volume</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NetappStorage.get_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.get_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">export_rules_of</span><span class="p">(</span><span class="n">policy_name</span><span class="p">)</span></div>
+<div class="viewcode-block" id="NetappStorage.get_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.get_policy">[docs]</a>    <span class="k">def</span> <span class="nf">get_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">policy_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">export_policies</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No such policy exists: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">policy_name</span><span class="p">))</span>
+        <span class="n">rules</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">export_rules_of</span><span class="p">(</span><span class="n">policy_name</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">rules</span></div>
+
+<div class="viewcode-block" id="NetappStorage.set_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.set_policy">[docs]</a>    <span class="k">def</span> <span class="nf">set_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
+        <span class="n">volume_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_volume_name</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">set_volume_export_policy</span><span class="p">(</span><span class="n">volume_name</span><span class="o">=</span><span class="n">volume_name</span><span class="p">,</span>
+                                             <span class="n">policy_name</span><span class="o">=</span><span class="n">policy_name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NetappStorage.get_snapshots"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.get_snapshots">[docs]</a>    <span class="k">def</span> <span class="nf">get_snapshots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
+        <span class="n">volume_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_volume_name</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">s</span><span class="p">}</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">snapshots_of</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)]</span></div>
 
-<div class="viewcode-block" id="NetappStorage.policies"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.policies">[docs]</a>    <span class="k">def</span> <span class="nf">policies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
-        <span class="c1"># We only have one, so return that!</span>
-        <span class="n">policy_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)[</span><span class="s1">&#39;active_policy_name&#39;</span><span class="p">]</span>
-        <span class="n">rules</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">export_rules_of</span><span class="p">(</span><span class="n">policy_name</span><span class="p">)]</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="p">(</span><span class="n">policy_name</span><span class="p">,</span> <span class="n">rules</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">response</span><span class="p">]</span></div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">policies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">format_policy</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">export_policies</span><span class="p">]</span>
 
 <div class="viewcode-block" id="NetappStorage.locks"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.locks">[docs]</a>    <span class="k">def</span> <span class="nf">locks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
+        <span class="n">volume_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_volume_name</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
         <span class="n">ls</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span><span class="o">.</span><span class="n">client_address</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">locks_on</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">ls</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
@@ -823,58 +912,106 @@
                                  <span class="n">junction_path</span><span class="p">,</span> <span class="n">from_snapshot_name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NetappStorage.create_snapshot"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.create_snapshot">[docs]</a>    <span class="k">def</span> <span class="nf">create_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">snapshot_name</span><span class="p">):</span>
+        <span class="n">_node</span><span class="p">,</span> <span class="n">junction_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_junction_path</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
+        <span class="n">volume_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_from_path</span><span class="p">(</span><span class="n">junction_path</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">create_snapshot</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="n">snapshot_name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NetappStorage.get_snapshot"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.get_snapshot">[docs]</a>    <span class="k">def</span> <span class="nf">get_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">snapshot_name</span><span class="p">):</span>
-        <span class="n">snapshots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">snapshots_of</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
+        <span class="n">volume_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_volume_name</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
+        <span class="n">snapshots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_snapshots</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">snapshot</span> <span class="ow">in</span> <span class="n">snapshots</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">snapshot</span> <span class="o">==</span> <span class="n">snapshot_name</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">snapshot</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">snapshot_name</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">snapshot</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No such snapshot </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">snapshot_name</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="NetappStorage.remove_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.remove_policy">[docs]</a>    <span class="k">def</span> <span class="nf">remove_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">delete_export_policy</span><span class="p">(</span><span class="n">policy_name</span><span class="p">)</span></div>
+<div class="viewcode-block" id="NetappStorage.remove_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.remove_policy">[docs]</a>    <span class="k">def</span> <span class="nf">remove_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">delete_export_policy</span><span class="p">(</span><span class="n">policy_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">netapp</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">APIError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="mi">15661</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Policy doesn&#39;t exist: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">policy_name</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span></div>
 
-<div class="viewcode-block" id="NetappStorage.create_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.create_policy">[docs]</a>    <span class="k">def</span> <span class="nf">create_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">create_export_policy</span><span class="p">(</span><span class="n">policy_name</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">rules</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">set_volume_export_policy</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">)</span></div>
+<div class="viewcode-block" id="NetappStorage.create_policy"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.create_policy">[docs]</a>    <span class="k">def</span> <span class="nf">create_policy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rules</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">create_export_policy</span><span class="p">(</span><span class="n">policy_name</span><span class="p">,</span> <span class="n">rules</span><span class="o">=</span><span class="n">rules</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NetappStorage.delete_snapshot"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.delete_snapshot">[docs]</a>    <span class="k">def</span> <span class="nf">delete_snapshot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">snapshot_name</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">delete_snapshot</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="n">snapshot_name</span><span class="p">)</span></div>
+        <span class="n">volume_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_volume_name</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">delete_snapshot</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="n">snapshot_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">netapp</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">APIError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="mi">15661</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;No such snapshot </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">snapshot_name</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span></div>
 
 <div class="viewcode-block" id="NetappStorage.rollback_volume"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.rollback_volume">[docs]</a>    <span class="k">def</span> <span class="nf">rollback_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">restore_snapshot_name</span><span class="p">):</span>
+        <span class="n">volume_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_volume_name</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">get_snapshot</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="n">restore_snapshot_name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">rollback_volume_from_snapshot</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="n">restore_snapshot_name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NetappStorage.ensure_policy_rule_present"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.ensure_policy_rule_present">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_policy_rule_present</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+<div class="viewcode-block" id="NetappStorage.ensure_policy_rule_present"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.ensure_policy_rule_present">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_policy_rule_present</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
         <span class="n">rules</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">_i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">export_rules_of</span><span class="p">(</span><span class="n">policy_name</span><span class="p">)]</span>
         <span class="k">if</span> <span class="n">rule</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">add_export_rule</span><span class="p">(</span><span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="NetappStorage.ensure_policy_rule_absent"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.ensure_policy_rule_absent">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_policy_rule_absent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+<div class="viewcode-block" id="NetappStorage.ensure_policy_rule_absent"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.ensure_policy_rule_absent">[docs]</a>    <span class="k">def</span> <span class="nf">ensure_policy_rule_absent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">policy_name</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">stored_rule</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">export_rules_of</span><span class="p">(</span><span class="n">policy_name</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">rule</span> <span class="o">==</span> <span class="n">stored_rule</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">remove_export_rule</span><span class="p">(</span><span class="n">policy_name</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
                 <span class="k">break</span></div>
 
+    <span class="nd">@normalised_with</span><span class="p">(</span><span class="s1">&#39;volume&#39;</span><span class="p">,</span> <span class="n">allow_unknown</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <div class="viewcode-block" id="NetappStorage.create_volume"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.create_volume">[docs]</a>    <span class="k">def</span> <span class="nf">create_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="o">**</span><span class="n">fields</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Important note: the volume &quot;name&quot; for NetApp is in actuality its</span>
-<span class="sd">        node name and junction path, separated by colon.</span>
+<span class="sd">        Important note: the volume &quot;name&quot; for NetApp is either a name,</span>
+<span class="sd">        or a node name and junction path separated by colon. Please note</span>
+<span class="sd">        that the node name is ignored, as the user cannot set the node</span>
+<span class="sd">        name on creation.</span>
 
-<span class="sd">        Therefore, an *actual* name must be provided as a data field</span>
-<span class="sd">        (&#39;name&#39;)</span>
+<span class="sd">        If creating a volume from a junction path, an *actual* name must</span>
+<span class="sd">        be provided as a data field (&#39;name&#39;) (and vice versa -- if</span>
+<span class="sd">        creating with a name, junction path must be provided).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Fixme: optionally include autosize_enabled etc</span>
 
-        <span class="n">_node</span><span class="p">,</span> <span class="n">junction_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_junction_path</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
+        <span class="n">node</span><span class="p">,</span> <span class="n">junction_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_junction_path</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide explicit name for NetApp!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Ignoring provided node name &#39;</span><span class="si">{}</span><span class="s2">&#39; for volume creation&quot;</span>
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Only name was given, get junction path from fields</span>
+            <span class="n">volume_name</span> <span class="o">=</span> <span class="n">junction_path</span>
+            <span class="n">junction_path</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;junction_path&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">volume_name</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">volume_name</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide a volume name for NetApp back-ends!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">junction_path</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide a junction path for NetApp back-ends!&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;size_total&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Must provide size_total for NetApp!&quot;</span><span class="p">)</span>
 
         <span class="n">aggregate_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">snapshot_reserve</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;percentage_snapshot_reserve&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">compression</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;compression_enabled&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">inline_compression</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;inline_compression&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">export_policy_name</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;active_policy_name&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># None-patch the keys with default values.</span>
+        <span class="c1"># This is needed, because the front-end gives us None if no</span>
+        <span class="c1"># value was provided by the user.</span>
+        <span class="k">if</span> <span class="n">snapshot_reserve</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">snapshot_reserve</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">compression</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">compression</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">inline_compression</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inline_compression</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">if</span> <span class="n">fields</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;aggregate_name&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
             <span class="n">aggregate_name</span> <span class="o">=</span> <span class="n">fields</span><span class="p">[</span><span class="s1">&#39;aggregate_name&#39;</span><span class="p">]</span>
@@ -883,9 +1020,12 @@
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Aggregate not provided,&quot;</span>
                      <span class="s2">&quot; using the one with the most free space...&quot;</span><span class="p">)</span>
             <span class="c1"># sorted sorts ascending by default.</span>
-            <span class="n">aggregates</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">aggregates</span><span class="p">,</span>
-                                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">bytes_available</span><span class="p">,</span>
-                                <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">with_vserver</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
+                <span class="c1"># Switch to cluster-mode for this operation</span>
+                <span class="n">aggregates</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">aggregates</span><span class="p">,</span>
+                                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">bytes_available</span><span class="p">,</span>
+                                    <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
             <span class="n">not_aggr0</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;(?!^aggr0.*)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">aggregate</span> <span class="ow">in</span> <span class="n">aggregates</span><span class="p">:</span>
@@ -901,33 +1041,89 @@
 
         <span class="k">assert</span> <span class="n">aggregate_name</span><span class="p">,</span> <span class="s2">&quot;Could not find a suitable aggregate!&quot;</span>
 
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">with_vserver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vserver</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">create_volume</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
-                                      <span class="n">size_bytes</span><span class="o">=</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;size_total&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="p">,</span>
-                                      <span class="n">junction_path</span><span class="o">=</span><span class="n">junction_path</span><span class="p">,</span>
-                                      <span class="n">aggregate_name</span><span class="o">=</span><span class="n">aggregate_name</span><span class="p">)</span></div>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">create_volume</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">volume_name</span><span class="p">,</span>
+                <span class="n">size_bytes</span><span class="o">=</span><span class="n">fields</span><span class="p">[</span><span class="s1">&#39;size_total&#39;</span><span class="p">],</span>
+                <span class="n">junction_path</span><span class="o">=</span><span class="n">junction_path</span><span class="p">,</span>
+                <span class="n">percentage_snapshot_reserve</span><span class="o">=</span><span class="n">snapshot_reserve</span><span class="p">,</span>
+                <span class="n">compression</span><span class="o">=</span><span class="n">compression</span><span class="p">,</span>
+                <span class="n">inline_compression</span><span class="o">=</span><span class="n">inline_compression</span><span class="p">,</span>
+                <span class="n">export_policy_name</span><span class="o">=</span><span class="n">export_policy_name</span><span class="p">,</span>
+                <span class="n">aggregate_name</span><span class="o">=</span><span class="n">aggregate_name</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_volume</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">single</span><span class="p">(</span><span class="n">volume_name</span><span class="o">=</span><span class="n">volume_name</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">netapp</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">APIError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="mi">17</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Volume </span><span class="si">{}</span><span class="s2"> already exists!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">volume_name</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span></div>
 
 <div class="viewcode-block" id="NetappStorage.create_lock"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.create_lock">[docs]</a>    <span class="k">def</span> <span class="nf">create_lock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">host_owner</span><span class="p">):</span>
         <span class="c1"># There doesn&#39;t seem to be any way of implementing this. :(</span>
         <span class="k">return</span> <span class="bp">NotImplemented</span></div>
 
 <div class="viewcode-block" id="NetappStorage.remove_lock"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.remove_lock">[docs]</a>    <span class="k">def</span> <span class="nf">remove_lock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">host_owner</span><span class="p">):</span>
+        <span class="n">volume_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_volume_name</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">break_lock</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="n">host_owner</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NetappStorage.patch_volume"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.patch_volume">[docs]</a>    <span class="k">def</span> <span class="nf">patch_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">):</span>
         <span class="n">previous</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
-        <span class="n">autosize_enabled</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;autosize_enabled&#39;</span><span class="p">,</span>
-                                    <span class="n">previous</span><span class="p">[</span><span class="s1">&#39;autosize_enabled&#39;</span><span class="p">])</span>
-        <span class="n">autosize_increment</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;autosize_increment&#39;</span><span class="p">,</span>
-                                      <span class="n">previous</span><span class="p">[</span><span class="s1">&#39;autosize_increment&#39;</span><span class="p">])</span>
-        <span class="n">max_autosize</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;max_autosize&#39;</span><span class="p">,</span> <span class="n">previous</span><span class="p">[</span><span class="s1">&#39;max_autosize&#39;</span><span class="p">])</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_volume_autosize</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="n">max_size_kb</span><span class="o">=</span><span class="n">max_autosize</span><span class="p">,</span>
-                                 <span class="n">increment_kb</span><span class="o">=</span><span class="n">autosize_increment</span><span class="p">,</span>
-                                 <span class="n">autosize_enabled</span><span class="o">=</span><span class="n">autosize_enabled</span><span class="p">)</span></div>
+        <span class="n">changed_keys</span><span class="p">,</span> <span class="n">updated_volume</span> <span class="o">=</span> <span class="n">patch_and_diff</span><span class="p">(</span><span class="n">previous</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="c1"># Autosize:</span>
+        <span class="n">autosize_key</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;autosize&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span>
+
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">autosize_key</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">changed_keys</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updating autosize...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">set_volume_autosize</span><span class="p">(</span>
+                <span class="n">previous</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                <span class="n">max_size_bytes</span><span class="o">=</span><span class="n">updated_volume</span><span class="p">[</span><span class="s1">&#39;max_autosize&#39;</span><span class="p">],</span>
+                <span class="n">increment_bytes</span><span class="o">=</span><span class="n">updated_volume</span><span class="p">[</span><span class="s1">&#39;autosize_increment&#39;</span><span class="p">],</span>
+                <span class="n">autosize_enabled</span><span class="o">=</span><span class="n">updated_volume</span><span class="p">[</span><span class="s1">&#39;autosize_enabled&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Snapshot reserve space</span>
+        <span class="k">if</span> <span class="s1">&#39;percentage_snapshot_reserve&#39;</span> <span class="ow">in</span> <span class="n">changed_keys</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updating snapshot reserve space...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">set_volume_snapshot_reserve</span><span class="p">(</span>
+                <span class="n">previous</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                <span class="n">reserve_percent</span><span class="o">=</span><span class="n">updated_volume</span><span class="p">[</span><span class="s1">&#39;percentage_snapshot_reserve&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Compression</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;compression&#39;</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">changed_keys</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updating compression...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">set_compression</span><span class="p">(</span>
+                <span class="n">volume_name</span><span class="o">=</span><span class="n">previous</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                <span class="n">enabled</span><span class="o">=</span><span class="n">updated_volume</span><span class="p">[</span><span class="s1">&#39;compression_enabled&#39;</span><span class="p">],</span>
+                <span class="n">inline</span><span class="o">=</span><span class="n">updated_volume</span><span class="p">[</span><span class="s1">&#39;inline_compression&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Active export policy</span>
+        <span class="k">if</span> <span class="s1">&#39;active_policy_name&#39;</span> <span class="ow">in</span> <span class="n">changed_keys</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Updating policy name...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">set_volume_export_policy</span><span class="p">(</span>
+                <span class="n">previous</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                <span class="n">policy_name</span><span class="o">=</span><span class="n">updated_volume</span><span class="p">[</span><span class="s1">&#39;active_policy_name&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Resize volume</span>
+        <span class="k">if</span> <span class="s1">&#39;size_total&#39;</span> <span class="ow">in</span> <span class="n">changed_keys</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Resizing volume...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">resize_volume</span><span class="p">(</span><span class="n">volume_name</span><span class="o">=</span><span class="n">previous</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                                      <span class="n">new_size</span><span class="o">=</span><span class="n">updated_volume</span><span class="p">[</span><span class="s1">&#39;size_total&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Caching policy</span>
+        <span class="k">if</span> <span class="s1">&#39;caching_policy&#39;</span> <span class="ow">in</span> <span class="n">changed_keys</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting caching policy...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">set_volume_caching_policy</span><span class="p">(</span>
+                <span class="n">volume_name</span><span class="o">=</span><span class="n">previous</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                <span class="n">policy_name</span><span class="o">=</span><span class="n">updated_volume</span><span class="p">[</span><span class="s1">&#39;caching_policy&#39;</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="NetappStorage.restrict_volume"><a class="viewcode-back" href="../../source/extensions.html#extensions.storage.NetappStorage.restrict_volume">[docs]</a>    <span class="k">def</span> <span class="nf">restrict_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">restrict_volume</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span></div></div>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_volume_name</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">restrict_volume</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">volume</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">volumes</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_volume</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span></div></div>
 
 <span class="c1"># I don&#39;t know if this does anything, but it may be necessary for, uh,</span>
 <span class="c1"># some reason?</span>
