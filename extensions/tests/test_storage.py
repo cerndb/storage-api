@@ -351,8 +351,8 @@ def test_ensure_policy_rule_present(storage, recorder):
 def test_ensure_policy_rule_absent(storage, recorder):
     rule = "127.0.0.1"
     policy_name = "a_policy_53"
-    try:
-        with recorder.use_cassette('ensure_policy_rule_absent'):
+    with recorder.use_cassette('ensure_policy_rule_absent'):
+        try:
             storage.create_policy(policy_name=policy_name,
                                   rules=[rule])
 
@@ -363,11 +363,11 @@ def test_ensure_policy_rule_absent(storage, recorder):
                                                   rule=rule)
 
             assert storage.get_policy(policy_name=policy_name) == []
-    finally:
-        try:
-            storage.remove_policy(policy_name=policy_name)
-        except KeyError:
-            pass
+        finally:
+            try:
+                storage.remove_policy(policy_name=policy_name)
+            except KeyError:
+                pass
 
 
 @on_all_backends
