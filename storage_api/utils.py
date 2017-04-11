@@ -35,3 +35,12 @@ def compose_decorators(*decs):
             f = dec(f)
         return f
     return deco
+
+
+# http://stackoverflow.com/a/26853961
+# Waiting for python 3.5 when we can just do z = {**x, **y}
+def merge_two_dicts(x, y):
+    """Given two dicts, merge them into a new dict as a shallow copy."""
+    z = x.copy()
+    z.update(y)
+    return z

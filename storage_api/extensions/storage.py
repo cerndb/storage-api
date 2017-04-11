@@ -15,7 +15,7 @@ In general, methods are expected to raise KeyErrors on 404-type errors
 cases, reasonable descriptions of what went wrong should be included,
 and -- if possible -- suggestions on how to fix the situation.
 """
-
+from storage_api.utils import merge_two_dicts
 
 from abc import ABCMeta, abstractmethod
 import logging
@@ -659,11 +659,12 @@ class NetappStorage(StorageBackend):
         requests.packages.urllib3.disable_warnings()
 
     def format_volume(self, v):
-        return {'size_total': v.size_total_bytes,
-                'size_used': v.size_used_bytes,
-                'filer_address': v.node_name,
-                'aggregate_name': v.containing_aggregate_name,
-                **v.__dict__}
+        return merge_two_dicts(
+            v.__dict__,
+            {'size_total': v.size_total_bytes,
+             'size_used': v.size_used_bytes,
+             'filer_address': v.node_name,
+             'aggregate_name': v.containing_aggregate_name})
 
     def format_policy(self, p):
         return {'name': p.name,
