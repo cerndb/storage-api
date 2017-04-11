@@ -1,4 +1,4 @@
-import extensions
+from storage_api import extensions
 
 import json
 from contextlib import contextmanager

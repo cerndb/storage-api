@@ -1,7 +1,7 @@
-import app
-import apis.common
-import extensions
-from utils import compose_decorators
+from storage_api import app
+from storage_api.apis import common
+from storage_api import extensions
+from storage_api.utils import compose_decorators
 
 import json
 from urllib.parse import urlencode
@@ -77,7 +77,7 @@ def patch_arguments(draw):
 
 
 @contextmanager
-def user_set(client, user={'group': [apis.common.ADMIN_GROUP]}):
+def user_set(client, user={'group': [common.ADMIN_GROUP]}):
     with client.session_transaction() as sess:
         sess['user'] = user
 

@@ -1,4 +1,5 @@
-from extensions.storage import DummyStorage, NetappStorage, StorageBackend # noqa
+from storage_api.extensions.storage import (DummyStorage,
+                                            NetappStorage) # noqa
 
 import uuid
 import functools

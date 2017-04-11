@@ -7,9 +7,9 @@
 # In applying this license, CERN does not waive the privileges and immunities
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
-from apis import api
-import apis
-import extensions
+from storage_api.apis import api
+import storage_api.apis as apis
+import storage_api.extensions as extensions
 
 import os
 import logging
