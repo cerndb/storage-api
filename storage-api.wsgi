@@ -9,4 +9,4 @@
 # or submit itself to any jurisdiction.
 
 # WSGI requirement
-from app import app as application # noqa
+from storage_api.app import app as application # noqa

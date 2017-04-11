@@ -63,10 +63,10 @@ tag-stable:
 	koji tag-build db7-stable $(PKGID)-$(PKGRELEASE).el7.cern
 
 lint: $(SOURCES)
-	flake8 app.py apis setup.py extensions
-	# mypy --ignore-missing-imports --fast-parser \
-	#      --check-untyped-defs --warn-no-return \
-	#      app.py apis setup.py extensions
+	flake8 $(SOURCES)
+	 mypy --ignore-missing-imports --fast-parser \
+	      --check-untyped-defs --warn-no-return \
+	      $(SOURCES)
 
 .PHONY: lint
 
