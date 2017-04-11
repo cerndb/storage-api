@@ -13,7 +13,7 @@ REPOURL=git+https://github.com
 # DB gitlab group
 REPOPREFIX=/cerndb
 REPO_NAME=storage-api
-SOURCES := $(shell find apis app.py -name '*.py')
+SOURCES := $(shell find storage_api -name '*.py')
 
 # Get all the package infos from the spec file
 PKGVERSION=$(shell awk '/Version:/ { print $$2 }' ${SPECFILE})
@@ -71,7 +71,7 @@ lint: $(SOURCES)
 .PHONY: lint
 
 devserver.PID:
-	FLASK_APP=app.py FLASK_DEBUG=true flask run & echo $$! > $@;
+	FLASK_APP=storage_api.app FLASK_DEBUG=true flask run & echo $$! > $@;
 
 
 devserver: devserver.PID

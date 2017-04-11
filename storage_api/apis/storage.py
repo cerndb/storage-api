@@ -8,10 +8,10 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
-import apis
-from apis.common.auth import in_group
-from apis.common import ADMIN_GROUP
-from utils import dict_without, filter_none
+from storage_api import apis as apis
+from storage_api.apis.common.auth import in_group
+from storage_api.apis.common import ADMIN_GROUP
+from storage_api.utils import dict_without, filter_none
 
 import logging
 import traceback

@@ -12,3 +12,4 @@ html
 /storage-api-*.tar.gz
 doc/_build/
 doc/source/
+*.egg-info

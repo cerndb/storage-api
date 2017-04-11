@@ -11,7 +11,7 @@
 from flask_restplus import Api
 
 from .storage import api as unified_ns
-from apis.common.auth import authorizations
+from storage_api.apis.common.auth import authorizations
 
 import logging
 

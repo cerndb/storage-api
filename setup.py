@@ -13,7 +13,7 @@ Storage REST API server setup file
 """
 
 from setuptools import setup, find_packages
-import apis
+import storage_api.apis as apis
 
 setup(name='storage-api',
       version=apis.__version__,
@@ -25,7 +25,7 @@ setup(name='storage-api',
       maintainer_email='rgaspar@cern.ch',
       url='https://github.com/cerndb/storage-api',
       packages=find_packages(),
-      scripts=['app.py'],
+      # scripts=['storage-api.cgi', 'storage-api.wsgi'],
       test_suite="",
       install_requires=[
           'netapp-api',
