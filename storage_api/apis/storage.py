@@ -8,7 +8,7 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
-from storage_api import apis as apis
+import storage_api.apis
 from storage_api.apis.common.auth import in_group
 from storage_api.apis.common import ADMIN_GROUP
 from storage_api.utils import dict_without, filter_none
@@ -229,7 +229,8 @@ class Volume(Resource):
                                    " (if created), otherwise nothing"))
     @in_group(api, ADMIN_GROUP)
     def post(self, subsystem, volume_name):
-        data = marshal(apis.api.payload, volume_create_w_snapshot_model)
+        data = marshal(storage_api.apis.api.payload,
+                       volume_create_w_snapshot_model)
 
         if data['from_volume'] and data['from_snapshot']:
             with keyerror_is_404(), valueerror_is_400():
@@ -265,7 +266,7 @@ class Volume(Resource):
     @api.expect(volume_write_model, validate=True)
     @in_group(api, ADMIN_GROUP)
     def patch(self, subsystem, volume_name):
-        data = filter_none(marshal(apis.api.payload, volume_write_model))
+        data = filter_none(marshal(storage_api.apis.api.payload, volume_write_model))
         log.info("PATCH with payload {}".format(str(data)))
         if data:
             with keyerror_is_404():
@@ -392,7 +393,8 @@ class Export(Resource):
     @api.expect(policy_rule_write_model, validate=True)
     @in_group(api, ADMIN_GROUP)
     def post(self, subsystem, policy):
-        rules = marshal(apis.api.payload, policy_rule_write_model)['rules']
+        rules = marshal(storage_api.apis.api.payload,
+                        policy_rule_write_model)['rules']
         with keyerror_is_404(), valueerror_is_400():
             backend(subsystem).create_policy(policy, rules)
         return '', 201
