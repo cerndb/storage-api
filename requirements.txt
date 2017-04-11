@@ -21,4 +21,3 @@ mypy==0.470
 betamax==0.8.0
 betamax-serializers==0.2.0
 -e git+https://github.com/cerndb/netapp-api-python.git#egg=netapp-api
-typed-ast

@@ -64,9 +64,9 @@ tag-stable:
 
 lint: $(SOURCES)
 	flake8 $(SOURCES)
-	 mypy --ignore-missing-imports --fast-parser \
-	      --check-untyped-defs --warn-no-return \
-	      $(SOURCES)
+	 # mypy --ignore-missing-imports --fast-parser \
+	 #      --check-untyped-defs --warn-no-return \
+	 #      $(SOURCES)
 
 .PHONY: lint
 
