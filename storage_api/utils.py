@@ -2,7 +2,6 @@
 This file contains various utilities, including this recipe for an
 ordered set http://code.activestate.com/recipes/576694/
 """
-import collections
 
 
 def dict_without(d, *keys):
