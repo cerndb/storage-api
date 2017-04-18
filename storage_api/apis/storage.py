@@ -189,7 +189,7 @@ def default_error_handler(error):    # pragma: no cover
     return {'message': str(error)}, getattr(error, 'code', 500)
 
 
-@api.route('/<string:subsystem>/volumes/')
+@api.route('/<string:subsystem>/volumes')
 @api.param('subsystem', SUBSYSTEM_DESCRIPTION)
 class AllVolumes(Resource):
     @api.doc(description="Get a list of all volumes",
