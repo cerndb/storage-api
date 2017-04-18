@@ -119,6 +119,7 @@ volume_create_model = api.inherit('VolumeCreate', volume_write_model, {
                      " use the one with the most free"
                      " space.")
     ),
+    'junction_path': fields.String(min_length=1),
 })
 
 volume_read_model = api.inherit('VolumeRead', volume_create_model, {
@@ -126,7 +127,6 @@ volume_read_model = api.inherit('VolumeRead', volume_create_model, {
     'uuid': fields.String(min_length=1),
     'state': fields.String(min_length=1),
     'filer_address': fields.String(min_length=1),
-    'junction_path': fields.String(min_length=1),
     'creation_time': fields.DateTime(dt_format='rfc822'),
     'percentage_snapshot_reserve_used': fields.Integer(),
     })
