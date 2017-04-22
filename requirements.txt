@@ -1,22 +1,14 @@
-flake8==3.2.1
-Flask==0.11.1
-flask-restplus==0.9.2
-Flask-SSO==0.4.0
+include requirements-runtime.txt
+
 pytest==3.0.5
 pytest-cov == 2.3.1
 # pytest-logging==2015.11.4
 hypothesis==3.6.1
 hypothesis-pytest==0.19.0
-ordered-set==2.0.1
 Flask-Testing==0.6.1
-requests==2.13.0
-jsonschema==2.5.1
-swagger-spec-validator==2.0.2
-Cerberus==1.1
 recommonmark==0.4.0
 sphinx-rtd-theme==0.1.9
 Sphinx==1.5.2
 sphinxcontrib-napoleon==0.6.0
 betamax==0.8.0
 betamax-serializers==0.2.0
--e git+https://github.com/cerndb/netapp-api-python.git#egg=netapp-api

@@ -1,0 +1,17 @@
+stages:
+ - build
+ - deploy
+
+build-docker-image:
+  stage: build
+  tags:
+   - docker-image-build
+  script: "echo building $CI_REGISTRY_IMAGE:runner" # No empty scripts are allowed
+  variables:
+   TO: $CI_REGISTRY_IMAGE:runner # Where to push resulting image
+
+deploy-openshift:
+  allow_failure: true
+  stage: deploy
+  image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
+  script: "oc import-image $IMAGE_NAME  --server=$OPENSHIFT_SERVER --token=$IMAGE_IMPORT_TOKEN --namespace $OPENSHIFT_PROJECT_NAME"
