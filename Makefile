@@ -102,3 +102,8 @@ html: swagger.json doc/source/modules.rst
 doc_deploy: swagger.json html
 	bash ./deploy.sh html
 .PHONY: doc_deploy
+
+image:
+	docker build --force-rm -t storage-api .
+run:
+	docker run -it --rm --publish-all storage-api
