@@ -21,7 +21,7 @@ import sys
 import sphinx_rtd_theme
 from recommonmark.parser import CommonMarkParser
 sys.path.insert(0, os.path.abspath('..'))
-import apis # noqa
+from storage_api import apis # noqa
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
