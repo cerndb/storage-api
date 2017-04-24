@@ -17,6 +17,7 @@ import logging
 import traceback
 from contextlib import contextmanager
 from functools import partial
+import re
 
 from flask_restplus import Namespace, Resource, fields, marshal
 from flask import current_app
@@ -41,6 +42,8 @@ SUBSYSTEM_MAPPING = {'netapp': 'NetappStorage',
 SUBSYSTEM_DESCRIPTION = ("The subsystem to run the command on."
                          " Must be one of: {}"
                          .format(", ".join(SUBSYSTEM_MAPPING.keys())))
+
+DISALLOWED_VOLUME_NAME_RE = re.compile(".*[^a-z1-9:/].*")
 
 
 @contextmanager
@@ -209,8 +212,11 @@ class Volume(Resource):
     @api.response(404, description="No such volume exists")
     @api.response(201, description="A new volume was created")
     def get(self, subsystem, volume_name):
-        assert "/snapshots" not in volume_name
         log.info("GET for {}".format(volume_name))
+
+        if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
+            api.abort(400, "Invalid volume name")
+
         with keyerror_is_404():
             return backend(subsystem).get_volume(volume_name)
 
@@ -229,6 +235,9 @@ class Volume(Resource):
                                    " (if created), otherwise nothing"))
     @in_group(api, ADMIN_GROUP)
     def post(self, subsystem, volume_name):
+        if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
+            api.abort(400, "Invalid volume name")
+
         data = marshal(storage_api.apis.api.payload,
                        volume_create_w_snapshot_model)
 
@@ -257,7 +266,8 @@ class Volume(Resource):
                   model=None)
     @in_group(api, ADMIN_GROUP)
     def delete(self, subsystem, volume_name):
-        assert "/snapshots" not in volume_name
+        if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
+            api.abort(400, "Invalid volume name")
         with keyerror_is_404():
             backend(subsystem).restrict_volume(volume_name)
         return '', 204
@@ -266,6 +276,9 @@ class Volume(Resource):
     @api.expect(volume_write_model, validate=True)
     @in_group(api, ADMIN_GROUP)
     def patch(self, subsystem, volume_name):
+        if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
+            api.abort(400, "Invalid volume name")
+
         data = filter_none(marshal(storage_api.apis.api.payload, volume_write_model))
         log.info("PATCH with payload {}".format(str(data)))
         if data:
@@ -282,7 +295,8 @@ class AllSnapshots(Resource):
     @api.marshal_with(snapshot_model, description="All snapshots for the volume",
                       as_list=True)
     def get(self, subsystem, volume_name):
-        assert "/snapshots" not in volume_name
+        if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
+            api.abort(400, "Invalid volume name")
         return backend(subsystem).get_snapshots(volume_name)
 
 
@@ -295,6 +309,8 @@ class Snapshots(Resource):
     @api.doc(description="Get the current information for a given snapshot")
     @api.marshal_with(snapshot_model)
     def get(self, subsystem, volume_name, snapshot_name):
+        if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
+            api.abort(400, "Invalid volume name")
         with keyerror_is_404():
             return backend(subsystem).get_snapshot(volume_name, snapshot_name)
 
@@ -305,6 +321,9 @@ class Snapshots(Resource):
     @api.doc(description=("Create a new snapshot of *volume_name*"
                           " under *snapshot_name*"))
     def post(self, subsystem, volume_name, snapshot_name):
+        if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
+            api.abort(400, "Invalid volume name")
+
         log.info("Creating snapshot {} for volume {}"
                  .format(snapshot_name, volume_name))
         with keyerror_is_404(), valueerror_is_400():
@@ -318,6 +337,8 @@ class Snapshots(Resource):
                   model=None)
     @in_group(api, ADMIN_GROUP)
     def delete(self, subsystem, volume_name, snapshot_name):
+        if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
+            api.abort(400, "Invalid volume name")
         with keyerror_is_404():
             backend(subsystem).delete_snapshot(volume_name, snapshot_name)
         return '', 204
@@ -333,6 +354,8 @@ class AllLocks(Resource):
                                    " held) or a single dict describing the"
                                    " host holding the lock"))
     def get(self, subsystem, volume_name):
+        if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
+            api.abort(400, "Invalid volume name")
         with keyerror_is_404():
             mby_lock = backend(subsystem).locks(volume_name)
             return [] if mby_lock is None else [{"host": mby_lock}]
@@ -347,6 +370,8 @@ class Locks(Resource):
     @api.response(201, "A new lock was added")
     @in_group(api, ADMIN_GROUP)
     def put(self, subsystem, volume_name, host):
+        if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
+            api.abort(400, "Invalid volume name")
         with valueerror_is_400(), keyerror_is_404():
             backend(subsystem).create_lock(volume_name, host)
         return '', 201
@@ -355,6 +380,8 @@ class Locks(Resource):
     @api.response(204, description="Lock successfully forced")
     @in_group(api, ADMIN_GROUP)
     def delete(self, subsystem, volume_name, host):
+        if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
+            api.abort(400, "Invalid volume name")
         with keyerror_is_404():
             backend(subsystem).remove_lock(volume_name, host)
         return '', 204
