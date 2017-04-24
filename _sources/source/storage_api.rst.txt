@@ -1,0 +1,38 @@
+storage_api package
+===================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    storage_api.apis
+    storage_api.extensions
+
+Submodules
+----------
+
+storage_api.app module
+----------------------
+
+.. automodule:: storage_api.app
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+storage_api.utils module
+------------------------
+
+.. automodule:: storage_api.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: storage_api
+    :members:
+    :undoc-members:
+    :show-inheritance:

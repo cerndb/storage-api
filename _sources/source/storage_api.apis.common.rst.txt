@@ -1,0 +1,22 @@
+storage_api.apis.common package
+===============================
+
+Submodules
+----------
+
+storage_api.apis.common.auth module
+-----------------------------------
+
+.. automodule:: storage_api.apis.common.auth
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: storage_api.apis.common
+    :members:
+    :undoc-members:
+    :show-inheritance:

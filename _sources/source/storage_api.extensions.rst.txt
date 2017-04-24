@@ -1,0 +1,29 @@
+storage_api.extensions package
+==============================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    storage_api.extensions.tests
+
+Submodules
+----------
+
+storage_api.extensions.storage module
+-------------------------------------
+
+.. automodule:: storage_api.extensions.storage
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: storage_api.extensions
+    :members:
+    :undoc-members:
+    :show-inheritance:

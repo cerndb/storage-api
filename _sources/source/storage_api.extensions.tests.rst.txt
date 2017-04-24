@@ -1,0 +1,22 @@
+storage_api.extensions.tests package
+====================================
+
+Submodules
+----------
+
+storage_api.extensions.tests.test_storage module
+------------------------------------------------
+
+.. automodule:: storage_api.extensions.tests.test_storage
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: storage_api.extensions.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

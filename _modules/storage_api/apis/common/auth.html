@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>apis.common.auth &mdash; CERN Unified Storage API 1.2.0 documentation</title>
+  <title>storage_api.apis.common.auth &mdash; CERN Unified Storage API 1.2.0 documentation</title>
   
 
   
@@ -24,20 +24,20 @@
 
   
   
-    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   
 
   
 
   
         <link rel="index" title="Index"
-              href="../../../genindex.html"/>
-        <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="CERN Unified Storage API 1.2.0 documentation" href="../../../index.html"/>
-        <link rel="up" title="Module code" href="../../index.html"/> 
+              href="../../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../../search.html"/>
+    <link rel="top" title="CERN Unified Storage API 1.2.0 documentation" href="../../../../index.html"/>
+        <link rel="up" title="Module code" href="../../../index.html"/> 
 
   
-  <script src="../../../_static/js/modernizr.min.js"></script>
+  <script src="../../../../_static/js/modernizr.min.js"></script>
 
 </head>
 
@@ -52,7 +52,7 @@
           
 
           
-            <a href="../../../index.html" class="icon icon-home"> CERN Unified Storage API
+            <a href="../../../../index.html" class="icon icon-home"> CERN Unified Storage API
           
 
           
@@ -69,7 +69,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -84,9 +84,9 @@
             
             
                 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../README.html">CERN Unified Storage API README</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../README.html">CERN Unified Storage API README</a></li>
 <li class="toctree-l1"><a class="reference external" href="./api/index.html#http://">API Documentation (generated)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">Source Documentation (generated)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../source/modules.html">Source Documentation (generated)</a></li>
 </ul>
 
             
@@ -100,7 +100,7 @@
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="../../../index.html">CERN Unified Storage API</a>
+        <a href="../../../../index.html">CERN Unified Storage API</a>
       </nav>
 
 
@@ -115,11 +115,11 @@
 
 <div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+    <li><a href="../../../../index.html">Docs</a> &raquo;</li>
       
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
       
-    <li>apis.common.auth</li>
+    <li>storage_api.apis.common.auth</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -131,7 +131,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <h1>Source code for apis.common.auth</h1><div class="highlight"><pre>
+  <h1>Source code for storage_api.apis.common.auth</h1><div class="highlight"><pre>
 <span></span><span class="c1"># -*- coding: utf-8 -*-</span>
 
 <span class="c1"># Copyright (C) 2016, CERN</span>
@@ -149,7 +149,7 @@
 <span class="n">authorizations</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[str, Any]</span>
 
 
-<div class="viewcode-block" id="in_group"><a class="viewcode-back" href="../../../source/apis.common.html#apis.common.auth.in_group">[docs]</a><span class="k">def</span> <span class="nf">in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">group_name</span><span class="p">):</span>
+<div class="viewcode-block" id="in_group"><a class="viewcode-back" href="../../../../source/storage_api.apis.common.html#storage_api.apis.common.auth.in_group">[docs]</a><span class="k">def</span> <span class="nf">in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">group_name</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Decorator: call flask.abort(403) if user is not in the specified</span>
 <span class="sd">    group, or if the session is unauthenticated.</span>
@@ -223,22 +223,22 @@
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../../../',
+            URL_ROOT:'../../../../',
             VERSION:'1.2.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
         };
     </script>
-      <script type="text/javascript" src="../../../_static/jquery.js"></script>
-      <script type="text/javascript" src="../../../_static/underscore.js"></script>
-      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../../_static/doctools.js"></script>
 
   
 
   
   
-    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
   
 
   

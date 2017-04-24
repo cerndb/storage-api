@@ -1,0 +1,971 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>storage_api.extensions package &mdash; CERN Unified Storage API 1.2.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="CERN Unified Storage API 1.2.0 documentation" href="../index.html"/>
+        <link rel="up" title="storage_api package" href="storage_api.html"/>
+        <link rel="next" title="storage_api.extensions.tests package" href="storage_api.extensions.tests.html"/>
+        <link rel="prev" title="storage_api.apis.common package" href="storage_api.apis.common.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> CERN Unified Storage API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../README.html">CERN Unified Storage API README</a></li>
+<li class="toctree-l1"><a class="reference external" href="./api/index.html#http://">API Documentation (generated)</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Source Documentation (generated)</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="storage_api.html">storage_api package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="storage_api.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="storage_api.apis.html">storage_api.apis package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">storage_api.extensions package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="storage_api.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storage_api.html#module-storage_api.app">storage_api.app module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storage_api.html#module-storage_api.utils">storage_api.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storage_api.html#module-storage_api">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">CERN Unified Storage API</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="modules.html">storage-api</a> &raquo;</li>
+      
+          <li><a href="storage_api.html">storage_api package</a> &raquo;</li>
+      
+    <li>storage_api.extensions package</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/source/storage_api.extensions.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="storage-api-extensions-package">
+<h1>storage_api.extensions package<a class="headerlink" href="#storage-api-extensions-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="storage_api.extensions.tests.html">storage_api.extensions.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="storage_api.extensions.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_api.extensions.tests.html#module-storage_api.extensions.tests.test_storage">storage_api.extensions.tests.test_storage module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="storage_api.extensions.tests.html#module-storage_api.extensions.tests">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-storage_api.extensions.storage">
+<span id="storage-api-extensions-storage-module"></span><h2>storage_api.extensions.storage module<a class="headerlink" href="#module-storage_api.extensions.storage" title="Permalink to this headline">¶</a></h2>
+<p>This is a generalised back-end for storage systems.</p>
+<p>In general, methods are expected to raise KeyErrors on 404-type errors
+(e.g. something not found), and ValueErrors on invalid input. In both
+cases, reasonable descriptions of what went wrong should be included,
+and &#8211; if possible &#8211; suggestions on how to fix the situation.</p>
+<dl class="class">
+<dt id="storage_api.extensions.storage.DummyStorage">
+<em class="property">class </em><code class="descclassname">storage_api.extensions.storage.</code><code class="descname">DummyStorage</code><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#storage_api.extensions.storage.StorageBackend" title="storage_api.extensions.storage.StorageBackend"><code class="xref py py-class docutils literal"><span class="pre">storage_api.extensions.storage.StorageBackend</span></code></a></p>
+<p>This is a dummy storage back-end meant for testing. It will persist
+data given to it in RAM and follow the standard API provided by the
+base class above, but that is about it.</p>
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.clone_volume">
+<code class="descname">clone_volume</code><span class="sig-paren">(</span><em>clone_volume_name</em>, <em>from_volume_name</em>, <em>from_snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.clone_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.clone_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.create_lock">
+<code class="descname">create_lock</code><span class="sig-paren">(</span><em>volume_name</em>, <em>host_owner</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.create_lock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.create_lock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.create_policy">
+<code class="descname">create_policy</code><span class="sig-paren">(</span><em>policy_name</em>, <em>rules</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.create_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.create_policy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.create_snapshot">
+<code class="descname">create_snapshot</code><span class="sig-paren">(</span><em>volume_name</em>, <em>snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.create_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.create_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.create_volume">
+<code class="descname">create_volume</code><span class="sig-paren">(</span><em>volume_name</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.create_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.create_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.delete_snapshot">
+<code class="descname">delete_snapshot</code><span class="sig-paren">(</span><em>volume_name</em>, <em>snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.delete_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.delete_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.ensure_policy_rule_absent">
+<code class="descname">ensure_policy_rule_absent</code><span class="sig-paren">(</span><em>policy_name</em>, <em>rule</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.ensure_policy_rule_absent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.ensure_policy_rule_absent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.ensure_policy_rule_present">
+<code class="descname">ensure_policy_rule_present</code><span class="sig-paren">(</span><em>policy_name</em>, <em>rule</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.ensure_policy_rule_present"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.ensure_policy_rule_present" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.get_policy">
+<code class="descname">get_policy</code><span class="sig-paren">(</span><em>policy_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.get_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.get_policy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.get_snapshot">
+<code class="descname">get_snapshot</code><span class="sig-paren">(</span><em>volume_name</em>, <em>snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.get_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.get_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.get_snapshots">
+<code class="descname">get_snapshots</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.get_snapshots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.get_snapshots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.get_volume">
+<code class="descname">get_volume</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.get_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.get_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.locks">
+<code class="descname">locks</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.locks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.locks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.patch_volume">
+<code class="descname">patch_volume</code><span class="sig-paren">(</span><em>volume_name</em>, <em>**data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.patch_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.patch_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="storage_api.extensions.storage.DummyStorage.policies">
+<code class="descname">policies</code><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.policies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.raise_if_snapshot_absent">
+<code class="descname">raise_if_snapshot_absent</code><span class="sig-paren">(</span><em>volume_name: str</em>, <em>snapshot_name: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.raise_if_snapshot_absent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.raise_if_snapshot_absent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise a <cite>KeyError</cite> with an appropriate message if a
+snapshot is absent.</p>
+<p>This implies first running <cite>raise_if_volume absent(volume_name)</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.raise_if_volume_absent">
+<code class="descname">raise_if_volume_absent</code><span class="sig-paren">(</span><em>volume_name: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.raise_if_volume_absent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.raise_if_volume_absent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise a <cite>KeyError</cite> with an appropriate message if a volume is
+absent.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.remove_lock">
+<code class="descname">remove_lock</code><span class="sig-paren">(</span><em>volume_name</em>, <em>host_owner</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.remove_lock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.remove_lock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.remove_policy">
+<code class="descname">remove_policy</code><span class="sig-paren">(</span><em>policy_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.remove_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.remove_policy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.restrict_volume">
+<code class="descname">restrict_volume</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.restrict_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.restrict_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.rollback_volume">
+<code class="descname">rollback_volume</code><span class="sig-paren">(</span><em>volume_name</em>, <em>restore_snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.rollback_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.rollback_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.DummyStorage.set_policy">
+<code class="descname">set_policy</code><span class="sig-paren">(</span><em>volume_name</em>, <em>policy_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#DummyStorage.set_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.set_policy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="storage_api.extensions.storage.DummyStorage.volumes">
+<code class="descname">volumes</code><a class="headerlink" href="#storage_api.extensions.storage.DummyStorage.volumes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="storage_api.extensions.storage.NetappStorage">
+<em class="property">class </em><code class="descclassname">storage_api.extensions.storage.</code><code class="descname">NetappStorage</code><span class="sig-paren">(</span><em>netapp_server</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#storage_api.extensions.storage.StorageBackend" title="storage_api.extensions.storage.StorageBackend"><code class="xref py py-class docutils literal"><span class="pre">storage_api.extensions.storage.StorageBackend</span></code></a></p>
+<p>A Back-end for a NetApp storage system.</p>
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.clone_volume">
+<code class="descname">clone_volume</code><span class="sig-paren">(</span><em>clone_volume_name</em>, <em>from_volume_name</em>, <em>from_snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.clone_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.clone_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.create_lock">
+<code class="descname">create_lock</code><span class="sig-paren">(</span><em>volume_name</em>, <em>host_owner</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.create_lock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.create_lock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.create_policy">
+<code class="descname">create_policy</code><span class="sig-paren">(</span><em>policy_name</em>, <em>rules</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.create_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.create_policy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.create_snapshot">
+<code class="descname">create_snapshot</code><span class="sig-paren">(</span><em>volume_name</em>, <em>snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.create_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.create_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.create_volume">
+<code class="descname">create_volume</code><span class="sig-paren">(</span><em>volume_name</em>, <em>**fields</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.create_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.create_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Important note: the volume &#8220;name&#8221; for NetApp is either a name,
+or a node name and junction path separated by colon. Please note
+that the node name is ignored, as the user cannot set the node
+name on creation.</p>
+<p>If creating a volume from a junction path, an <em>actual</em> name must
+be provided as a data field (&#8216;name&#8217;) (and vice versa &#8211; if
+creating with a name, junction path must be provided).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.delete_snapshot">
+<code class="descname">delete_snapshot</code><span class="sig-paren">(</span><em>volume_name</em>, <em>snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.delete_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.delete_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.ensure_policy_rule_absent">
+<code class="descname">ensure_policy_rule_absent</code><span class="sig-paren">(</span><em>policy_name</em>, <em>rule</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.ensure_policy_rule_absent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.ensure_policy_rule_absent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.ensure_policy_rule_present">
+<code class="descname">ensure_policy_rule_present</code><span class="sig-paren">(</span><em>policy_name</em>, <em>rule</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.ensure_policy_rule_present"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.ensure_policy_rule_present" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.format_policy">
+<code class="descname">format_policy</code><span class="sig-paren">(</span><em>p</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.format_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.format_policy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.format_volume">
+<code class="descname">format_volume</code><span class="sig-paren">(</span><em>v</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.format_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.format_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.get_policy">
+<code class="descname">get_policy</code><span class="sig-paren">(</span><em>policy_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.get_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.get_policy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.get_snapshot">
+<code class="descname">get_snapshot</code><span class="sig-paren">(</span><em>volume_name</em>, <em>snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.get_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.get_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.get_snapshots">
+<code class="descname">get_snapshots</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.get_snapshots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.get_snapshots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.get_volume">
+<code class="descname">get_volume</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.get_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.get_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.locks">
+<code class="descname">locks</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.locks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.locks" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.name_from_path">
+<code class="descname">name_from_path</code><span class="sig-paren">(</span><em>junction_path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.name_from_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.name_from_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>&#8216;Resolve&#8217; a junction path to a proper volume name.</p>
+<p>Raises KeyError if there was no such volume.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.node_junction_path">
+<code class="descname">node_junction_path</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.node_junction_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.node_junction_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a &#8220;volume_name&#8221; parameter to a node name and junction
+path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a tuple of <cite>(node, junction path)</cite>. If the string does not
+adhere to the format, it is assumed to contain only the
+junction path and the returned node is None.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.parse_volume_name">
+<code class="descname">parse_volume_name</code><span class="sig-paren">(</span><em>volume_name_or_node_path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.parse_volume_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.parse_volume_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a volume name on the format name, or node:junction_path,
+always returning a unique name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.patch_volume">
+<code class="descname">patch_volume</code><span class="sig-paren">(</span><em>volume_name</em>, <em>**data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.patch_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.patch_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="storage_api.extensions.storage.NetappStorage.policies">
+<code class="descname">policies</code><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.policies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.remove_lock">
+<code class="descname">remove_lock</code><span class="sig-paren">(</span><em>volume_name</em>, <em>host_owner</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.remove_lock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.remove_lock" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.remove_policy">
+<code class="descname">remove_policy</code><span class="sig-paren">(</span><em>policy_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.remove_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.remove_policy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.restrict_volume">
+<code class="descname">restrict_volume</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.restrict_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.restrict_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.rollback_volume">
+<code class="descname">rollback_volume</code><span class="sig-paren">(</span><em>volume_name</em>, <em>restore_snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.rollback_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.rollback_volume" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.NetappStorage.set_policy">
+<code class="descname">set_policy</code><span class="sig-paren">(</span><em>volume_name</em>, <em>policy_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#NetappStorage.set_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.set_policy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="storage_api.extensions.storage.NetappStorage.volumes">
+<code class="descname">volumes</code><a class="headerlink" href="#storage_api.extensions.storage.NetappStorage.volumes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Explicitly ignores volumes belonging to aggr0 and volumes that
+are restricted.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="storage_api.extensions.storage.StorageBackend">
+<em class="property">class </em><code class="descclassname">storage_api.extensions.storage.</code><code class="descname">StorageBackend</code><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.clone_volume">
+<code class="descname">clone_volume</code><span class="sig-paren">(</span><em>clone_volume_name</em>, <em>from_volume_name</em>, <em>from_snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.clone_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.clone_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a clone of a volume from a provided snapshot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no such volume or snapshot exists</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if clone_volume_name already exists</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.create_lock">
+<code class="descname">create_lock</code><span class="sig-paren">(</span><em>volume_name</em>, <em>host_owner</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.create_lock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.create_lock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install a lock held by the host host_owner on the given volume.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if a lock is already held on that volume by
+another host</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no such volume exists</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.create_policy">
+<code class="descname">create_policy</code><span class="sig-paren">(</span><em>policy_name</em>, <em>rules</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.create_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.create_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a new policy with a set of rules to a given volume</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if there is already a policy with that name</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.create_snapshot">
+<code class="descname">create_snapshot</code><span class="sig-paren">(</span><em>volume_name</em>, <em>snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.create_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.create_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a snapshot from the current state of a volume.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no volume named volume_name exists</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if there is already a snapshot named snapshot_name,
+or if the name is invalid.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.create_volume">
+<code class="descname">create_volume</code><span class="sig-paren">(</span><em>volume_name</em>, <em>**fields</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.create_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.create_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new volume with a given name and the provided data
+fields.</p>
+<p><cite>fields</cite> can be at least:</p>
+<ul class="simple">
+<li>size_total</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if the data is malformed</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if the volume already exists</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The created volume.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Back-ends are allowed to add implementation-specific elements.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.delete_snapshot">
+<code class="descname">delete_snapshot</code><span class="sig-paren">(</span><em>volume_name</em>, <em>snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.delete_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.delete_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete, or the closest possible equivalent, a given snapshot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no such volume or snapshot exists</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.ensure_policy_rule_absent">
+<code class="descname">ensure_policy_rule_absent</code><span class="sig-paren">(</span><em>policy_name</em>, <em>rule</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.ensure_policy_rule_absent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.ensure_policy_rule_absent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Idempotently ensure that a given export policy (as represented
+by an IP with optional mask) is absent in the rules of a given
+policy. Will delete it if present, otherwise give no warning.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no such policy exists.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.ensure_policy_rule_present">
+<code class="descname">ensure_policy_rule_present</code><span class="sig-paren">(</span><em>policy_name</em>, <em>rule</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.ensure_policy_rule_present"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.ensure_policy_rule_present" title="Permalink to this definition">¶</a></dt>
+<dd><p>Idempotently ensure that a given export policy (as represented
+by an IP with optional mask) is present in the rules of a given
+policy. If it is not present it will be added.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no such policy exists.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.get_policy">
+<code class="descname">get_policy</code><span class="sig-paren">(</span><em>policy_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.get_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.get_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a (potentially empty) list of export policies in the form
+of strings representing IP numbers, with possible masks
+associated with the given policy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if volume_name does not exist or does not have a policy named policy_name</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.get_snapshot">
+<code class="descname">get_snapshot</code><span class="sig-paren">(</span><em>volume_name</em>, <em>snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.get_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.get_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the data associated with the snapshot.</p>
+<p>Back-ends are allowed to add additional keys.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no such volume or snapshot exists</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.get_snapshots">
+<code class="descname">get_snapshots</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.get_snapshots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.get_snapshots" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of snapshots for volume_name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no such volume exists.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.get_volume">
+<code class="descname">get_volume</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.get_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.get_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return (the data for) a specific volume as a dictionary with (at
+least) the following elements:</p>
+<ul class="simple">
+<li>name</li>
+<li>size_used</li>
+<li>size_total</li>
+<li>filer_address</li>
+</ul>
+<p>Back-ends are allowed to add implementation-specific
+elements.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no such volume exists</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.init_app">
+<code class="descname">init_app</code><span class="sig-paren">(</span><em>app: flask.app.Flask</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.init_app"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.init_app" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise a Flask app context with the storage system.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>app</strong> (<a class="reference external" href="http://flask.pocoo.org/docs/latest/api/#flask.Flask" title="(in Flask v0.12-dev)"><em>flask.Flask</em></a>) &#8211; The application to install the storage
+system back-end in</td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">netapp</span> <span class="o">=</span> <span class="n">NetAppStorage</span><span class="p">()</span>
+<span class="n">netapp</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="o">=</span><span class="n">app</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.locks">
+<code class="descname">locks</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.locks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.locks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the string naming the host currently holding a lock on
+the volume named volume_name, or None if there were no locks.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no such volume exists</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.patch_volume">
+<code class="descname">patch_volume</code><span class="sig-paren">(</span><em>volume_name</em>, <em>**data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.patch_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.patch_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update a volume with data from <a href="#id1"><span class="problematic" id="id2">**</span></a>data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; on poorly formatted data, or invalid data
+entries/attempts to write to read-only fields</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no volume named volume_name exists.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.policies">
+<code class="descname">policies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.policies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.policies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of export policies for the given back-end, as a list
+of name/value tuples.</p>
+<p>Example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="s2">&quot;my_policy&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="s2">&quot;10.10.10.1/24&quot;</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p>Notably, no policies would yield []. The interpretation
+of these values are up to the implementation, but it can be
+assumed that no policies is not the same thing as a policy with
+no rules.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no such volume exists</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.remove_lock">
+<code class="descname">remove_lock</code><span class="sig-paren">(</span><em>volume_name</em>, <em>host_owner</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.remove_lock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.remove_lock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove/break/force the lock on a volume, if held by
+host_owner. Does nothing if no locks were held on volume_name,
+or if the lock wasn&#8217;t held by host_owner.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no such volume exists</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.remove_policy">
+<code class="descname">remove_policy</code><span class="sig-paren">(</span><em>policy_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.remove_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.remove_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a policy. After removal, it must be possible to create a
+new policy with the same name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if no such volume or policy exists</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.restrict_volume">
+<code class="descname">restrict_volume</code><span class="sig-paren">(</span><em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.restrict_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.restrict_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restrict or delete a volume. This will cause it to not appear in
+volumes or get_volume(), as if the volume never existed.</p>
+<p>What action is actually performed is platform-dependent, but
+should be semantically as close to a delete operation as
+possible.</p>
+<p>Notably, there is no guarantee that it is possible to create a
+new volume with the same name as a recently deleted volume.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.rollback_volume">
+<code class="descname">rollback_volume</code><span class="sig-paren">(</span><em>volume_name</em>, <em>restore_snapshot_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.rollback_volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.rollback_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Roll back a volume to a snapshot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if volume_name does not exist or does not have a
+snapshot named restore_snapshot_name.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="storage_api.extensions.storage.StorageBackend.set_policy">
+<code class="descname">set_policy</code><span class="sig-paren">(</span><em>volume_name</em>, <em>policy_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#StorageBackend.set_policy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.set_policy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a policy</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code> &#8211; if volume_name does not exist</li>
+<li><code class="xref py py-exc docutils literal"><span class="pre">ValueError</span></code> &#8211; if policy_name does not exist</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="storage_api.extensions.storage.StorageBackend.volumes">
+<code class="descname">volumes</code><a class="headerlink" href="#storage_api.extensions.storage.StorageBackend.volumes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all active and usable volumes of the storage backend as
+a list of dictionaries (see get_volume() for their format).</p>
+<p>Read-only property.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="storage_api.extensions.storage.ValidationError">
+<em class="property">exception </em><code class="descclassname">storage_api.extensions.storage.</code><code class="descname">ValidationError</code><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#ValidationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.ValidationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></p>
+<p>An Exception raised when a return value fails to pass its schema
+validation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="storage_api.extensions.storage.annotate_exception">
+<code class="descclassname">storage_api.extensions.storage.</code><code class="descname">annotate_exception</code><span class="sig-paren">(</span><em>exception</em>, <em>annotation</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#annotate_exception"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.annotate_exception" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context manager to annotate a particular type of exception with a
+descriptive text.</p>
+<p>Example:
+<a href="#id3"><span class="problematic" id="id4">``</span></a>`
+with annotate_exception(KeyError, &#8220;no such item!&#8221;):</p>
+<blockquote>
+<div>a = foo[&#8216;key&#8217;]</div></blockquote>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="storage_api.extensions.storage.normalised_with">
+<code class="descclassname">storage_api.extensions.storage.</code><code class="descname">normalised_with</code><span class="sig-paren">(</span><em>schema_name: str</em>, <em>allow_unknown: bool = False</em>, <em>as_list: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#normalised_with"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.normalised_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>A decorator to normalise and validate the return values of a
+function according to a schema.</p>
+<p>If as_list is True, validate and normalise each entry in the
+returned list.</p>
+<p>Raises a ValidationError if the schema was not correctly validated.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="storage_api.extensions.storage.patch_and_diff">
+<code class="descclassname">storage_api.extensions.storage.</code><code class="descname">patch_and_diff</code><span class="sig-paren">(</span><em>previous</em>, <em>new</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#patch_and_diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.patch_and_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replace all keys in previous with their values in new, returning a
+list of keys for which the values changed and the updated previous.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="storage_api.extensions.storage.validate_value">
+<code class="descclassname">storage_api.extensions.storage.</code><code class="descname">validate_value</code><span class="sig-paren">(</span><em>v: cerberus.validator.Validator, value: typing.Dict[str, typing.Any]</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/extensions/storage.html#validate_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.validate_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="storage_api.extensions.storage.vol_404">
+<code class="descclassname">storage_api.extensions.storage.</code><code class="descname">vol_404</code><span class="sig-paren">(</span><em>volume_name: str</em><span class="sig-paren">)</span> &rarr; str<a class="reference internal" href="../_modules/storage_api/extensions/storage.html#vol_404"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.extensions.storage.vol_404" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-storage_api.extensions">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-storage_api.extensions" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="storage_api.extensions.tests.html" class="btn btn-neutral float-right" title="storage_api.extensions.tests package" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="storage_api.apis.common.html" class="btn btn-neutral" title="storage_api.apis.common package" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, CERN.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'1.2.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

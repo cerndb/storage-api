@@ -4,7 +4,4 @@ storage-api
 .. toctree::
    :maxdepth: 4
 
-   apis
-   app
-   extensions
-   utils
+   storage_api
