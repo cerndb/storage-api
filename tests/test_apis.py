@@ -32,11 +32,13 @@ def nice_strings(bad_chars):
         return c not in ['/']
 
     return text(alphabet=characters(blacklist_characters=bad_chars,
-                                    max_codepoint=1000),
+                                    whitelist_categories=['Ll'],
+                                    min_codepoint=ord('0'),
+                                    max_codepoint=ord('z')),
                 min_size=1).filter(sane_first_character)
 
 
-name_strings = partial(nice_strings, bad_chars=['\n', '#', '?', '%'])
+name_strings = partial(nice_strings, bad_chars=['\n', '#', '?', '%', ';'])
 policy_name_strings = partial(nice_strings, bad_chars=['\n', '/', '?', '#', '%'])
 
 # Useful parameterisations:

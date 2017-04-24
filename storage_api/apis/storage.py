@@ -43,7 +43,7 @@ SUBSYSTEM_DESCRIPTION = ("The subsystem to run the command on."
                          " Must be one of: {}"
                          .format(", ".join(SUBSYSTEM_MAPPING.keys())))
 
-DISALLOWED_VOLUME_NAME_RE = re.compile(".*[^a-z1-9:/].*")
+DISALLOWED_VOLUME_NAME_RE = re.compile(".*[^a-z0-9:/_\.-].*")
 
 
 @contextmanager
