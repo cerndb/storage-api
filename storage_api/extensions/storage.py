@@ -887,11 +887,10 @@ class NetappStorage(StorageBackend):
             log.info("Aggregate not provided,"
                      " using the one with the most free space...")
             # sorted sorts ascending by default.
-            with self.server.with_vserver(None):
-                # Switch to cluster-mode for this operation
-                aggregates = sorted(self.server.aggregates,
-                                    key=lambda a: a.bytes_available,
-                                    reverse=True)
+
+            aggregates = sorted(self.server.aggregates,
+                                key=lambda a: a.bytes_available,
+                                reverse=True)
 
             not_aggr0 = functools.partial(re.compile("(?!^aggr0.*)").match)
 

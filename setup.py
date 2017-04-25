@@ -36,4 +36,4 @@ setup(name='storage-api',
       ],
       dependency_links=[("git+https://https://github.com/cerndb/"
                          "netapp-api-python.git"
-                         "#egg=netapp-api-0.4.2")])
+                         "#egg=netapp-api-0.10.0")])
