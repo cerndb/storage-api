@@ -85,7 +85,7 @@ def login():
 
 
 @app.route(oauth_callback_url_relative)
-def authorized(user_info):   # pragma: no cover
+def authorized():   # pragma: no cover
     resp = cern.authorized_response()
     if resp is None or resp.get('access_token') is None:
         return 'Access denied: reason=%s error=%s resp=%s' % (
