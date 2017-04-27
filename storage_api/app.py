@@ -97,7 +97,7 @@ def authorized(user_info):   # pragma: no cover
     app.logger.info("Got authentication call-back from OAuth."
                     " Proceeding to fetch groups...")
 
-    response = cern.get(oauth_groups_url).json()
+    response = cern.get(oauth_groups_url).data
     groups = response['groups']
     flask.session['user'] = {}
     app.logger.info("OAuth reported the following groups: {}"
