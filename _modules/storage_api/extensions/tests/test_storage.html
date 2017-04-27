@@ -233,7 +233,7 @@
 <div class="viewcode-block" id="test_create_get_volume"><a class="viewcode-back" href="../../../../source/storage_api.extensions.tests.html#storage_api.extensions.tests.test_storage.test_create_get_volume">[docs]</a><span class="k">def</span> <span class="nf">test_create_get_volume</span><span class="p">(</span><span class="n">storage</span><span class="p">,</span> <span class="n">recorder</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">recorder</span><span class="o">.</span><span class="n">use_cassette</span><span class="p">(</span><span class="s1">&#39;create_get_volume&#39;</span><span class="p">):</span>
         <span class="n">new_vol</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">create_volume</span><span class="p">(</span><span class="s1">&#39;:/volumename&#39;</span><span class="p">,</span>
-                                        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;volume_name&quot;</span><span class="p">,</span>
+                                        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;volume_name_9000&quot;</span><span class="p">,</span>
                                         <span class="n">size_total</span><span class="o">=</span><span class="n">DEFAULT_VOLUME_SIZE</span><span class="p">)</span>
         <span class="n">volume</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(</span><span class="n">id_from_vol</span><span class="p">(</span><span class="n">new_vol</span><span class="p">,</span> <span class="n">storage</span><span class="p">))</span>
         <span class="k">assert</span> <span class="n">new_vol</span> <span class="o">==</span> <span class="n">volume</span>
@@ -268,7 +268,8 @@
         <span class="k">with</span> <span class="n">ephermeral_volume</span><span class="p">(</span><span class="n">storage</span><span class="p">)</span> <span class="k">as</span> <span class="n">vol</span><span class="p">:</span>
             <span class="n">storage</span><span class="o">.</span><span class="n">patch_volume</span><span class="p">(</span><span class="n">id_from_vol</span><span class="p">(</span><span class="n">vol</span><span class="p">,</span> <span class="n">storage</span><span class="p">),</span>
                                  <span class="n">autosize_enabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                 <span class="n">max_autosize</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="n">DEFAULT_VOLUME_SIZE</span><span class="p">)</span>
+                                 <span class="n">max_autosize</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="n">DEFAULT_VOLUME_SIZE</span><span class="p">,</span>
+                                 <span class="n">autosize_increment</span><span class="o">=</span><span class="mi">1234</span><span class="p">)</span>
 
             <span class="n">v</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(</span><span class="n">id_from_vol</span><span class="p">(</span><span class="n">vol</span><span class="p">,</span> <span class="n">storage</span><span class="p">))</span>
             <span class="k">assert</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;autosize_enabled&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span>
@@ -532,15 +533,15 @@
 
     <span class="k">with</span> <span class="n">recorder</span><span class="o">.</span><span class="n">use_cassette</span><span class="p">(</span><span class="s1">&#39;tricky_netapp_create_no_node&#39;</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">new_vol</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">create_volume</span><span class="p">(</span><span class="s1">&#39;:/volumename&#39;</span><span class="p">,</span>
-                                            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;volume_name&quot;</span><span class="p">,</span>
+            <span class="n">new_vol</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">create_volume</span><span class="p">(</span><span class="s1">&#39;:/volumename_9001&#39;</span><span class="p">,</span>
+                                            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;volume_name_9001&quot;</span><span class="p">,</span>
                                             <span class="n">size_total</span><span class="o">=</span><span class="n">DEFAULT_VOLUME_SIZE</span><span class="p">)</span>
             <span class="n">volume</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(</span><span class="n">new_vol</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
             <span class="k">assert</span> <span class="n">new_vol</span> <span class="o">==</span> <span class="n">volume</span>
             <span class="k">assert</span> <span class="n">volume</span> <span class="ow">in</span> <span class="n">storage</span><span class="o">.</span><span class="n">volumes</span>
             <span class="k">assert</span> <span class="s1">&#39;filer_address&#39;</span> <span class="ow">in</span> <span class="n">new_vol</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="n">delete_volume</span><span class="p">(</span><span class="n">storage</span><span class="p">,</span> <span class="s2">&quot;volume_name&quot;</span><span class="p">)</span></div>
+            <span class="n">delete_volume</span><span class="p">(</span><span class="n">storage</span><span class="p">,</span> <span class="s2">&quot;volume_name_9001&quot;</span><span class="p">)</span></div>
 
 
 <span class="nd">@on_all_backends</span>

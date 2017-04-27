@@ -1021,11 +1021,10 @@
             <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Aggregate not provided,&quot;</span>
                      <span class="s2">&quot; using the one with the most free space...&quot;</span><span class="p">)</span>
             <span class="c1"># sorted sorts ascending by default.</span>
-            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">with_vserver</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span>
-                <span class="c1"># Switch to cluster-mode for this operation</span>
-                <span class="n">aggregates</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">aggregates</span><span class="p">,</span>
-                                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">bytes_available</span><span class="p">,</span>
-                                    <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="n">aggregates</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">aggregates</span><span class="p">,</span>
+                                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">bytes_available</span><span class="p">,</span>
+                                <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
             <span class="n">not_aggr0</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;(?!^aggr0.*)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">)</span>
 
