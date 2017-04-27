@@ -9,7 +9,7 @@
 # or submit itself to any jurisdiction.
 
 import logging
-ADMIN_GROUP = 'admin-group'
+ADMIN_GROUP = 'it-db-storage'
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
