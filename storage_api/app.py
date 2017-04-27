@@ -15,8 +15,8 @@ import os
 import logging
 
 import flask
-from flask import Flask
-from flask_sso import SSO
+from flask import Flask, url_for
+from flask_oauthlib.client import OAuth
 import netapp.api
 
 app = Flask(__name__)
@@ -25,21 +25,34 @@ logging.basicConfig(level=logging.INFO)
 
 api.init_app(app)
 
-SSO_ATTRIBUTE_MAP = {
-    'ADFS_LOGIN': (True, 'username'),
-    'ADFS_FULLNAME': (True, 'fullname'),
-    'ADFS_PERSONID': (True, 'personid'),
-    'ADFS_DEPARTMENT': (True, 'department'),
-    'ADFS_EMAIL': (True, 'email'),
-    'ADFS_GROUP': (True, 'group')
-}
+oauth = OAuth(app)
+oauth_client_id = os.getenv('OAUTH_CLIENT_ID', 'dummy_id')
+oauth_secret_key = os.getenv('OAUTH_SECRET_KEY', 'dummy_key')
+oauth_access_token_url = os.getenv('OAUTH_TOKEN_URL',
+                                   'https://oauth.web.cern.ch/OAuth/Token')
+oauth_authorze_url = os.getenv('OAUTH_AUTHORIZE_URL',
+                               'https://oauth.web.cern.ch/OAuth/Authorize')
+oauth_groups_url = os.getenv('OAUTH_GROUPS_URL',
+                             'https://oauthresource.web.cern.ch/api/Groups')
+oauth_callback_url_relative = os.getenv('OAUTH_CALLBACK_URL_RELATIVE',
+                                        '/oauth-done')
 
-app.config.setdefault('SSO_ATTRIBUTE_MAP', SSO_ATTRIBUTE_MAP)
-app.config.setdefault('SSO_LOGIN_URL', '/login')
+cern = oauth.remote_app(
+    'cern',
+    consumer_key=oauth_client_id,
+    consumer_secret=oauth_secret_key,
+    request_token_url=None,
+    access_token_method='POST',
+    access_token_url=oauth_access_token_url,
+    authorize_url=oauth_authorze_url,
+)
 
-sso = SSO(app=app)
 app.secret_key = os.urandom(24)
 log = logging.getLogger(__name__)
+
+log.debug("Set variables:\n{}".format(
+    "\n".join(["{} = {}".format(k, v)
+               for k, v in os.environ.items() if k[:5] == "OAUTH"])))
 
 try:
     netapp_host = os.environ['ONTAP_HOST']
@@ -59,39 +72,51 @@ except KeyError:
 extensions.DummyStorage().init_app(app)
 
 
-@sso.login_handler
-def login(user_info):   # pragma: no cover
-    flask.session['user'] = user_info
-    groups = user_info["group"].split(';')
-    app.logger.info("Shibboleth reported the following groups: {}"
-                    .format(", ".join(groups)))
-    flask.session['user']["group"] = groups
-    return flask.redirect('/')
-
-
-@sso.login_error_handler
-def error_callback(user_info):   # pragma: no cover
-    if not app.debug:
-        return flask.abort(403)
-    else:
+@app.route('/login')
+def login():
+    if app.debug:
         app.logger.warning("Failed login, but authenticating anyway as"
                            " we are in dev mode")
-        flask.session['user'] = user_info
+        flask.session['user'] = {}
         flask.session['user']['group'] = [apis.common.ADMIN_GROUP]
-        app.logger.info("User data is: {}".format(str(flask.session['user'])))
-        return flask.redirect('/')
+        return flask.redirect(url_for('index'))
+
+    return cern.authorize(callback=url_for('authorized', _external=True))
+
+
+@app.route(oauth_callback_url_relative)
+def authorized(user_info):   # pragma: no cover
+    resp = cern.authorized_response()
+    if resp is None or resp.get('access_token') is None:
+        return 'Access denied: reason=%s error=%s resp=%s' % (
+            flask.request.args['error'],
+            flask.request.args['error_description'],
+            resp
+        )
+    flask.session['cern_token'] = (resp['access_token'], '')
+    app.logger.info("Got authentication call-back from OAuth."
+                    " Proceeding to fetch groups...")
+
+    response = cern.get(oauth_groups_url).json()
+    groups = response['groups']
+    flask.session['user'] = {}
+    app.logger.info("OAuth reported the following groups: {}"
+                    .format(", ".join(groups)))
+    flask.session['user']["group"] = groups
+    return flask.redirect(url_for('index'))
 
 
 @app.route('/logout')
 def logout():   # pragma: no cover
     app.logger.info("Current session data: {}".format(str(flask.session)))
-    if 'user' in flask.session:
-        app.logger.info("Logging out user")
-        flask.session.pop('user')
-    else:
-        app.logger.warning("No user logged in!")
+    flask.session.pop('cern_token', None)
+    flask.session.pop('user', None)
+    return flask.redirect(url_for('index'))
 
-    return flask.redirect('/')
+
+@cern.tokengetter
+def get_cern_oauth_token():
+    return flask.session.get('cern_token')
 
 
 if __name__ == '__main__':
