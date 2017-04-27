@@ -1,7 +1,7 @@
 {
   "http_interactions": [
     {
-      "recorded_at": "2017-03-28T14:58:57",
+      "recorded_at": "2017-04-27T08:04:25",
       "request": {
         "body": {
           "encoding": "utf-8",
@@ -12,7 +12,7 @@
           "Accept-Encoding": "gzip, deflate",
           "Authorization": "Basic <ONTAP-AUTH>",
           "Connection": "keep-alive",
-          "Content-Length": "260",
+          "Content-Length": "259",
           "Content-type": "application/xml",
           "User-Agent": "python-requests/2.13.0"
         },
@@ -22,13 +22,13 @@
       "response": {
         "body": {
           "encoding": "ISO-8859-1",
-          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.31' xmlns='http://www.netapp.com/filer/admin'>\n<results reason=\"entry doesn&apos;t exist\" status=\"failed\" errno=\"15661\"/></netapp>"
+          "string": "<?xml version='1.0' encoding='UTF-8' ?>\n<!DOCTYPE netapp SYSTEM 'file:/etc/netapp_gx.dtd'>\n<netapp version='1.110' xmlns='http://www.netapp.com/filer/admin'>\n<results reason=\"entry doesn&apos;t exist\" status=\"failed\" errno=\"15661\"/></netapp>"
         },
         "headers": {
           "Connection": "Keep-Alive",
-          "Content-Length": "240",
+          "Content-Length": "241",
           "Content-Type": "text/xml",
-          "Date": "Tue, 28 Mar 2017 14:58:57 GMT",
+          "Date": "Thu, 27 Apr 2017 08:04:24 GMT",
           "Keep-Alive": "timeout=5, max=100",
           "Server": "libzapid-httpd"
         },
