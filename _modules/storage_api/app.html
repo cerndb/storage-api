@@ -231,7 +231,7 @@
     <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got authentication call-back from OAuth.&quot;</span>
                     <span class="s2">&quot; Proceeding to fetch groups...&quot;</span><span class="p">)</span>
 
-    <span class="n">response</span> <span class="o">=</span> <span class="n">cern</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">oauth_groups_url</span><span class="p">)</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">cern</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">oauth_groups_url</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
     <span class="n">groups</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s1">&#39;groups&#39;</span><span class="p">]</span>
     <span class="n">flask</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;OAuth reported the following groups: </span><span class="si">{}</span><span class="s2">&quot;</span>
