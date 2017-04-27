@@ -99,7 +99,7 @@ def test_get_nonexistent_volume(storage, recorder):
 def test_create_get_volume(storage, recorder):
     with recorder.use_cassette('create_get_volume'):
         new_vol = storage.create_volume(':/volumename',
-                                        name="volume_name",
+                                        name="volume_name_9000",
                                         size_total=DEFAULT_VOLUME_SIZE)
         volume = storage.get_volume(id_from_vol(new_vol, storage))
         assert new_vol == volume
@@ -134,7 +134,8 @@ def test_patch_volume(storage, recorder):
         with ephermeral_volume(storage) as vol:
             storage.patch_volume(id_from_vol(vol, storage),
                                  autosize_enabled=True,
-                                 max_autosize=2*DEFAULT_VOLUME_SIZE)
+                                 max_autosize=2*DEFAULT_VOLUME_SIZE,
+                                 autosize_increment=1234)
 
             v = storage.get_volume(id_from_vol(vol, storage))
             assert v['autosize_enabled'] is True
@@ -398,15 +399,15 @@ def test_netapp_create_volume_no_node(storage, recorder):
 
     with recorder.use_cassette('tricky_netapp_create_no_node'):
         try:
-            new_vol = storage.create_volume(':/volumename',
-                                            name="volume_name",
+            new_vol = storage.create_volume(':/volumename_9001',
+                                            name="volume_name_9001",
                                             size_total=DEFAULT_VOLUME_SIZE)
             volume = storage.get_volume(new_vol['name'])
             assert new_vol == volume
             assert volume in storage.volumes
             assert 'filer_address' in new_vol
         finally:
-            delete_volume(storage, "volume_name")
+            delete_volume(storage, "volume_name_9001")
 
 
 @on_all_backends

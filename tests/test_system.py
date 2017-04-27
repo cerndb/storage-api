@@ -31,7 +31,7 @@ class LiveTests(LiveServerTestCase):
         return class_name[4:]
 
     def create_app(self):
-        from app import app
+        from storage_api.app import app
         app.config['TESTING'] = True
         app.config['LIVESERVER_PORT'] = 8943
         app.config['LIVESERVER_TIMEOUT'] = 10
@@ -132,9 +132,14 @@ class LiveTests(LiveServerTestCase):
 
         with self.recorder.use_cassette('get_specific'):
             for cmp_no, volume in enumerate(s.get(url + "/netapp/volumes").json()):
-                by_name = s.get("{}/netapp/volumes/{}:{}"
-                                .format(url, volume['filer_address'],
-                                        volume['junction_path'])).json()
+
+                name_path_address = ("{}/netapp/volumes/{}:{}"
+                                     .format(url, volume['filer_address'],
+                                             volume['junction_path']))
+                if name_path_address[-1] == '/':
+                    continue
+
+                by_name = s.get(name_path_address).json()
                 print(volume)
                 assert by_name == volume
                 if cmp_no >= NUM_COMPARISONS:
@@ -145,8 +150,8 @@ class LiveTests(LiveServerTestCase):
         url = self.get_server_url()
         with self.perform(
                 'post',
-                "/netapp/volumes/nothing:/test_volume_api_system_test_13",
-                payload=json.dumps({'name': 'my_test_volume_api_system_test_13',
+                "/netapp/volumes/nothing:/test_volume_api_system_test_14",
+                payload=json.dumps({'name': 'my_test_volume_api_system_test_14',
                                     'size_total': 20971520})) as (r, code):
 
             try:
