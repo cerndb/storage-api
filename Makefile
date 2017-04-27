@@ -104,6 +104,10 @@ doc_deploy: swagger.json html
 .PHONY: doc_deploy
 
 image:
-	docker build --force-rm -t storage-api .
+	docker build -t  "gitlab-registry.cern.ch/db/storage-api-mirror:runner" .
+
+push-image:
+	docker	push "gitlab-registry.cern.ch/db/storage-api-mirror:runner"
+
 run:
-	docker run -it --rm --publish-all storage-api
+	docker run -it --rm --publish-all "gitlab-registry.cern.ch/db/storage-api-mirror:runner"

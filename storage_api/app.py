@@ -79,7 +79,7 @@ def login():
                            " we are in dev mode")
         flask.session['user'] = {}
         flask.session['user']['group'] = [apis.common.ADMIN_GROUP]
-        return flask.redirect(url_for('index'))
+        return flask.redirect('/')
 
     return cern.authorize(callback=url_for('authorized', _external=True))
 
@@ -103,7 +103,7 @@ def authorized():   # pragma: no cover
     app.logger.info("OAuth reported the following groups: {}"
                     .format(", ".join(groups)))
     flask.session['user']["group"] = groups
-    return flask.redirect(url_for('index'))
+    return flask.redirect('/')
 
 
 @app.route('/logout')
@@ -111,7 +111,7 @@ def logout():   # pragma: no cover
     app.logger.info("Current session data: {}".format(str(flask.session)))
     flask.session.pop('cern_token', None)
     flask.session.pop('user', None)
-    return flask.redirect(url_for('index'))
+    return flask.redirect('/')
 
 
 @cern.tokengetter
