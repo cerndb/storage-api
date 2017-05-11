@@ -21,7 +21,7 @@ import netapp.api
 
 app = Flask(__name__)
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 api.init_app(app)
 
@@ -101,8 +101,12 @@ def authorized():   # pragma: no cover
     groups = response['groups']
     flask.session['user'] = {}
     app.logger.info("OAuth reported the following groups: {}"
-                    .format(", ".join(groups)))
-    flask.session['user']["group"] = groups
+                    .format(", ".join(['"{}"'.format(g) for g in groups])))
+    if apis.common.ADMIN_GROUP in groups:
+        flask.session['user']["group"] = [apis.common.ADMIN_GROUP]
+    else:
+        app.logger.error("Group {} was not in the user's list!"
+                         .format(apis.common.ADMIN_GROUP))
     return flask.redirect('/')
 
 
