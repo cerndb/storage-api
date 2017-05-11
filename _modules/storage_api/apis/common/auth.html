@@ -182,6 +182,8 @@
                                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">group_name</span><span class="p">))</span>
 
             <span class="k">if</span> <span class="n">group_name</span> <span class="ow">in</span> <span class="n">user</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The user was in in group </span><span class="si">{}</span><span class="s2">!&quot;</span>
+                                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">group_name</span><span class="p">))</span>
                 <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Logged-in user is not in group </span><span class="si">{}</span><span class="s2">&quot;</span>
