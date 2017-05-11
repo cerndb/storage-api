@@ -48,6 +48,8 @@ def in_group(api, group_name):
                                     .format(group_name))
 
             if group_name in user.get('group', []):
+                current_app.logger.info("The user was in in group {}!"
+                                        .format(group_name))
                 return func(*args, **kwargs)
             else:
                 current_app.logger.error("Logged-in user is not in group {}"

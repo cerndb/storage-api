@@ -109,5 +109,8 @@ image:
 push-image:
 	docker	push "gitlab-registry.cern.ch/db/storage-api-mirror:runner"
 
+deploy-os:
+	oc import-image --token ${OPENSHIFT_PUSH_TOKEN} --namespace it-db-storage-api --server "https://openshift.cern.ch" "db/storage-api-mirror:runner"
+
 run:
 	docker run -it --rm --publish-all "gitlab-registry.cern.ch/db/storage-api-mirror:runner"
