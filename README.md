@@ -70,6 +70,21 @@ app pattern. The following environment variables are used:
   the storage API runs as
 - `SAPI_OAUTH_SECRET_KEY`: The private key of the OAuth2 service the
   storage API runs as
+
+The following keys are also optional:
+- `SAPI_OAUTH_TOKEN_URL`: The URL to get OAuth2 Tokens from. **Default**:
+  `https://oauth.web.cern.ch/OAuth/Token`.
+- `SAPI_OAUTH_AUTHORIZE_URL`: The URL to send OAuth2 Authorization
+  requests to. **Default**: `https://oauth.web.cern.ch/OAuth/Authorize`
+- `SAPI_OAUTH_GROUPS_URL`: The URL to send a GET request with the
+  current OAuth2 token to receive a list of groups the current user is a
+  member of. **Default**: `https://oauthresource.web.cern.ch/api/Groups`
+- `SAPI_OAUTH_CALLBACK_URL_RELATIVE`: The relative (to the app's root)
+  URL to report as the call-back URL to the OAuth2 Authorize server. You
+  most likely do not need to change this, unless you have some really
+  exotic routing pattern. **Default**: `/oauth-done`.
+
+The following configuration options control the role-based access control:
 - `SAPI_ROLE_USER_GROUPS`: A comma-separated list of groups whose users
   are just plain users. If the list is empty or unset, unauthenticated
   users are included in the user role and given access to certain
@@ -78,7 +93,10 @@ app pattern. The following environment variables are used:
   are (at least) administrators. Empty list or unset variable means
   the role is disabled.
 - `SAPI_ROLE_UBER_ADMIN_GROUPS`: A comma-separated list of groups whose
-  users are uber-admins (e.g. the highest privilege level).
+  users are uber-admins (e.g. the highest privilege level). Empty list
+  or unset variable means the role is disabled.
+
+Back-ends are configured using the following pattern:
 - `SAPI_BACKENDS`: A unicorn emoji-separated list of back-ends to enable,
   and their configuration as per the following pattern:
   `endpoint_name:BackEndClass:option_name:option_value:another_option_name:another_option_value`,
