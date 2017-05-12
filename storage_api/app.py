@@ -26,7 +26,7 @@ CONFIG_SEPARATOR = "🌈"
 app = Flask(__name__)
 app.config['SUBSYSTEM'] = {}
 
-logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 
 api.init_app(app)
