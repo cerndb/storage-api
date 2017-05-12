@@ -15,6 +15,7 @@ RUN chown -R appserver .
 USER appserver
 
 RUN virtualenv --python=python3 venv
-RUN source venv/bin/activate && pip install -r requirements-runtime.txt
+RUN source venv/bin/activate && pip install -r requirements.txt
 RUN source venv/bin/activate && python setup.py install
+RUN source venv/bin/activate && pytest -vvv --ignore=venv
 CMD uwsgi uwsgi.ini
