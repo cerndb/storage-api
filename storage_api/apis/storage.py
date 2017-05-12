@@ -35,13 +35,7 @@ VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
                            " this may either be the name of a volume, or"
                            " node_name:/junction/path.")
 
-SUBSYSTEM_MAPPING = {'netapp': 'NetappStorage',
-                     'ceph': 'DummyStorage',
-                     'dummy': 'DummyStorage'}
-
-SUBSYSTEM_DESCRIPTION = ("The subsystem to run the command on."
-                         " Must be one of: {}"
-                         .format(", ".join(SUBSYSTEM_MAPPING.keys())))
+SUBSYSTEM_DESCRIPTION = "The subsystem to run the command on."
 
 DISALLOWED_VOLUME_NAME_RE = re.compile(".*[^a-z0-9:/_\.-].*")
 
@@ -78,14 +72,9 @@ def backend(backend_name):
     with exception_is_errorcode(api, KeyError, 404,
                                 message=("No such subsystem. "
                                          "Allowed values are: {}")
-                                .format(", ".join(SUBSYSTEM_MAPPING.keys()))):
-        canonical_name = SUBSYSTEM_MAPPING[backend_name]
-    try:
-        return current_app.extensions[canonical_name]
-    except KeyError:
-        log.error("Backend {} not installed, using dummy back-end"
-                  .format(canonical_name))
-        return current_app.extensions['DummyStorage']
+                                .format(", ".join(current_app.config['SUBSYSTEM'].keys()))):
+        instance_id = current_app.config['SUBSYSTEM'][backend_name]
+        return current_app.extensions[instance_id]
 
 
 policy_rule_list_field = fields.List(fields.String(

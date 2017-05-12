@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 # Copyright (C) 2016, CERN
 # This software is distributed under the terms of the GNU General Public
 # Licence version 3 (GPL Version 3), copied verbatim in the file "LICENSE".
@@ -18,24 +17,56 @@ import flask
 from flask import Flask, url_for
 from flask_oauthlib.client import OAuth
 import netapp.api
+from itertools import tee
+
+# If you're not unicode ready, you're not ready, period.
+BACKEND_SEPARATOR = "🦄"
+CONFIG_SEPARATOR = "🔑"
 
 app = Flask(__name__)
+app.config['SUBSYSTEM'] = {}
 
 logging.basicConfig(level=logging.DEBUG)
+
 
 api.init_app(app)
 
 oauth = OAuth(app)
-oauth_client_id = os.getenv('OAUTH_CLIENT_ID', 'dummy_id')
-oauth_secret_key = os.getenv('OAUTH_SECRET_KEY', 'dummy_key')
-oauth_access_token_url = os.getenv('OAUTH_TOKEN_URL',
+oauth_client_id = os.getenv('SAPI_OAUTH_CLIENT_ID', 'dummy_id')
+oauth_secret_key = os.getenv('SAPI_OAUTH_SECRET_KEY', 'dummy_key')
+oauth_access_token_url = os.getenv('SAPI_OAUTH_TOKEN_URL',
                                    'https://oauth.web.cern.ch/OAuth/Token')
-oauth_authorze_url = os.getenv('OAUTH_AUTHORIZE_URL',
+oauth_authorze_url = os.getenv('SAPI_OAUTH_AUTHORIZE_URL',
                                'https://oauth.web.cern.ch/OAuth/Authorize')
-oauth_groups_url = os.getenv('OAUTH_GROUPS_URL',
+oauth_groups_url = os.getenv('SAPI_OAUTH_GROUPS_URL',
                              'https://oauthresource.web.cern.ch/api/Groups')
-oauth_callback_url_relative = os.getenv('OAUTH_CALLBACK_URL_RELATIVE',
+oauth_callback_url_relative = os.getenv('SAPI_OAUTH_CALLBACK_URL_RELATIVE',
                                         '/oauth-done')
+
+
+def pairwise(iterable):
+    return zip(iterable[0::2], iterable[1::2])
+
+
+def conf_to_dict(conf_list):
+    # If the length of the configuration is uneven, keys don't match up.
+    assert len(conf_list) % 2 == 0
+    return dict(pairwise(conf_list))
+
+
+def load_backend_conf(conf):
+    backends = conf.split(BACKEND_SEPARATOR)
+    for backend_conf in backends:
+        conf = backend_conf.split(CONFIG_SEPARATOR)
+        endpoint = conf[0]
+
+        # This is the class itself:
+        Backend = getattr(extensions, conf[1])
+        conf_dict = conf_to_dict(conf[2:])
+        log.debug("Back-end conf dict: {}".format(conf_dict))
+        backend = Backend(**conf_dict)
+        backend.init_app(app, endpoint=endpoint)
+
 
 cern = oauth.remote_app(
     'cern',
@@ -52,24 +83,13 @@ log = logging.getLogger(__name__)
 
 log.debug("Set variables:\n{}".format(
     "\n".join(["{} = {}".format(k, v)
-               for k, v in os.environ.items() if k[:5] == "OAUTH"])))
+               for k, v in os.environ.items() if k[:4] == "SAPI"])))
 
+log.info("Loading back-end conf from $SAPI_BACKENDS")
 try:
-    netapp_host = os.environ['ONTAP_HOST']
-    netapp_username = os.environ['ONTAP_USERNAME']
-    netapp_password = os.environ['ONTAP_PASSWORD']
-    netapp_vserver = os.environ['ONTAP_VSERVER']
-    server = netapp.api.Server(hostname=netapp_host,
-                               username=netapp_username,
-                               password=netapp_password,
-                               vserver=netapp_vserver)
-    extensions.NetappStorage(netapp_server=server).init_app(app)
-    log.info("Set up NetApp backend")
-except KeyError:
-    log.error("NetApp environment variables not configured, back-end inactive")
-    pass
-
-extensions.DummyStorage().init_app(app)
+    load_backend_conf(os.environ['SAPI_BACKENDS'])
+except KeyError as e:
+    log.error("You need to set $SAPI_BACKENDS!")
 
 
 @app.route('/login')

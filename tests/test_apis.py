@@ -125,22 +125,17 @@ def client(request):
     Fixture to set up a Flask test client
     """
     app.app.testing = True
-    extensions.DummyStorage().init_app(app.app)
-
-    backend_classes = extensions.storage.StorageBackend.__subclasses__()
-
-    for name, be in app.app.extensions.items():
-        if be.__class__ in backend_classes:
-            # Re-wire all storage types to use the dummy back-end
-            log.debug("Set storage back-end {} to use DummyStorage"
-                      .format(name))
-            app.app.extensions[name] = app.app.extensions['DummyStorage']
+    extensions.DummyStorage().init_app(app.app, endpoint="dummy")
+    extensions.DummyStorage().init_app(app.app, endpoint="netapp")
+    extensions.DummyStorage().init_app(app.app, endpoint="ceph")
 
     with app.app.test_client() as client:
         yield client
 
     log.debug("App teardown initiated: re-initialising dummy backend")
-    extensions.DummyStorage().init_app(app.app)
+    extensions.DummyStorage().init_app(app.app, endpoint="dummy")
+    extensions.DummyStorage().init_app(app.app, endpoint="netapp")
+    extensions.DummyStorage().init_app(app.app, endpoint="ceph")
 
 
 def init_vols_from_params(client, namespace, auth, vol_exists, volume_name):

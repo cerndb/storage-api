@@ -435,28 +435,31 @@ class StorageBackend(metaclass=ABCMeta):
 
         return NotImplemented
 
-    def init_app(self, app: flask.Flask):
+    def init_app(self, app: flask.Flask, endpoint):
         """
         Initialise a Flask app context with the storage system.
 
         Args:
             app (flask.Flask): The application to install the storage
                 system back-end in
+            endpoint (str): The API endpoint to mount the back-end at.
 
 
         Example::
 
             app = Flask(__name__)
             netapp = NetAppStorage()
-            netapp.init_app(app=app)
+            netapp.init_app(app=app, endpoint="netapp")
         """
 
         if not hasattr(app, 'extensions'):   # pragma: no coverage
             app.extensions = {}
 
         class_name = self.__class__.__name__
+        instance_id = "{}_{}".format(class_name, endpoint)
         log.info("Initialising storage back-end {}".format(class_name))
-        app.extensions[class_name] = self
+        app.extensions[instance_id] = self
+        app.config['SUBSYSTEM'][endpoint] = instance_id
 
 
 class DummyStorage(StorageBackend):
@@ -649,13 +652,19 @@ class NetappStorage(StorageBackend):
     A Back-end for a NetApp storage system.
     """
 
-    def __init__(self, netapp_server):
+    def __init__(self, hostname, username, password, vserver, timeout_s=4):
         """
-        netapp_server is assumed to be configured to a vserver.
+        Initialise a NetApp back-end
         """
 
-        self.server = netapp_server
+        self.server = netapp.api.Server(hostname=hostname,
+                                        username=username,
+                                        password=password,
+                                        vserver=vserver,
+                                        timeout_s=timeout_s)
         import requests
+
+        # FIXME: implement proper certificates, Miro!
         requests.packages.urllib3.disable_warnings()
 
     def format_volume(self, v):
