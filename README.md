@@ -63,12 +63,6 @@ with corresponding `make stop`.
 
 ### Configuration
 
-The NetApp back-end uses the environment variables `ONTAP_HOST`,
-`ONTAP_USERNAME`, `ONTAP_PASSWORD`, and `ONTAP_VSERVER` to set up the
-hostname, user name, password and vserver/vfiler to communicate with. If
-these variables are not found, the NetApp back-end will default to use
-the in-memory dummy back-end.
-
 Configuration is done using environment variables, as per the 12-factor
 app pattern. The following environment variables are used:
 
