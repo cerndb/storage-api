@@ -21,7 +21,7 @@ from itertools import tee
 
 # If you're not unicode ready, you're not ready, period.
 BACKEND_SEPARATOR = "🦄"
-CONFIG_SEPARATOR = "🔑"
+CONFIG_SEPARATOR = "🌈"
 
 app = Flask(__name__)
 app.config['SUBSYSTEM'] = {}
