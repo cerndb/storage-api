@@ -69,6 +69,37 @@ hostname, user name, password and vserver/vfiler to communicate with. If
 these variables are not found, the NetApp back-end will default to use
 the in-memory dummy back-end.
 
+Configuration is done using environment variables, as per the 12-factor
+app pattern. The following environment variables are used:
+
+- `SAPI_OAUTH_CLIENT_ID`: The public client ID for the OAuth2 service
+  the storage API runs as
+- `SAPI_OAUTH_SECRET_KEY`: The private key of the OAuth2 service the
+  storage API runs as
+- `SAPI_ROLE_USER_GROUPS`: A comma-separated list of groups whose users
+  are just plain users. If the list is empty or unset, unauthenticated
+  users are included in the user role and given access to certain
+  (non-destructive) endpoints. See the API documentation!
+- `SAPI_ROLE_ADMIN_GROUPS`: A comma-separated list of groups whose users
+  are (at least) administrators. Empty list or unset variable means
+  the role is disabled.
+- `SAPI_ROLE_UBER_ADMIN_GROUPS`: A comma-separated list of groups whose
+  users are uber-admins (e.g. the highest privilege level).
+- `SAPI_BACKENDS`: A unicorn emoji-separated list of back-ends to enable,
+  and their configuration as per the following pattern:
+  `endpoint_name:BackEndClass:option_name:option_value:another_option_name:another_option_value`,
+  where endpoint_name is the part that goes into the
+  `/<endpoint_name>/volumes>` part of the URL, `BackEndClass` is the
+  name of a class that implements the corresponding back-end
+  (e.g. `DummyStorage`), and the following set of key emoji-separated
+  options will be passed as keys and value arguments to that back-ends
+  constructor.
+
+  The following example sets up a NetApp back-end and RAM-backed dummy back-end:
+`export SAPI_BACKENDS="dummy🔑DummyStorage🦄netapp🔑NetappStorage🔑username🔑storage-api🔑password🔑myPassword:@;🔑vserver🔑vs3sx50"`
+
+  Please note that it is perfectly possible to set up multiple endpoints with the same back-end.
+
 ## Testing and Continuous Integration
 
 Continuous integration is provided by Travis, and tests are run using
