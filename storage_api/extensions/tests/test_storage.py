@@ -67,11 +67,10 @@ def on_all_backends(func):
     ontap_username = os.environ.get('ONTAP_USERNAME', "user-placeholder")
     ontap_password = os.environ.get('ONTAP_PASSWORD', "password-placeholder")
 
-    netapp_server = netapp.api.Server(hostname=ontap_host,
-                                      username=ontap_username,
-                                      password=ontap_password,
-                                      vserver=vserver)
-    backend = NetappStorage(netapp_server=netapp_server)
+    backend = NetappStorage(hostname=ontap_host,
+                            username=ontap_username,
+                            password=ontap_password,
+                            vserver=vserver)
     recorder = betamax.Betamax(backend.server.session)
 
     @functools.wraps(func)
