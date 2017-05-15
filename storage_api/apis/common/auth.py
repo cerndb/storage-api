@@ -12,10 +12,12 @@ from typing import Any # noqa
 
 from flask import session, current_app
 
-authorizations = {}  # type: Dict[str, Any]
+USER_ROLE = 'USER_ROLE'
+ADMIN_ROLE = 'ADMIN_ROLE'
+UBER_ADMIN_ROLE = 'UBER_ADMIN_ROLE'
 
 
-def in_group(api, group_name):
+def in_role(api, group_name):
     """
     Decorator: call flask.abort(403) if user is not in the specified
     group, or if the session is unauthenticated.
@@ -35,27 +37,36 @@ def in_group(api, group_name):
     def group_decorator(func):
         @wraps(func)
         @api.response(403, description=("Current user is not logged in or not"
-                                        " a member of the group '{}'")
+                                        " a member of the role '{}'")
                       .format(group_name), model=None)
         @api.doc(security=[{'sso': ['read', 'write']}])
         def group_wrapper(*args, **kwargs):
             user = session.get('user', None)
             if not user:
-                current_app.logger.error("User not authenticated at all")
-                api.abort(403, "The current user is not logged in!")
+                current_app.logger.error("User not authenticated at all!")
+                if (current_app.config['USER_IS_UNAUTHENTICATED'] and group_name == USER_ROLE):
+                    current_app.logger.info("Setting user role...")
+                    user = {}
+                    user['roles'] = set([USER_ROLE])
+                    session.user = user
+                else:
+                    api.abort(403, "The current user is not logged in!")
 
             current_app.logger.info("Testing if user is in group {}"
                                     .format(group_name))
 
-            if group_name in user.get('group', []):
-                current_app.logger.info("The user was in in group {}!"
+            if group_name in user.get('roles', []):
+                current_app.logger.info("The user had role {}!"
                                         .format(group_name))
                 return func(*args, **kwargs)
             else:
-                current_app.logger.error("Logged-in user is not in group {}"
+                current_app.logger.error("Logged-in user did not have role {}"
                                          .format(group_name))
+                current_app.logger.debug("User had roles {}"
+                                         .format(", "
+                                                 .join(user.get('roles', []))))
 
-                api.abort(403, "The user is not in the group {}"
+                api.abort(403, "The user does not have the role {}"
                           .format(group_name))
         return group_wrapper
     return group_decorator
