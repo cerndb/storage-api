@@ -12,6 +12,8 @@ import storage_api.extensions as extensions
 
 import os
 import logging
+import csv
+import io
 
 import flask
 from flask import Flask, url_for
@@ -22,13 +24,10 @@ from itertools import tee
 # If you're not unicode ready, you're not ready, period.
 BACKEND_SEPARATOR = "🦄"
 CONFIG_SEPARATOR = "🌈"
+USER_ROLES = ["USER", "ADMIN", "UBER_ADMIN"]
 
 app = Flask(__name__)
 app.config['SUBSYSTEM'] = {}
-
-#logging.basicConfig(level=logging.DEBUG)
-
-
 api.init_app(app)
 
 oauth = OAuth(app)
@@ -68,6 +67,21 @@ def load_backend_conf(conf):
         backend.init_app(app, endpoint=endpoint)
 
 
+def set_auth_string(role_name):
+    role_name = role_name.upper()
+    key_name = "{}_GROUPS".format(role_name)
+    env_var_name = "SAPI_ROLE_{}_GROUPS".format(role_name)
+
+    group_string = os.getenv(env_var_name, "")
+
+    if not group_string:
+        group_data = set()
+    else:
+        group_data = set(*csv.reader(io.StringIO(group_string),
+                                     delimiter=","))
+    app.config[key_name] = group_data
+
+
 cern = oauth.remote_app(
     'cern',
     consumer_key=oauth_client_id,
@@ -86,11 +100,14 @@ log.debug("Set variables:\n{}".format(
                for k, v in os.environ.items() if k[:4] == "SAPI"])))
 
 log.info("Loading back-end conf from $SAPI_BACKENDS")
-try:
-    load_backend_conf(os.environ['SAPI_BACKENDS'])
-except KeyError as e:
-    log.error("You need to set $SAPI_BACKENDS!")
+load_backend_conf(os.environ['SAPI_BACKENDS'])
 
+log.info("Loading authorisation config")
+[set_auth_string(role) for role in USER_ROLES]
+if not app.config['USER_GROUPS']:
+    app.config['USER_IS_UNAUTHENTICATED'] = True
+else:
+    app.config['USER_IS_UNAUTHENTICATED'] = False
 
 @app.route('/login')
 def login():
@@ -98,7 +115,9 @@ def login():
         app.logger.warning("Failed login, but authenticating anyway as"
                            " we are in dev mode")
         flask.session['user'] = {}
-        flask.session['user']['group'] = [apis.common.ADMIN_GROUP]
+        flask.session['user']['roles'] = [apis.common.USER_ROLE,
+                                          apis.common.ADMIN_ROLE,
+                                          apis.common.UBER_ADMIN_ROLE]
         return flask.redirect('/')
 
     return cern.authorize(callback=url_for('authorized', _external=True))
@@ -118,15 +137,26 @@ def authorized():   # pragma: no cover
                     " Proceeding to fetch groups...")
 
     response = cern.get(oauth_groups_url).data
-    groups = response['groups']
+    user_groups = set(response['groups'])
     flask.session['user'] = {}
-    app.logger.info("OAuth reported the following groups: {}"
-                    .format(", ".join(['"{}"'.format(g) for g in groups])))
-    if apis.common.ADMIN_GROUP in groups:
-        flask.session['user']["group"] = [apis.common.ADMIN_GROUP]
-    else:
-        app.logger.error("Group {} was not in the user's list!"
-                         .format(apis.common.ADMIN_GROUP))
+    session_roles = []
+    app.logger.debug("OAuth reported the following groups: {}"
+                     .format(", ".join(['"{}"'.format(g) for g in user_groups])))
+    if not app.config['USER_GROUPS']:
+        app.logger.info("No user groups configured, setting role USER")
+        session_roles.append(apis.common.USER_ROLE)
+    for role in USER_ROLES:
+        overlap = user_groups.intersection(app.config['{}_GROUPS'
+                                                      .format(role)])
+        if overlap:
+            app.logger.info("User was in {} role groups {}, granting role"
+                            .format(role, ", ".join(overlap)))
+            session_roles.append(getattr(apis.common, '{}_ROLE'.format(role)))
+        else:
+            app.logger.info("User was not in any {} role groups, denying"
+                            .format(role))
+    app.logger.info("Setting user roles: {}".format(", ".join(session_roles)))
+    flask.session['user']['roles'] = session_roles
     return flask.redirect('/')
 
 

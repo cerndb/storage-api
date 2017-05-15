@@ -1,4 +1,3 @@
-from storage_api import app
 from storage_api.apis import common
 from storage_api import extensions
 from storage_api.utils import compose_decorators
@@ -8,7 +7,9 @@ from urllib.parse import urlencode
 from contextlib import contextmanager
 import uuid
 import logging
+import os
 from functools import partial
+from unittest import mock
 
 import pytest
 from hypothesis import given
@@ -79,7 +80,8 @@ def patch_arguments(draw):
 
 
 @contextmanager
-def user_set(client, user={'group': [common.ADMIN_GROUP]}):
+def user_set(client, user={'roles': [common.ADMIN_ROLE, common.UBER_ADMIN_ROLE,
+                                     common.USER_ROLE]}):
     with client.session_transaction() as sess:
         sess['user'] = user
 
@@ -124,6 +126,12 @@ def client(request):
     """
     Fixture to set up a Flask test client
     """
+    with mock.patch.dict(os.environ, {'SAPI_BACKENDS':
+                                      ("dummy🌈DummyStorage🦄"
+                                       "netapp🌈DummyStorage🦄"
+                                       "ceph🌈DummyStorage")}):
+        from storage_api import app
+
     app.app.testing = True
     extensions.DummyStorage().init_app(app.app, endpoint="dummy")
     extensions.DummyStorage().init_app(app.app, endpoint="netapp")
