@@ -8,6 +8,10 @@
 # #
 # #
 # #*******************************************************************************
+
+
+SOURCES=$(wildcard *.py)
+
 clean:
 	find . -name \*.pyc -o -name \*.pyo -o -name __pycache__ -exec rm -rf {} +
 	rm -f $(TARFILE)
@@ -16,9 +20,9 @@ clean:
 	cd doc && make clean
 lint: $(SOURCES)
 	flake8 $(SOURCES)
-	 # mypy --ignore-missing-imports --fast-parser \
-	 #      --check-untyped-defs --warn-no-return \
-	 #      $(SOURCES)
+	 # mypy --ignore-missing-imports  \
+	 #       --check-untyped-defs --warn-no-return \
+	 #       $(SOURCES)
 
 .PHONY: lint
 

@@ -18,12 +18,10 @@ import io
 import flask
 from flask import Flask, url_for
 from flask_oauthlib.client import OAuth
-import netapp.api
-from itertools import tee
 
 # If you're not unicode ready, you're not ready, period.
 BACKEND_SEPARATOR = "🦄"
-CONFIG_SEPARATOR = "🌈"
+CONFIG_SEPARATOR = "y"
 USER_ROLES = ["USER", "ADMIN", "UBER_ADMIN"]
 
 app = Flask(__name__)
@@ -109,6 +107,7 @@ if not app.config['USER_GROUPS']:
 else:
     app.config['USER_IS_UNAUTHENTICATED'] = False
 
+
 @app.route('/login')
 def login():
     if app.debug:
@@ -141,7 +140,8 @@ def authorized():   # pragma: no cover
     flask.session['user'] = {}
     session_roles = []
     app.logger.debug("OAuth reported the following groups: {}"
-                     .format(", ".join(['"{}"'.format(g) for g in user_groups])))
+                     .format(", ".join(['"{}"'
+                                        .format(g) for g in user_groups])))
     if not app.config['USER_GROUPS']:
         app.logger.info("No user groups configured, setting role USER")
         session_roles.append(apis.common.USER_ROLE)

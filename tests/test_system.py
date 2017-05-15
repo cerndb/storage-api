@@ -28,7 +28,8 @@ class LiveTests(LiveServerTestCase):
         vserver = os.environ.get('ONTAP_VSERVER', 'vs1rac11')
         server_host = os.environ.get('ONTAP_HOST', 'db-51195')
         server_username = os.environ.get('ONTAP_USERNAME', "user-placeholder")
-        server_password = os.environ.get('ONTAP_PASSWORD', "password-placeholder")
+        server_password = os.environ.get('ONTAP_PASSWORD',
+                                         "password-placeholder")
 
         self.backend = extensions.NetappStorage(
             hostname=server_host,
@@ -47,7 +48,8 @@ class LiveTests(LiveServerTestCase):
         ONTAP_VSERVER = os.environ.get('ONTAP_VSERVER', 'vs1rac11')
         server_host = os.environ.get('ONTAP_HOST', 'db-51195')
         server_username = os.environ.get('ONTAP_USERNAME', "user-placeholder")
-        server_password = os.environ.get('ONTAP_PASSWORD', "password-placeholder")
+        server_password = os.environ.get('ONTAP_PASSWORD',
+                                         "password-placeholder")
 
         s = netapp.api.Server(hostname=server_host, username=server_username,
                               password=server_password)
@@ -115,7 +117,8 @@ class NetappLiveTests(LiveTests):
         with self.perform(
                 'post',
                 "/test/volumes/nothing:/test_volume_api_system_test_14",
-                payload=json.dumps({'name': 'my_test_volume_api_system_test_14',
+                payload=json.dumps({'name':
+                                    'my_test_volume_api_system_test_14',
                                     'size_total': 20971520})) as (r, code):
 
             try:
@@ -124,8 +127,9 @@ class NetappLiveTests(LiveTests):
                              s.get(url + "/test/volumes").json()]
                 assert r['name'] in all_names
 
-                r2 = s.delete(url + "/test/volumes/{}:{}".format(r['filer_address'],
-                                                                 r['junction_path']),
+                r2 = s.delete(url + "/test/volumes/{}:{}"
+                              .format(r['filer_address'],
+                                      r['junction_path']),
                               headers=_DEFAULT_HEADERS)
                 assert r2.status_code == 204
 
@@ -154,7 +158,7 @@ class NetappLiveTests(LiveTests):
         with self.recorder.use_cassette('get_volumes'):
             r1 = s.get(url + "/test/volumes")
             assert r1.status_code == 200
-            result = r1.json()
+            result = r1.json()  # noqa
 
     def test_netapp_get_specific_volume(self):
         url = self.get_server_url()
@@ -163,7 +167,8 @@ class NetappLiveTests(LiveTests):
         NUM_COMPARISONS = 5
 
         with self.recorder.use_cassette('get_specific'):
-            for cmp_no, volume in enumerate(s.get(url + "/test/volumes").json()):
+            for cmp_no, volume in enumerate(s.get(url + "/test/volumes")
+                                            .json()):
 
                 name_path_address = ("{}/test/volumes/{}:{}"
                                      .format(url, volume['filer_address'],

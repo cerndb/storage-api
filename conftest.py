@@ -16,7 +16,8 @@ ontap_password = os.environ.get('ONTAP_PASSWORD', 'password-placeholder')
 settings.register_profile("ci", settings(max_examples=10))
 settings.register_profile("exhaustive", settings(max_examples=400))
 settings.register_profile("dev", settings(max_examples=10))
-settings.register_profile("debug", settings(max_examples=10, verbosity=Verbosity.verbose))
+settings.register_profile("debug", settings(max_examples=10,
+                                            verbosity=Verbosity.verbose))
 settings.load_profile(os.getenv(u'HYPOTHESIS_PROFILE', 'dev'))
 
 
@@ -24,7 +25,8 @@ def pytest_addoption(parser):
     parser.addoption("--runslow", action="store_true",
                      help="run slow tests")
     parser.addoption("--betamax-record-mode", action="store", default="never",
-                     help="Use betamax recording option (once, new_episodes, never)")
+                     help=("Use betamax recording option "
+                           "(once, new_episodes, never)"))
 
 
 def pytest_runtest_setup(item):
@@ -39,9 +41,9 @@ with betamax.Betamax.configure() as config:
     # Replace the base64-encoded username:password string in the
     # basicauth headers with a placeholder to avoid exposing cleartext
     # passwords in checked-in content.
-    config.define_cassette_placeholder('<ONTAP-AUTH>',
-                                       base64.b64encode(
-                                           ('{0}:{1}'
-                                            .format(ontap_username,
-                                                    ontap_password)).encode('utf-8'))
-                                       .decode('utf-8'))
+    config.define_cassette_placeholder(
+        '<ONTAP-AUTH>',
+        base64.b64encode(
+            ('{0}:{1}'.format(ontap_username,
+                              ontap_password)).encode('utf-8'))
+        .decode('utf-8'))
