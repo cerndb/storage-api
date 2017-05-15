@@ -104,26 +104,33 @@ The following configuration options control the role-based access control:
   are (at least) administrators. Empty list or unset variable means
   the role is disabled.
 - `SAPI_ROLE_UBER_ADMIN_GROUPS`: A comma-separated list of groups whose
-  users are uber-admins (e.g. the highest privilege level). Empty list
+  users are uber-admins. Empty list
   or unset variable means the role is disabled.
 
+Please note that roles are distinct, e.g. the admin role is not
+contained within the uber-admin-role. If you want both, you need to have
+both.
+
 Back-ends are configured using the following pattern:
-- `SAPI_BACKENDS`: A unicorn emoji-separated list of back-ends to enable,
+- `SAPI_BACKENDS`: A unicorn emoji-separated (:unicorn:) list of back-ends to enable,
   and their configuration as per the following pattern:
   `endpoint_name:BackEndClass:option_name:option_value:another_option_name:another_option_value`,
   where endpoint_name is the part that goes into the
   `/<endpoint_name>/volumes>` part of the URL, `BackEndClass` is the
   name of a class that implements the corresponding back-end
-  (e.g. `DummyStorage`), and the following set of key emoji-separated
-  options will be passed as keys and value arguments to that back-ends
+  (e.g. `DummyStorage`), and the following set of rainbow emoji-separated
+  options (:rainbow:) will be passed as keys and value arguments to that back-ends
   constructor.
 
   The following example sets up a NetApp back-end and RAM-backed dummy back-end:
-`export SAPI_BACKENDS="dummy🔑DummyStorage🦄netapp🔑NetappStorage🔑username🔑storage-api🔑password🔑myPassword:@;🔑vserver🔑vs3sx50"`
+`export SAPI_BACKENDS="dummy🌈DummyStorage🦄netapp🌈NetappStorage🌈username🌈storage-api🌈password🌈myPassword:@;🌈vserver🌈vs3sx50"`
 
   Please note that it is perfectly possible to set up multiple endpoints
   with the same back-end, e.g. multiple NetApp filers or clusters with
-  different vservers on different endpoints.
+  different vservers on different endpoints. Endpoints needs to be
+  unique though.
+ 
+**Without at least one configured endpoint, the app will not run.**
 
 ## Testing and Continuous Integration
 
