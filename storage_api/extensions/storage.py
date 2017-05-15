@@ -110,7 +110,7 @@ def normalised_with(schema_name: str,
 
             if as_list:
                 if isinstance(return_value, str):
-                    raise ValidationError("Expected a list!")  # pragma: no cover
+                    raise ValidationError("Expected a list!")
                 try:
                     return [validate_value(v, x) for x in return_value]
                 except TypeError:  # pragma: no cover
@@ -303,7 +303,8 @@ class StorageBackend(metaclass=ABCMeta):
         associated with the given policy.
 
         Raises:
-            KeyError: if volume_name does not exist or does not have a policy named policy_name
+            KeyError: if volume_name does not exist or does not have a
+              policy named policy_name
         """
         return NotImplemented
 
@@ -559,7 +560,8 @@ class DummyStorage(StorageBackend):
         self.raise_if_volume_absent(volume_name)
 
         log.info("Host_Owner {} is locking {}".format(host_owner, volume_name))
-        if volume_name in self.locks_store and self.locks_store[volume_name] != host_owner:
+        if volume_name in self.locks_store and\
+           self.locks_store[volume_name] != host_owner:
             raise ValueError("{} is already locked by {}!"
                              .format(volume_name,
                                      self.locks_store[volume_name]))
@@ -806,7 +808,8 @@ class NetappStorage(StorageBackend):
             self.server.delete_export_policy(policy_name)
         except netapp.api.APIError as e:
             if e.errno == 15661:
-                raise KeyError("Policy doesn't exist: '{}'".format(policy_name))
+                raise KeyError("Policy doesn't exist: '{}'"
+                               .format(policy_name))
             else:
                 raise e
 
@@ -826,7 +829,8 @@ class NetappStorage(StorageBackend):
     def rollback_volume(self, volume_name, restore_snapshot_name):
         volume_name = self.parse_volume_name(volume_name)
         self.get_snapshot(volume_name, restore_snapshot_name)
-        self.server.rollback_volume_from_snapshot(volume_name, restore_snapshot_name)
+        self.server.rollback_volume_from_snapshot(volume_name,
+                                                  restore_snapshot_name)
 
     def ensure_policy_rule_present(self, policy_name, rule):
         rules = [r for _i, r in self.server.export_rules_of(policy_name)]
@@ -867,9 +871,9 @@ class NetappStorage(StorageBackend):
             volume_name = fields.get('name', None)
 
         if not volume_name:
-            raise ValueError("Must provide a volume name for NetApp back-ends!")
+            raise ValueError("Must provide a volume name for NetApp back-ends")
         if not junction_path:
-            raise ValueError("Must provide a junction path for NetApp back-ends!")
+            raise ValueError("Must provide a junction path for NetApp")
         if not fields.get('size_total', None):
             raise ValueError("Must provide size_total for NetApp!")
 

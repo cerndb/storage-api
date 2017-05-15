@@ -44,7 +44,8 @@ def in_role(api, group_name):
             user = session.get('user', None)
             if not user:
                 current_app.logger.error("User not authenticated at all!")
-                if (current_app.config['USER_IS_UNAUTHENTICATED'] and group_name == USER_ROLE):
+                if current_app.config['USER_IS_UNAUTHENTICATED'] and \
+                   group_name == USER_ROLE:
                     current_app.logger.info("Setting user role...")
                     user = {}
                     user['roles'] = set([USER_ROLE])

@@ -7,13 +7,13 @@
 # In applying this license, CERN does not waive the privileges and immunities
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
+import logging
 
 from flask_restplus import Api
 
 from .storage import api as unified_ns
 authorizations = {}
 
-import logging
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 

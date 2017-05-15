@@ -154,9 +154,9 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 #
 # html_logo = None
 
-# The name of an image file (relative to this directory) to use as a favicon of
-# the docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
-# pixels large.
+# The name of an image file (relative to this directory) to use as a
+# favicon of the docs.  This file should be a Windows icon file (.ico)
+# being 16x16 or 32x32 pixels large.
 #
 # html_favicon = None
 
@@ -269,7 +269,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'CERNUnifiedStorageAPI.tex', u'CERN Unified Storage API Documentation',
+    (master_doc, 'CERNUnifiedStorageAPI.tex',
+     u'CERN Unified Storage API Documentation',
      u'CERN', 'manual'),
 ]
 
@@ -311,7 +312,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'cernunifiedstorageapi', u'CERN Unified Storage API Documentation',
+    (master_doc, 'cernunifiedstorageapi',
+     u'CERN Unified Storage API Documentation',
      [author], 1)
 ]
 
@@ -326,7 +328,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'CERNUnifiedStorageAPI', u'CERN Unified Storage API Documentation',
+    (master_doc, 'CERNUnifiedStorageAPI',
+     u'CERN Unified Storage API Documentation',
      author, 'CERNUnifiedStorageAPI', 'One line description of project.',
      'Miscellaneous'),
 ]
@@ -349,7 +352,9 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('https://docs.python.org/', None),
-                       'flask_restplus': ('https://flask-restplus.readthedocs.io/en/stable/', None),
-                       'netapp-api': ('https://cerndb.github.io/netapp-api-python/', None),
-                       'flask': ('http://flask.pocoo.org/docs/latest/', None)}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/', None),
+    'flask_restplus':
+    ('https://flask-restplus.readthedocs.io/en/stable/', None),
+    'netapp-api': ('https://cerndb.github.io/netapp-api-python/', None),
+    'flask': ('http://flask.pocoo.org/docs/latest/', None)}

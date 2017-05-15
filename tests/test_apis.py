@@ -40,7 +40,8 @@ def nice_strings(bad_chars):
 
 
 name_strings = partial(nice_strings, bad_chars=['\n', '#', '?', '%', ';'])
-policy_name_strings = partial(nice_strings, bad_chars=['\n', '/', '?', '#', '%'])
+policy_name_strings = partial(nice_strings,
+                              bad_chars=['\n', '/', '?', '#', '%'])
 
 # Useful parameterisations:
 params_namespaces = pytest.mark.parametrize('namespace', ["ceph", "netapp"])
@@ -292,7 +293,9 @@ def test_create_snapshot_from_volume(client, namespace):
     snapshot = '{}/snapshots/{}'.format(volume, snapshot_name)
 
     with user_set(client):
-        snapshot_post_code, _snapshot_post_result = _post(client, snapshot, data={})
+        snapshot_post_code, _snapshot_post_result = _post(client,
+                                                          snapshot,
+                                                          data={})
 
     assert snapshot_post_code == 201
 
@@ -300,7 +303,9 @@ def test_create_snapshot_from_volume(client, namespace):
     assert get_code == 200
     assert get_result['name'] == snapshot_name
 
-    snapshots_get_code, get_results = _get(client, '{}/snapshots'.format(volume))
+    snapshots_get_code, get_results = _get(client,
+                                           '{}/snapshots'
+                                           .format(volume))
     assert snapshots_get_code == 200
 
     assert any(map(lambda x: x['name'] == snapshot_name, get_results))
@@ -411,7 +416,9 @@ def test_patch_volume(client, namespace, vol_exists, auth,
 
 @params_volume_names
 @params_namespaces
-def test_delete_snapshot_nonexistent_snapshot_and_volume(client, namespace, volume_name):
+def test_delete_snapshot_nonexistent_snapshot_and_volume(client,
+                                                         namespace,
+                                                         volume_name):
     volume = '/{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
     snapshot = '{}/snapshots/my-snapshot'.format(volume, volume_name)
 
@@ -500,7 +507,8 @@ def test_lock_volume(client, namespace, auth, vol_exists, volume_name):
 
 
 @params_vol_ns_auth
-def test_force_lock_on_volume(client, namespace, auth, vol_exists, volume_name):
+def test_force_lock_on_volume(client, namespace,
+                              auth, vol_exists, volume_name):
     volume, volume_exists, authorised = init_vols_from_params(client,
                                                               namespace,
                                                               auth,
@@ -703,7 +711,8 @@ def test_put_export_rule(client, namespace, auth, policy_status, policy_name):
 @given(policy_name=policy_name_strings())
 @params_policy_presence
 @params_ns_auth
-def test_delete_export_rule(client, namespace, auth,  policy_status, policy_name):
+def test_delete_export_rule(client, namespace, auth,
+                            policy_status, policy_name):
     authorised = auth == "authorised"
     policy_exists = policy_status == "policy_present"
     policy = '{}/export/{}'.format(namespace, policy_name)
