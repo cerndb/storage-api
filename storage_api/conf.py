@@ -17,6 +17,7 @@ BACKEND_SEPARATOR = "🦄"
 CONFIG_SEPARATOR = "🌈"
 BACKENDS_VARIABLE_NAME = "SAPI_BACKENDS"
 
+
 def conf_to_dict(conf_list):
     # If the length of the configuration is uneven, keys don't match up.
     assert len(conf_list) % 2 == 0
@@ -30,7 +31,7 @@ def load_backend_conf(app, backends_module):
     """
 
     # Placeholder for back-end mappings:
-    if not 'SUBSYSTEM' in app.config:
+    if 'SUBSYSTEM' not in app.config:
         app.config['SUBSYSTEM'] = {}
 
     app.logger.info("Loading back-end conf from ${}"
@@ -48,6 +49,7 @@ def load_backend_conf(app, backends_module):
         backend = Backend(**conf_dict)
         backend.init_app(app, endpoint=endpoint)
 
+
 def set_oauth_property(app, key_name, default_value):
     """
     Helper: fetch an OAuth property named PROPRETY_NAME from an
@@ -61,6 +63,7 @@ def set_oauth_property(app, key_name, default_value):
     app.logger.debug("Set OAuth configuration key {} from {}"
                      .format(internal_key, env_key))
 
+
 def load_oauth_conf(app):
     """
     Load the OAuth configuration options from the environment and insert
@@ -70,9 +73,12 @@ def load_oauth_conf(app):
 
     set_oauth_property(app, 'CLIENT_ID', 'dummy_id')
     set_oauth_property(app, 'SECRET_KEY', 'dummy_key')
-    set_oauth_property(app, 'ACCESS_TOKEN_URL', 'https://oauth.web.cern.ch/OAuth/Token')
-    set_oauth_property(app, 'AUTHORIZE_URL', 'https://oauth.web.cern.ch/OAuth/Authorize')
-    set_oauth_property(app, 'GROUPS_URL', 'https://oauthresource.web.cern.ch/api/Groups')
+    set_oauth_property(app, 'ACCESS_TOKEN_URL',
+                       'https://oauth.web.cern.ch/OAuth/Token')
+    set_oauth_property(app, 'AUTHORIZE_URL',
+                       'https://oauth.web.cern.ch/OAuth/Authorize')
+    set_oauth_property(app, 'GROUPS_URL',
+                       'https://oauthresource.web.cern.ch/api/Groups')
     set_oauth_property(app, 'CALLBACK_URL_RELATIVE', '/oauth-done')
 
 
