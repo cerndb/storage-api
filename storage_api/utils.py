@@ -43,3 +43,7 @@ def merge_two_dicts(x, y):
     z = x.copy()
     z.update(y)
     return z
+
+
+def pairwise(iterable):
+    return zip(iterable[0::2], iterable[1::2])
