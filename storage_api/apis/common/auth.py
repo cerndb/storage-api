@@ -96,14 +96,15 @@ def setup_oauth(app, login_endpoint, logout_endpoint):
             if overlap:
                 app.logger.info("User was in {} role groups {}, granting role"
                                 .format(role, ", ".join(overlap)))
-                session_roles.append(getattr(apis.common, '{}_ROLE'.format(role)))
+                session_roles.append(getattr(apis.common, '{}_ROLE'
+                                             .format(role)))
             else:
                 app.logger.info("User was not in any {} role groups, denying"
                                 .format(role))
-        app.logger.info("Setting user roles: {}".format(", ".join(session_roles)))
+        app.logger.info("Setting user roles: {}"
+                        .format(", ".join(session_roles)))
         flask.session['user']['roles'] = session_roles
         return flask.redirect('/')
-
 
     @app.route(logout_endpoint)
     def logout():   # pragma: no cover
@@ -111,7 +112,6 @@ def setup_oauth(app, login_endpoint, logout_endpoint):
         flask.session.pop('cern_token', None)
         flask.session.pop('user', None)
         return flask.redirect('/')
-
 
     @cern.tokengetter
     def get_cern_oauth_token():
