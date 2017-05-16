@@ -21,7 +21,7 @@ from flask_oauthlib.client import OAuth
 
 # If you're not unicode ready, you're not ready, period.
 BACKEND_SEPARATOR = "🦄"
-CONFIG_SEPARATOR = "y"
+CONFIG_SEPARATOR = "🌈"
 USER_ROLES = ["USER", "ADMIN", "UBER_ADMIN"]
 
 app = Flask(__name__)
