@@ -9,8 +9,8 @@
 # or submit itself to any jurisdiction.
 
 import storage_api.apis
-from storage_api.apis.common.auth import in_group
-from storage_api.apis.common import ADMIN_GROUP
+from storage_api.apis.common.auth import in_role
+from storage_api.apis.common import ADMIN_ROLE, UBER_ADMIN_ROLE, USER_ROLE
 from storage_api.utils import dict_without, filter_none
 
 import logging
@@ -35,13 +35,7 @@ VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
                            " this may either be the name of a volume, or"
                            " node_name:/junction/path.")
 
-SUBSYSTEM_MAPPING = {'netapp': 'NetappStorage',
-                     'ceph': 'DummyStorage',
-                     'dummy': 'DummyStorage'}
-
-SUBSYSTEM_DESCRIPTION = ("The subsystem to run the command on."
-                         " Must be one of: {}"
-                         .format(", ".join(SUBSYSTEM_MAPPING.keys())))
+SUBSYSTEM_DESCRIPTION = "The subsystem to run the command on."
 
 DISALLOWED_VOLUME_NAME_RE = re.compile(".*[^a-z0-9:/_\.-].*")
 
@@ -78,14 +72,10 @@ def backend(backend_name):
     with exception_is_errorcode(api, KeyError, 404,
                                 message=("No such subsystem. "
                                          "Allowed values are: {}")
-                                .format(", ".join(SUBSYSTEM_MAPPING.keys()))):
-        canonical_name = SUBSYSTEM_MAPPING[backend_name]
-    try:
-        return current_app.extensions[canonical_name]
-    except KeyError:
-        log.error("Backend {} not installed, using dummy back-end"
-                  .format(canonical_name))
-        return current_app.extensions['DummyStorage']
+                                .format(", ".join(
+                                    current_app.config['SUBSYSTEM'].keys()))):
+        instance_id = current_app.config['SUBSYSTEM'][backend_name]
+        return current_app.extensions[instance_id]
 
 
 policy_rule_list_field = fields.List(fields.String(
@@ -198,19 +188,23 @@ class AllVolumes(Resource):
     @api.doc(description="Get a list of all volumes",
              id='get_volumes')
     @api.marshal_with(volume_read_model, as_list=True)
+    @in_role(api, USER_ROLE)
     def get(self, subsystem):
         return backend(subsystem).volumes
 
 
+@in_role(api, USER_ROLE)
 @api.route('/<string:subsystem>/volumes/<path:volume_name>')
 @api.param('subsystem', SUBSYSTEM_DESCRIPTION)
 @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 class Volume(Resource):
 
-    @api.marshal_with(volume_read_model, description="The volume named volume_name")
+    @api.marshal_with(volume_read_model,
+                      description="The volume named volume_name")
     @api.doc(description="Get a specific volume by name")
     @api.response(404, description="No such volume exists")
     @api.response(201, description="A new volume was created")
+    @in_role(api, USER_ROLE)
     def get(self, subsystem, volume_name):
         log.info("GET for {}".format(volume_name))
 
@@ -233,7 +227,7 @@ class Volume(Resource):
     @api.marshal_with(volume_read_model,
                       description=("The newly created volume"
                                    " (if created), otherwise nothing"))
-    @in_group(api, ADMIN_GROUP)
+    @in_role(api, ADMIN_ROLE)
     def post(self, subsystem, volume_name):
         if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
             api.abort(400, "Invalid volume name")
@@ -243,8 +237,10 @@ class Volume(Resource):
 
         if data['from_volume'] and data['from_snapshot']:
             with keyerror_is_404(), valueerror_is_400():
-                new_vol = backend(subsystem).clone_volume(volume_name, data['from_volume'],
-                                                          data['from_snapshot'])
+                new_vol = backend(subsystem).clone_volume(
+                    volume_name,
+                    data['from_volume'],
+                    data['from_snapshot'])
 
         elif data['from_snapshot']:
             with keyerror_is_404():
@@ -264,7 +260,7 @@ class Volume(Resource):
                           " but do not actually delete it"))
     @api.response(204, description="Successfully restricted",
                   model=None)
-    @in_group(api, ADMIN_GROUP)
+    @in_role(api, UBER_ADMIN_ROLE)
     def delete(self, subsystem, volume_name):
         if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
             api.abort(400, "Invalid volume name")
@@ -274,12 +270,13 @@ class Volume(Resource):
 
     @api.doc(description="Partially update volume_name")
     @api.expect(volume_write_model, validate=True)
-    @in_group(api, ADMIN_GROUP)
+    @in_role(api, UBER_ADMIN_ROLE)
     def patch(self, subsystem, volume_name):
         if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
             api.abort(400, "Invalid volume name")
 
-        data = filter_none(marshal(storage_api.apis.api.payload, volume_write_model))
+        data = filter_none(marshal(storage_api.apis.api.payload,
+                                   volume_write_model))
         log.info("PATCH with payload {}".format(str(data)))
         if data:
             with keyerror_is_404():
@@ -292,7 +289,8 @@ class Volume(Resource):
 @api.param('subsystem', SUBSYSTEM_DESCRIPTION)
 @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 class AllSnapshots(Resource):
-    @api.marshal_with(snapshot_model, description="All snapshots for the volume",
+    @api.marshal_with(snapshot_model,
+                      description="All snapshots for the volume",
                       as_list=True)
     def get(self, subsystem, volume_name):
         if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
@@ -300,7 +298,8 @@ class AllSnapshots(Resource):
         return backend(subsystem).get_snapshots(volume_name)
 
 
-@api.route('/<string:subsystem>/volumes/<path:volume_name>/snapshots/<string:snapshot_name>')
+@api.route(('/<string:subsystem>/volumes/'
+           '<path:volume_name>/snapshots/<string:snapshot_name>'))
 @api.param('subsystem', SUBSYSTEM_DESCRIPTION)
 @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 @api.param('snapshot_name', 'The snapshot name')
@@ -314,8 +313,9 @@ class Snapshots(Resource):
         with keyerror_is_404():
             return backend(subsystem).get_snapshot(volume_name, snapshot_name)
 
-    @api.response(409, description=("Too many snapshots, cannot create another. "
-                                    "Try `purge_old_if_needed=true`."))
+    @api.response(409, description=("Too many snapshots, cannot create"
+                                    " another. Try"
+                                    " `purge_old_if_needed=true`."))
     @api.response(201, description="Successfully created a snapshot")
     @api.expect(snapshot_put_model)
     @api.doc(description=("Create a new snapshot of *volume_name*"
@@ -335,7 +335,7 @@ class Snapshots(Resource):
                   model=None)
     @api.response(404, description="No such snapshot",
                   model=None)
-    @in_group(api, ADMIN_GROUP)
+    @in_role(api, ADMIN_ROLE)
     def delete(self, subsystem, volume_name, snapshot_name):
         if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
             api.abort(400, "Invalid volume name")
@@ -353,6 +353,7 @@ class AllLocks(Resource):
                       description=("An empty list (if no locks were"
                                    " held) or a single dict describing the"
                                    " host holding the lock"))
+    @in_role(api, USER_ROLE)
     def get(self, subsystem, volume_name):
         if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
             api.abort(400, "Invalid volume name")
@@ -361,14 +362,15 @@ class AllLocks(Resource):
             return [] if mby_lock is None else [{"host": mby_lock}]
 
 
-@api.route('/<string:subsystem>/volumes/<path:volume_name>/locks/<string:host>')
+@api.route(('/<string:subsystem>/volumes/'
+            '<path:volume_name>/locks/<string:host>'))
 @api.param('subsystem', SUBSYSTEM_DESCRIPTION)
 @api.param('volume_name', VOLUME_NAME_DESCRIPTION)
 @api.param('host', "the host holding the lock in question")
 class Locks(Resource):
     @api.doc(description="Lock the volume with host holding the lock")
     @api.response(201, "A new lock was added")
-    @in_group(api, ADMIN_GROUP)
+    @in_role(api, ADMIN_ROLE)
     def put(self, subsystem, volume_name, host):
         if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
             api.abort(400, "Invalid volume name")
@@ -378,7 +380,7 @@ class Locks(Resource):
 
     @api.doc(description="Force the lock for the host")
     @api.response(204, description="Lock successfully forced")
-    @in_group(api, ADMIN_GROUP)
+    @in_role(api, UBER_ADMIN_ROLE)
     def delete(self, subsystem, volume_name, host):
         if DISALLOWED_VOLUME_NAME_RE.match(volume_name):
             api.abort(400, "Invalid volume name")
@@ -394,7 +396,7 @@ class AllExports(Resource):
                       description="The full policy",
                       as_list=True)
     @api.doc(description="Get all ACLs present on the back-end")
-    @in_group(api, ADMIN_GROUP)
+    @in_role(api, ADMIN_ROLE)
     def get(self, subsystem):
             return backend(subsystem).policies
 
@@ -407,18 +409,19 @@ class Export(Resource):
     @api.marshal_with(export_policy_model,
                       description="Get the rules of a specific policy")
     @api.doc(description="Display the rules of a given policy")
-    @in_group(api, ADMIN_GROUP)
+    @in_role(api, ADMIN_ROLE)
     def get(self, subsystem, policy):
         with keyerror_is_404():
             rules = backend(subsystem).get_policy(policy)
             return {'name': policy,
                     'rules': rules}
 
-    @api.doc(description="Grant hosts matching a given pattern access to the given volume")
+    @api.doc(description=("Grant hosts matching"
+                          " a given pattern access to the given volume"))
     @api.response(201, description="The provided access rules were added")
     @api.response(400, description="A policy with that name already exists")
     @api.expect(policy_rule_write_model, validate=True)
-    @in_group(api, ADMIN_GROUP)
+    @in_role(api, ADMIN_ROLE)
     def post(self, subsystem, policy):
         rules = marshal(storage_api.apis.api.payload,
                         policy_rule_write_model)['rules']
@@ -429,7 +432,7 @@ class Export(Resource):
     @api.doc(description=("Delete the entire policy"))
     @api.response(204, description="Successfully deleted the policy")
     @api.response(404, description="No such policy exists")
-    @in_group(api, ADMIN_GROUP)
+    @in_role(api, ADMIN_ROLE)
     def delete(self, subsystem, policy):
         with keyerror_is_404():
             backend(subsystem).remove_policy(policy)
@@ -442,17 +445,19 @@ class Export(Resource):
 @api.param('rule', "The policy rule to operate on")
 class ExportRule(Resource):
 
-    @api.doc(description="Grant hosts matching a given pattern access to the given resource")
-    @api.response(201, description="The provided access rule was added or already present")
-    @in_group(api, ADMIN_GROUP)
+    @api.doc(description="Grant hosts matching a given pattern access")
+    @api.response(201, description=("The provided access rule"
+                                    " was added or already present"))
+    @in_role(api, ADMIN_ROLE)
     def put(self, subsystem, policy, rule):
         backend(subsystem).ensure_policy_rule_present(policy, rule)
         return '', 201
 
     @api.doc(description=("Delete rule from policy"))
-    @api.response(204, description="Successfully deleted the rule, or rule did not exist")
+    @api.response(204, description=("Successfully deleted the rule,"
+                                    " or rule did not exist"))
     @api.response(404, description="No such policy exists")
-    @in_group(api, ADMIN_GROUP)
+    @in_role(api, ADMIN_ROLE)
     def delete(self, subsystem, policy, rule):
         backend(subsystem).ensure_policy_rule_absent(policy, rule)
         return '', 204

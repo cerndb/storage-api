@@ -67,15 +67,15 @@ def on_all_backends(func):
     ontap_username = os.environ.get('ONTAP_USERNAME', "user-placeholder")
     ontap_password = os.environ.get('ONTAP_PASSWORD', "password-placeholder")
 
-    netapp_server = netapp.api.Server(hostname=ontap_host,
-                                      username=ontap_username,
-                                      password=ontap_password,
-                                      vserver=vserver)
-    backend = NetappStorage(netapp_server=netapp_server)
+    backend = NetappStorage(hostname=ontap_host,
+                            username=ontap_username,
+                            password=ontap_password,
+                            vserver=vserver)
     recorder = betamax.Betamax(backend.server.session)
 
     @functools.wraps(func)
-    @pytest.mark.parametrize("storage,recorder", [(DummyStorage(), mock.MagicMock()),
+    @pytest.mark.parametrize("storage,recorder", [(DummyStorage(),
+                                                   mock.MagicMock()),
                                                   (backend, recorder)])
     def backend_wrapper(*args, **kwargs):
         func(*args, **kwargs)
@@ -212,7 +212,9 @@ def test_get_snapshots(storage, recorder):
             storage.create_snapshot(volume_id, snapshot_name="snapshot-new")
             snapshots = storage.get_snapshots(volume_id)
             assert len(snapshots) == 1
-            assert storage.get_snapshot(volume_id, "snapshot-new")['name'] == "snapshot-new"
+            snapshot_name = storage.get_snapshot(
+                volume_id, "snapshot-new")['name']
+            assert snapshot_name == "snapshot-new"
             assert snapshots[0]['name'] == "snapshot-new"
 
 

@@ -1,6 +1,4 @@
-from storage_api import app
 from storage_api.apis import common
-from storage_api import extensions
 from storage_api.utils import compose_decorators
 
 import json
@@ -39,7 +37,8 @@ def nice_strings(bad_chars):
 
 
 name_strings = partial(nice_strings, bad_chars=['\n', '#', '?', '%', ';'])
-policy_name_strings = partial(nice_strings, bad_chars=['\n', '/', '?', '#', '%'])
+policy_name_strings = partial(nice_strings,
+                              bad_chars=['\n', '/', '?', '#', '%'])
 
 # Useful parameterisations:
 params_namespaces = pytest.mark.parametrize('namespace', ["ceph", "netapp"])
@@ -79,7 +78,8 @@ def patch_arguments(draw):
 
 
 @contextmanager
-def user_set(client, user={'group': [common.ADMIN_GROUP]}):
+def user_set(client, user={'roles': [common.ADMIN_ROLE, common.UBER_ADMIN_ROLE,
+                                     common.USER_ROLE]}):
     with client.session_transaction() as sess:
         sess['user'] = user
 
@@ -117,30 +117,6 @@ _put = partial(_open, method="PUT")
 _post = partial(_open, method="POST")
 _delete = partial(_open, method="DELETE")
 _patch = partial(_open, method="PATCH")
-
-
-@pytest.fixture(scope="function")
-def client(request):
-    """
-    Fixture to set up a Flask test client
-    """
-    app.app.testing = True
-    extensions.DummyStorage().init_app(app.app)
-
-    backend_classes = extensions.storage.StorageBackend.__subclasses__()
-
-    for name, be in app.app.extensions.items():
-        if be.__class__ in backend_classes:
-            # Re-wire all storage types to use the dummy back-end
-            log.debug("Set storage back-end {} to use DummyStorage"
-                      .format(name))
-            app.app.extensions[name] = app.app.extensions['DummyStorage']
-
-    with app.app.test_client() as client:
-        yield client
-
-    log.debug("App teardown initiated: re-initialising dummy backend")
-    extensions.DummyStorage().init_app(app.app)
 
 
 def init_vols_from_params(client, namespace, auth, vol_exists, volume_name):
@@ -289,7 +265,9 @@ def test_create_snapshot_from_volume(client, namespace):
     snapshot = '{}/snapshots/{}'.format(volume, snapshot_name)
 
     with user_set(client):
-        snapshot_post_code, _snapshot_post_result = _post(client, snapshot, data={})
+        snapshot_post_code, _snapshot_post_result = _post(client,
+                                                          snapshot,
+                                                          data={})
 
     assert snapshot_post_code == 201
 
@@ -297,7 +275,9 @@ def test_create_snapshot_from_volume(client, namespace):
     assert get_code == 200
     assert get_result['name'] == snapshot_name
 
-    snapshots_get_code, get_results = _get(client, '{}/snapshots'.format(volume))
+    snapshots_get_code, get_results = _get(client,
+                                           '{}/snapshots'
+                                           .format(volume))
     assert snapshots_get_code == 200
 
     assert any(map(lambda x: x['name'] == snapshot_name, get_results))
@@ -408,7 +388,9 @@ def test_patch_volume(client, namespace, vol_exists, auth,
 
 @params_volume_names
 @params_namespaces
-def test_delete_snapshot_nonexistent_snapshot_and_volume(client, namespace, volume_name):
+def test_delete_snapshot_nonexistent_snapshot_and_volume(client,
+                                                         namespace,
+                                                         volume_name):
     volume = '/{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
     snapshot = '{}/snapshots/my-snapshot'.format(volume, volume_name)
 
@@ -497,7 +479,8 @@ def test_lock_volume(client, namespace, auth, vol_exists, volume_name):
 
 
 @params_vol_ns_auth
-def test_force_lock_on_volume(client, namespace, auth, vol_exists, volume_name):
+def test_force_lock_on_volume(client, namespace,
+                              auth, vol_exists, volume_name):
     volume, volume_exists, authorised = init_vols_from_params(client,
                                                               namespace,
                                                               auth,
@@ -700,7 +683,8 @@ def test_put_export_rule(client, namespace, auth, policy_status, policy_name):
 @given(policy_name=policy_name_strings())
 @params_policy_presence
 @params_ns_auth
-def test_delete_export_rule(client, namespace, auth,  policy_status, policy_name):
+def test_delete_export_rule(client, namespace, auth,
+                            policy_status, policy_name):
     authorised = auth == "authorised"
     policy_exists = policy_status == "policy_present"
     policy = '{}/export/{}'.format(namespace, policy_name)

@@ -12,17 +12,23 @@ scripts has been developed to interact mainly with NetApp storage.  The
 actual solution presents a RESTful API developed using Flask and
 Python 3.
 
+## Usage
+
+Accessing `/login` will put you through the standard CERN single sign-on
+process and return you to the API with an authenticated session once you
+are done. For use in Python scripts and applications, setting the
+relevant session cookies using
+[cern-sso-python](https://gitlab.cern.ch/db/cern-sso-python) is
+recommended.
+
+For API documentation, see the generated Swagger documentation (linked below).
+
 ## Components and Design
 
 The Storage API uses the flask-sso module developed by
 [Invenio](https://github.com/inveniosoftware/flask-sso). Authorisation
-is based on CERN e-groups (Active Directory distribution lists) and it's
-implemented on the endpoint using a decorator. Authentication together
-with some basic access control is based on
-[Shibboleth](https://shibboleth.net/) implementing Single Sign On
-(SSO). The use of Shibboleth determined the choice of an http server to
-Apache. An again the use of Apache somehow made natural to use mod_wsgi
-as WSGI platform to run python code.
+is based on CERN e-groups (Active Directory distribution lists), and
+user authentication is done using the central OAuth2 providers.
 
 The application is designed around common Python and Flask framework
 patterns, with some help from the flask-restplus framework to provide
@@ -56,18 +62,75 @@ $ export FLASK_DEBUG=1
 $ flask run
 ```
 
-Accessing `/login` in debug mode *will immediately authorise you*.
+Accessing `/login` in debug mode *will immediately authorise you as an
+uber-admin*.
 
 There is also a shorthand Makefile option available as `make devserver`
 with corresponding `make stop`.
 
+It is also possible to run the Dockerised image with `make image run`. 
+Remember that you can determine which random port the container
+was assigned with `docker port <name of container>`.
+
 ### Configuration
 
-The NetApp back-end uses the environment variables `ONTAP_HOST`,
-`ONTAP_USERNAME`, `ONTAP_PASSWORD`, and `ONTAP_VSERVER` to set up the
-hostname, user name, password and vserver/vfiler to communicate with. If
-these variables are not found, the NetApp back-end will default to use
-the in-memory dummy back-end.
+Configuration is done using environment variables, as per the 12-factor
+app pattern. The following environment variables are used:
+
+- `SAPI_OAUTH_CLIENT_ID`: The public client ID for the OAuth2 service
+  the storage API runs as
+- `SAPI_OAUTH_SECRET_KEY`: The private key of the OAuth2 service the
+  storage API runs as
+
+The following keys are optional:
+- `SAPI_OAUTH_TOKEN_URL`: The URL to get OAuth2 Tokens from. **Default**:
+  `https://oauth.web.cern.ch/OAuth/Token`
+- `SAPI_OAUTH_AUTHORIZE_URL`: The URL to send OAuth2 Authorization
+  requests to. **Default**: `https://oauth.web.cern.ch/OAuth/Authorize`
+- `SAPI_OAUTH_GROUPS_URL`: The URL to send a GET request with the
+  current OAuth2 token to receive a list of groups the current user is a
+  member of. **Default**: `https://oauthresource.web.cern.ch/api/Groups`
+- `SAPI_OAUTH_CALLBACK_URL_RELATIVE`: The relative (to the app's root)
+  URL to report as the call-back URL to the OAuth2 Authorize server. You
+  most likely do not need to change this, unless you have some really
+  exotic routing pattern. **Default**: `/oauth-done`
+
+The following configuration options control the role-based access control:
+- `SAPI_ROLE_USER_GROUPS`: A comma-separated list of groups whose users
+  are just plain users. If the list is empty or unset, unauthenticated
+  users are included in the user role and given access to certain
+  (non-destructive) endpoints. See the API documentation!
+- `SAPI_ROLE_ADMIN_GROUPS`: A comma-separated list of groups whose users
+  are (at least) administrators. Empty list or unset variable means
+  the role is disabled.
+- `SAPI_ROLE_UBER_ADMIN_GROUPS`: A comma-separated list of groups whose
+  users are uber-admins. Empty list
+  or unset variable means the role is disabled.
+
+Please note that roles are distinct, e.g. the admin role is not
+contained within the uber-admin-role. If you want both, you need to have
+both.
+
+Back-ends are configured using the following pattern:
+- `SAPI_BACKENDS`: A unicorn emoji-separated (:unicorn:) list of back-ends to enable,
+  and their configuration as per the following pattern:
+  `endpoint_name:BackEndClass:option_name:option_value:another_option_name:another_option_value`,
+  where endpoint_name is the part that goes into the
+  `/<endpoint_name>/volumes>` part of the URL, `BackEndClass` is the
+  name of a class that implements the corresponding back-end
+  (e.g. `DummyStorage`), and the following set of rainbow emoji-separated
+  options (:rainbow:) will be passed as keys and value arguments to that back-ends
+  constructor.
+
+  The following example sets up a NetApp back-end and RAM-backed dummy back-end:
+`export SAPI_BACKENDS="dummy🌈DummyStorage🦄netapp🌈NetappStorage🌈username🌈storage-api🌈password🌈myPassword:@;🌈vserver🌈vs3sx50"`
+
+  Please note that it is perfectly possible to set up multiple endpoints
+  with the same back-end, e.g. multiple NetApp filers or clusters with
+  different vservers on different endpoints. Endpoints needs to be
+  unique though.
+ 
+**Without at least one configured endpoint, the app will not run.**
 
 ## Testing and Continuous Integration
 
@@ -82,17 +145,14 @@ tests can be increased using `-vvvv` with a variable number of `v`:s
 
 ## Deployment
 
-The API is deployed via an RPM, which sets up a clean Python virtual
-environment and installs using normal Pip proceducers into it (e.g. the
-same as the ones used for development). An example config for Apache
-featuring SSO/Shibboleth config and proper virtual environment handling
-is available in `templates/storage-api.conf`. For more information, see
-[the mod_wsgi documentation on the subject][mod-wsgi-venv].
-
-To combine https access with Single Sign On a Shibboleth &
-Apache setup is required. The setup steps are quite well described by
-[Alex Pearce article][ap-flask-sso],
-especially targeting a CERN environment.
+The API is deployed via a standard Docker container to
+OpenShift. Provided you are authenticated with CERN's GitLab as a
+registry in Docker, running `make image push-image` will compile the
+image and push it to the registry. If you have also set
+`OPENSHIFT_PUSH_TOKEN` to an authentication token with access to pushing
+images to the the OpenShift project, `make deploy-os` will finally
+deploy the new image to OpenShift as a rolling deployment. The entire
+process can be run with `make image push-image deploy-os`.
 
 ## Documentation
 
@@ -102,7 +162,3 @@ available at `/swagger.json`. A HTML version is also rendered by
 [Spectacle](http://sourcey.com/spectacle/) and published automatically
 by Travis to
 [cerndb.github.io/storage-api](http://cerndb.github.io/storage-api/).
-
-
-[mod-wsgi-venv]: http://modwsgi.readthedocs.io/en/develop/user-guides/virtual-environments.html
-[ap-flask-sso]: https://alexpearce.me/2014/10/setting-up-flask-with-apache-and-shibboleth/

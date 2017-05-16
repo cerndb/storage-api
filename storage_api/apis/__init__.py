@@ -7,17 +7,17 @@
 # In applying this license, CERN does not waive the privileges and immunities
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
+import logging
 
 from flask_restplus import Api
 
 from .storage import api as unified_ns
-from storage_api.apis.common.auth import authorizations
+authorizations = {}
 
-import logging
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
-__version__ = '1.3.0'
+__version__ = '2.0.1'
 
 api = Api(
     title='CERN Unified Storage API',

@@ -9,7 +9,8 @@
 # or submit itself to any jurisdiction.
 
 import logging
-ADMIN_GROUP = 'it-db-storage'
+from .auth import ADMIN_ROLE, USER_ROLE, UBER_ADMIN_ROLE  # noqa
+
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
