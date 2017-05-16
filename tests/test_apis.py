@@ -1,5 +1,4 @@
 from storage_api.apis import common
-from storage_api import extensions
 from storage_api.utils import compose_decorators
 
 import json
@@ -7,9 +6,7 @@ from urllib.parse import urlencode
 from contextlib import contextmanager
 import uuid
 import logging
-import os
 from functools import partial
-from unittest import mock
 
 import pytest
 from hypothesis import given
@@ -120,31 +117,6 @@ _put = partial(_open, method="PUT")
 _post = partial(_open, method="POST")
 _delete = partial(_open, method="DELETE")
 _patch = partial(_open, method="PATCH")
-
-
-@pytest.fixture(scope="function")
-def client(request):
-    """
-    Fixture to set up a Flask test client
-    """
-    with mock.patch.dict(os.environ, {'SAPI_BACKENDS':
-                                      ("dummy🌈DummyStorage🦄"
-                                       "netapp🌈DummyStorage🦄"
-                                       "ceph🌈DummyStorage")}):
-        from storage_api import app
-
-    app.app.testing = True
-    extensions.DummyStorage().init_app(app.app, endpoint="dummy")
-    extensions.DummyStorage().init_app(app.app, endpoint="netapp")
-    extensions.DummyStorage().init_app(app.app, endpoint="ceph")
-
-    with app.app.test_client() as client:
-        yield client
-
-    log.debug("App teardown initiated: re-initialising dummy backend")
-    extensions.DummyStorage().init_app(app.app, endpoint="dummy")
-    extensions.DummyStorage().init_app(app.app, endpoint="netapp")
-    extensions.DummyStorage().init_app(app.app, endpoint="ceph")
 
 
 def init_vols_from_params(client, namespace, auth, vol_exists, volume_name):
