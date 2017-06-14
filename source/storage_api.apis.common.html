@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>storage_api.apis.common package &mdash; CERN Unified Storage API 1.3.0 documentation</title>
+  <title>storage_api.apis.common package &mdash; CERN Unified Storage API 2.0.1 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="CERN Unified Storage API 1.3.0 documentation" href="../index.html"/>
+    <link rel="top" title="CERN Unified Storage API 2.0.1 documentation" href="../index.html"/>
         <link rel="up" title="storage_api.apis package" href="storage_api.apis.html"/>
         <link rel="next" title="storage_api.extensions package" href="storage_api.extensions.html"/>
         <link rel="prev" title="storage_api.apis package" href="storage_api.apis.html"/> 
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                1.3.0
+                2.0.1
               </div>
             
           
@@ -96,7 +96,8 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="storage_api.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="storage_api.html#module-storage_api.app">storage_api.app module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storage_api.html#storage-api-app-module">storage_api.app module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storage_api.html#module-storage_api.conf">storage_api.conf module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="storage_api.html#module-storage_api.utils">storage_api.utils module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="storage_api.html#module-storage_api">Module contents</a></li>
 </ul>
@@ -161,8 +162,8 @@
 <div class="section" id="module-storage_api.apis.common.auth">
 <span id="storage-api-apis-common-auth-module"></span><h2>storage_api.apis.common.auth module<a class="headerlink" href="#module-storage_api.apis.common.auth" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="storage_api.apis.common.auth.in_group">
-<code class="descclassname">storage_api.apis.common.auth.</code><code class="descname">in_group</code><span class="sig-paren">(</span><em>api</em>, <em>group_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/apis/common/auth.html#in_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.apis.common.auth.in_group" title="Permalink to this definition">¶</a></dt>
+<dt id="storage_api.apis.common.auth.in_role">
+<code class="descclassname">storage_api.apis.common.auth.</code><code class="descname">in_role</code><span class="sig-paren">(</span><em>api</em>, <em>group_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/apis/common/auth.html#in_role"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.apis.common.auth.in_role" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator: call flask.abort(403) if user is not in the specified
 group, or if the session is unauthenticated.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -183,6 +184,21 @@ group, or if the session is unauthenticated.</p>
     <span class="k">pass</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="function">
+<dt id="storage_api.apis.common.auth.setup_oauth">
+<code class="descclassname">storage_api.apis.common.auth.</code><code class="descname">setup_oauth</code><span class="sig-paren">(</span><em>app</em>, <em>login_endpoint</em>, <em>logout_endpoint</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/apis/common/auth.html#setup_oauth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.apis.common.auth.setup_oauth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup OAuth2 aunhentication flow for the app with logins initiated by
+going to login_endpoint, and logouts done in logout_endpoint.</p>
+<p>Must be called after the neccessary configuration options have been
+loaded into app.config.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="storage_api.apis.common.auth.setup_roles_from_env">
+<code class="descclassname">storage_api.apis.common.auth.</code><code class="descname">setup_roles_from_env</code><span class="sig-paren">(</span><em>app</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/apis/common/auth.html#setup_roles_from_env"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.apis.common.auth.setup_roles_from_env" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure an application&#8217;s roles from the environment.</p>
 </dd></dl>
 
 </div>
@@ -232,7 +248,7 @@ group, or if the session is unauthenticated.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'1.3.0',
+            VERSION:'2.0.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

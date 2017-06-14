@@ -20,6 +20,14 @@ storage_api.app module
     :undoc-members:
     :show-inheritance:
 
+storage_api.conf module
+-----------------------
+
+.. automodule:: storage_api.conf
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 storage_api.utils module
 ------------------------
 

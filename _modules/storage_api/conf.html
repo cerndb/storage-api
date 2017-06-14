@@ -1,0 +1,311 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>storage_api.conf &mdash; CERN Unified Storage API 2.0.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../genindex.html"/>
+        <link rel="search" title="Search" href="../../search.html"/>
+    <link rel="top" title="CERN Unified Storage API 2.0.1 documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> CERN Unified Storage API
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">CERN Unified Storage API README</a></li>
+<li class="toctree-l1"><a class="reference external" href="./api/index.html#http://">API Documentation (generated)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/modules.html">Source Documentation (generated)</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">CERN Unified Storage API</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>storage_api.conf</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for storage_api.conf</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Copyright (C) 2016, CERN</span>
+<span class="c1"># This software is distributed under the terms of the GNU General Public</span>
+<span class="c1"># Licence version 3 (GPL Version 3), copied verbatim in the file &quot;LICENSE&quot;.</span>
+<span class="c1"># In applying this license, CERN does not waive the privileges and immunities</span>
+<span class="c1"># granted to it by virtue of its status as Intergovernmental Organization</span>
+<span class="c1"># or submit itself to any jurisdiction.</span>
+
+<span class="kn">from</span> <span class="nn">storage_api.utils</span> <span class="k">import</span> <span class="n">pairwise</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">io</span>
+
+<span class="c1"># If you&#39;re not unicode ready, you&#39;re not ready, period.</span>
+<span class="n">BACKEND_SEPARATOR</span> <span class="o">=</span> <span class="s2">&quot;🦄&quot;</span>
+<span class="n">CONFIG_SEPARATOR</span> <span class="o">=</span> <span class="s2">&quot;🌈&quot;</span>
+<span class="n">BACKENDS_VARIABLE_NAME</span> <span class="o">=</span> <span class="s2">&quot;SAPI_BACKENDS&quot;</span>
+
+
+<div class="viewcode-block" id="conf_to_dict"><a class="viewcode-back" href="../../source/storage_api.html#storage_api.conf.conf_to_dict">[docs]</a><span class="k">def</span> <span class="nf">conf_to_dict</span><span class="p">(</span><span class="n">conf_list</span><span class="p">):</span>
+    <span class="c1"># If the length of the configuration is uneven, keys don&#39;t match up.</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">conf_list</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">pairwise</span><span class="p">(</span><span class="n">conf_list</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="load_backend_conf"><a class="viewcode-back" href="../../source/storage_api.html#storage_api.conf.load_backend_conf">[docs]</a><span class="k">def</span> <span class="nf">load_backend_conf</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">backends_module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialise back-ends into the app app, using the provided module to</span>
+<span class="sd">    get back-end classes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Placeholder for back-end mappings:</span>
+    <span class="k">if</span> <span class="s1">&#39;SUBSYSTEM&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;SUBSYSTEM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading back-end conf from $</span><span class="si">{}</span><span class="s2">&quot;</span>
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">BACKENDS_VARIABLE_NAME</span><span class="p">))</span>
+    <span class="n">conf</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">BACKENDS_VARIABLE_NAME</span><span class="p">]</span>
+    <span class="n">backends</span> <span class="o">=</span> <span class="n">conf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">BACKEND_SEPARATOR</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">backend_conf</span> <span class="ow">in</span> <span class="n">backends</span><span class="p">:</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="n">backend_conf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">CONFIG_SEPARATOR</span><span class="p">)</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># This is the class itself:</span>
+        <span class="n">Backend</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">backends_module</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">conf_dict</span> <span class="o">=</span> <span class="n">conf_to_dict</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Back-end conf dict: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conf_dict</span><span class="p">))</span>
+        <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="o">**</span><span class="n">conf_dict</span><span class="p">)</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="set_oauth_property"><a class="viewcode-back" href="../../source/storage_api.html#storage_api.conf.set_oauth_property">[docs]</a><span class="k">def</span> <span class="nf">set_oauth_property</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">key_name</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper: fetch an OAuth property named PROPRETY_NAME from an</span>
+<span class="sd">    environment variable named SAPI_OAUTH_PROPERTY_NAME into a</span>
+<span class="sd">    configuration field named OAUTH_PROPERTY_NAME.</span>
+
+<span class="sd">    Raises KeyError if the variable is not set and no default value was</span>
+<span class="sd">    passed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">internal_key</span> <span class="o">=</span> <span class="s1">&#39;OAUTH_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key_name</span><span class="p">)</span>
+    <span class="n">env_key</span> <span class="o">=</span> <span class="s1">&#39;SAPI_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">internal_key</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">default_value</span> <span class="ow">and</span> <span class="n">env_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;$</span><span class="si">{}</span><span class="s2"> not set!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">env_key</span><span class="p">))</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">internal_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="n">env_key</span><span class="p">,</span> <span class="n">default_value</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Set OAuth configuration key </span><span class="si">{}</span><span class="s2"> from </span><span class="si">{}</span><span class="s2">&quot;</span>
+                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">internal_key</span><span class="p">,</span> <span class="n">env_key</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="load_oauth_conf"><a class="viewcode-back" href="../../source/storage_api.html#storage_api.conf.load_oauth_conf">[docs]</a><span class="k">def</span> <span class="nf">load_oauth_conf</span><span class="p">(</span><span class="n">app</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load the OAuth configuration options from the environment and insert</span>
+<span class="sd">    it into the app&#39;s conf dict.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading OAuth configuration keys...&quot;</span><span class="p">)</span>
+
+    <span class="n">set_oauth_property</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s1">&#39;CLIENT_ID&#39;</span><span class="p">)</span>
+    <span class="n">set_oauth_property</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s1">&#39;SECRET_KEY&#39;</span><span class="p">)</span>
+    <span class="n">set_oauth_property</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s1">&#39;ACCESS_TOKEN_URL&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;https://oauth.web.cern.ch/OAuth/Token&#39;</span><span class="p">)</span>
+    <span class="n">set_oauth_property</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s1">&#39;AUTHORIZE_URL&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;https://oauth.web.cern.ch/OAuth/Authorize&#39;</span><span class="p">)</span>
+    <span class="n">set_oauth_property</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s1">&#39;GROUPS_URL&#39;</span><span class="p">,</span>
+                       <span class="s1">&#39;https://oauthresource.web.cern.ch/api/Groups&#39;</span><span class="p">)</span>
+    <span class="n">set_oauth_property</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s1">&#39;CALLBACK_URL_RELATIVE&#39;</span><span class="p">,</span> <span class="s1">&#39;/oauth-done&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="set_auth_string"><a class="viewcode-back" href="../../source/storage_api.html#storage_api.conf.set_auth_string">[docs]</a><span class="k">def</span> <span class="nf">set_auth_string</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">role_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read and parse the comma-separated list of groups for a given role</span>
+<span class="sd">    from the environment variable $SAPI_ROLE_X_GROUPS into the app</span>
+<span class="sd">    configuration key X_GROUPS, as a set.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">role_name</span> <span class="o">=</span> <span class="n">role_name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">key_name</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_GROUPS&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">role_name</span><span class="p">)</span>
+    <span class="n">env_var_name</span> <span class="o">=</span> <span class="s2">&quot;SAPI_ROLE_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key_name</span><span class="p">)</span>
+
+    <span class="n">group_string</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="n">env_var_name</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">group_string</span><span class="p">:</span>
+        <span class="n">group_data</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">group_data</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="o">*</span><span class="n">csv</span><span class="o">.</span><span class="n">reader</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">group_string</span><span class="p">),</span>
+                                     <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">))</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">key_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">group_data</span>
+
+    <span class="k">if</span> <span class="n">role_name</span> <span class="o">==</span> <span class="s1">&#39;USER&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">group_data</span><span class="p">:</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;USER_IS_UNAUTHENTICATED&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;USER_IS_UNAUTHENTICATED&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, CERN.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'2.0.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

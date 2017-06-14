@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>storage_api.apis.common.auth &mdash; CERN Unified Storage API 1.3.0 documentation</title>
+  <title>storage_api.apis.common.auth &mdash; CERN Unified Storage API 2.0.1 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../../search.html"/>
-    <link rel="top" title="CERN Unified Storage API 1.3.0 documentation" href="../../../../index.html"/>
+    <link rel="top" title="CERN Unified Storage API 2.0.1 documentation" href="../../../../index.html"/>
         <link rel="up" title="Module code" href="../../../index.html"/> 
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                1.3.0
+                2.0.1
               </div>
             
           
@@ -141,15 +141,118 @@
 <span class="c1"># granted to it by virtue of its status as Intergovernmental Organization</span>
 <span class="c1"># or submit itself to any jurisdiction.</span>
 
+<span class="kn">from</span> <span class="nn">storage_api</span> <span class="k">import</span> <span class="n">conf</span><span class="p">,</span> <span class="n">apis</span>
+
 <span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">wraps</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Any</span> <span class="c1"># noqa</span>
 
-<span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">session</span><span class="p">,</span> <span class="n">current_app</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="k">import</span> <span class="n">session</span><span class="p">,</span> <span class="n">current_app</span><span class="p">,</span> <span class="n">url_for</span>
+<span class="kn">import</span> <span class="nn">flask</span>
+<span class="kn">from</span> <span class="nn">flask_oauthlib.client</span> <span class="k">import</span> <span class="n">OAuth</span>
 
-<span class="n">authorizations</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># type: Dict[str, Any]</span>
+<span class="n">USER_ROLES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;USER&quot;</span><span class="p">,</span> <span class="s2">&quot;ADMIN&quot;</span><span class="p">,</span> <span class="s2">&quot;UBER_ADMIN&quot;</span><span class="p">]</span>
+<span class="n">USER_ROLE</span> <span class="o">=</span> <span class="s1">&#39;USER_ROLE&#39;</span>
+<span class="n">ADMIN_ROLE</span> <span class="o">=</span> <span class="s1">&#39;ADMIN_ROLE&#39;</span>
+<span class="n">UBER_ADMIN_ROLE</span> <span class="o">=</span> <span class="s1">&#39;UBER_ADMIN_ROLE&#39;</span>
 
 
-<div class="viewcode-block" id="in_group"><a class="viewcode-back" href="../../../../source/storage_api.apis.common.html#storage_api.apis.common.auth.in_group">[docs]</a><span class="k">def</span> <span class="nf">in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">group_name</span><span class="p">):</span>
+<div class="viewcode-block" id="setup_roles_from_env"><a class="viewcode-back" href="../../../../source/storage_api.apis.common.html#storage_api.apis.common.auth.setup_roles_from_env">[docs]</a><span class="k">def</span> <span class="nf">setup_roles_from_env</span><span class="p">(</span><span class="n">app</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Configure an application&#39;s roles from the environment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading authorisation config&quot;</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">conf</span><span class="o">.</span><span class="n">set_auth_string</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">role</span><span class="p">)</span> <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">USER_ROLES</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="setup_oauth"><a class="viewcode-back" href="../../../../source/storage_api.apis.common.html#storage_api.apis.common.auth.setup_oauth">[docs]</a><span class="k">def</span> <span class="nf">setup_oauth</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">login_endpoint</span><span class="p">,</span> <span class="n">logout_endpoint</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Setup OAuth2 aunhentication flow for the app with logins initiated by</span>
+<span class="sd">    going to login_endpoint, and logouts done in logout_endpoint.</span>
+
+<span class="sd">    Must be called after the neccessary configuration options have been</span>
+<span class="sd">    loaded into app.config.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">oauth</span> <span class="o">=</span> <span class="n">OAuth</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+    <span class="n">callback_url_relative</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;OAUTH_CALLBACK_URL_RELATIVE&#39;</span><span class="p">]</span>
+    <span class="n">groups_url</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;OAUTH_GROUPS_URL&#39;</span><span class="p">]</span>
+
+    <span class="n">cern</span> <span class="o">=</span> <span class="n">oauth</span><span class="o">.</span><span class="n">remote_app</span><span class="p">(</span>
+        <span class="s1">&#39;cern&#39;</span><span class="p">,</span>
+        <span class="n">consumer_key</span><span class="o">=</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;OAUTH_CLIENT_ID&#39;</span><span class="p">],</span>
+        <span class="n">consumer_secret</span><span class="o">=</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;OAUTH_SECRET_KEY&#39;</span><span class="p">],</span>
+        <span class="n">request_token_url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">access_token_method</span><span class="o">=</span><span class="s1">&#39;POST&#39;</span><span class="p">,</span>
+        <span class="n">access_token_url</span><span class="o">=</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;OAUTH_ACCESS_TOKEN_URL&#39;</span><span class="p">],</span>
+        <span class="n">authorize_url</span><span class="o">=</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;OAUTH_AUTHORIZE_URL&#39;</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="n">login_endpoint</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">login</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">app</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed login, but authenticating anyway as&quot;</span>
+                               <span class="s2">&quot; we are in dev mode&quot;</span><span class="p">)</span>
+            <span class="n">flask</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">flask</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">][</span><span class="s1">&#39;roles&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">USER_ROLE</span><span class="p">,</span>
+                                              <span class="n">ADMIN_ROLE</span><span class="p">,</span>
+                                              <span class="n">UBER_ADMIN_ROLE</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">flask</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cern</span><span class="o">.</span><span class="n">authorize</span><span class="p">(</span><span class="n">callback</span><span class="o">=</span><span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;authorized&#39;</span><span class="p">,</span> <span class="n">_external</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+    <span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="n">callback_url_relative</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">authorized</span><span class="p">():</span>   <span class="c1"># pragma: no cover</span>
+        <span class="n">resp</span> <span class="o">=</span> <span class="n">cern</span><span class="o">.</span><span class="n">authorized_response</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">resp</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">resp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;access_token&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;Access denied: reason=</span><span class="si">%s</span><span class="s1"> error=</span><span class="si">%s</span><span class="s1"> resp=</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">flask</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">],</span>
+                <span class="n">flask</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="s1">&#39;error_description&#39;</span><span class="p">],</span>
+                <span class="n">resp</span>
+            <span class="p">)</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;cern_token&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">resp</span><span class="p">[</span><span class="s1">&#39;access_token&#39;</span><span class="p">],</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got authentication call-back from OAuth.&quot;</span>
+                        <span class="s2">&quot; Proceeding to fetch groups...&quot;</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">cern</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">groups_url</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">user_groups</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">response</span><span class="p">[</span><span class="s1">&#39;groups&#39;</span><span class="p">])</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">session_roles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;OAuth reported the following groups: </span><span class="si">{}</span><span class="s2">&quot;</span>
+                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;&quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span>
+                                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">user_groups</span><span class="p">])))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;USER_GROUPS&#39;</span><span class="p">]:</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No user groups configured, setting role USER&quot;</span><span class="p">)</span>
+            <span class="n">session_roles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">USER_ROLE</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">role</span> <span class="ow">in</span> <span class="n">USER_ROLES</span><span class="p">:</span>
+            <span class="n">overlap</span> <span class="o">=</span> <span class="n">user_groups</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_GROUPS&#39;</span>
+                                                          <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">role</span><span class="p">)])</span>
+            <span class="k">if</span> <span class="n">overlap</span><span class="p">:</span>
+                <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;User was in </span><span class="si">{}</span><span class="s2"> role groups </span><span class="si">{}</span><span class="s2">, granting role&quot;</span>
+                                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">role</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">overlap</span><span class="p">)))</span>
+                <span class="n">session_roles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">apis</span><span class="o">.</span><span class="n">common</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_ROLE&#39;</span>
+                                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">role</span><span class="p">)))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;User was not in any </span><span class="si">{}</span><span class="s2"> role groups, denying&quot;</span>
+                                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">role</span><span class="p">))</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting user roles: </span><span class="si">{}</span><span class="s2">&quot;</span>
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">session_roles</span><span class="p">)))</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">session</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">][</span><span class="s1">&#39;roles&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">session_roles</span>
+        <span class="k">return</span> <span class="n">flask</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+    <span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="n">logout_endpoint</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">logout</span><span class="p">():</span>   <span class="c1"># pragma: no cover</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Current session data: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">flask</span><span class="o">.</span><span class="n">session</span><span class="p">)))</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;cern_token&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">flask</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">flask</span><span class="o">.</span><span class="n">redirect</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+
+    <span class="nd">@cern</span><span class="o">.</span><span class="n">tokengetter</span>
+    <span class="k">def</span> <span class="nf">get_cern_oauth_token</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">flask</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;cern_token&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="in_role"><a class="viewcode-back" href="../../../../source/storage_api.apis.common.html#storage_api.apis.common.auth.in_role">[docs]</a><span class="k">def</span> <span class="nf">in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">group_name</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Decorator: call flask.abort(403) if user is not in the specified</span>
 <span class="sd">    group, or if the session is unauthenticated.</span>
@@ -169,27 +272,37 @@
     <span class="k">def</span> <span class="nf">group_decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
         <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Current user is not logged in or not&quot;</span>
-                                        <span class="s2">&quot; a member of the group &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                                        <span class="s2">&quot; a member of the role &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">group_name</span><span class="p">),</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
         <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">security</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;sso&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;read&#39;</span><span class="p">,</span> <span class="s1">&#39;write&#39;</span><span class="p">]}])</span>
         <span class="k">def</span> <span class="nf">group_wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="n">user</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">user</span><span class="p">:</span>
-                <span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;User not authenticated at all&quot;</span><span class="p">)</span>
-                <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span> <span class="s2">&quot;The current user is not logged in!&quot;</span><span class="p">)</span>
+                <span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;User not authenticated at all!&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;USER_IS_UNAUTHENTICATED&#39;</span><span class="p">]</span> <span class="ow">and</span> \
+                   <span class="n">group_name</span> <span class="o">==</span> <span class="n">USER_ROLE</span><span class="p">:</span>
+                    <span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting user role...&quot;</span><span class="p">)</span>
+                    <span class="n">user</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="n">user</span><span class="p">[</span><span class="s1">&#39;roles&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">USER_ROLE</span><span class="p">])</span>
+                    <span class="n">session</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">user</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span> <span class="s2">&quot;The current user is not logged in!&quot;</span><span class="p">)</span>
 
             <span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Testing if user is in group </span><span class="si">{}</span><span class="s2">&quot;</span>
                                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">group_name</span><span class="p">))</span>
 
-            <span class="k">if</span> <span class="n">group_name</span> <span class="ow">in</span> <span class="n">user</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group&#39;</span><span class="p">,</span> <span class="p">[]):</span>
-                <span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The user was in in group </span><span class="si">{}</span><span class="s2">!&quot;</span>
+            <span class="k">if</span> <span class="n">group_name</span> <span class="ow">in</span> <span class="n">user</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;roles&#39;</span><span class="p">,</span> <span class="p">[]):</span>
+                <span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;The user had role </span><span class="si">{}</span><span class="s2">!&quot;</span>
                                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">group_name</span><span class="p">))</span>
                 <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Logged-in user is not in group </span><span class="si">{}</span><span class="s2">&quot;</span>
+                <span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Logged-in user did not have role </span><span class="si">{}</span><span class="s2">&quot;</span>
                                          <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">group_name</span><span class="p">))</span>
+                <span class="n">current_app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;User had roles </span><span class="si">{}</span><span class="s2">&quot;</span>
+                                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;, &quot;</span>
+                                                 <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">user</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;roles&#39;</span><span class="p">,</span> <span class="p">[]))))</span>
 
-                <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span> <span class="s2">&quot;The user is not in the group </span><span class="si">{}</span><span class="s2">&quot;</span>
+                <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">403</span><span class="p">,</span> <span class="s2">&quot;The user does not have the role </span><span class="si">{}</span><span class="s2">&quot;</span>
                           <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">group_name</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">group_wrapper</span>
     <span class="k">return</span> <span class="n">group_decorator</span></div>
@@ -226,7 +339,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../../',
-            VERSION:'1.3.0',
+            VERSION:'2.0.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

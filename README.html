@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>CERN Unified Storage API &mdash; CERN Unified Storage API 1.3.0 documentation</title>
+  <title>CERN Unified Storage API &mdash; CERN Unified Storage API 2.0.1 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="CERN Unified Storage API 1.3.0 documentation" href="index.html"/>
+    <link rel="top" title="CERN Unified Storage API 2.0.1 documentation" href="index.html"/>
         <link rel="next" title="storage-api" href="source/modules.html"/>
         <link rel="prev" title="CERN Unified Storage API documentation" href="index.html"/> 
 
@@ -63,7 +63,7 @@
             
             
               <div class="version">
-                1.3.0
+                2.0.1
               </div>
             
           
@@ -87,6 +87,7 @@
                 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">CERN Unified Storage API README</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#aim-of-the-project">Aim of the project</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#components-and-design">Components and Design</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#development">Development</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#configuration">Configuration</a></li>
@@ -156,17 +157,22 @@ scripts has been developed to interact mainly with NetApp storage.  The
 actual solution presents a RESTful API developed using Flask and
 Python 3.</p>
 </div>
+<div class="section" id="usage">
+<span id="usage"></span><h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Accessing <code class="docutils literal"><span class="pre">/login</span></code> will put you through the standard CERN single sign-on
+process and return you to the API with an authenticated session once you
+are done. For use in Python scripts and applications, setting the
+relevant session cookies using
+<a class="reference external" href="https://gitlab.cern.ch/db/cern-sso-python">cern-sso-python</a> is
+recommended.</p>
+<p>For API documentation, see the generated Swagger documentation (linked below).</p>
+</div>
 <div class="section" id="components-and-design">
 <span id="components-and-design"></span><h2>Components and Design<a class="headerlink" href="#components-and-design" title="Permalink to this headline">¶</a></h2>
 <p>The Storage API uses the flask-sso module developed by
 <a class="reference external" href="https://github.com/inveniosoftware/flask-sso">Invenio</a>. Authorisation
-is based on CERN e-groups (Active Directory distribution lists) and it&#8217;s
-implemented on the endpoint using a decorator. Authentication together
-with some basic access control is based on
-<a class="reference external" href="https://shibboleth.net/">Shibboleth</a> implementing Single Sign On
-(SSO). The use of Shibboleth determined the choice of an http server to
-Apache. An again the use of Apache somehow made natural to use mod_wsgi
-as WSGI platform to run python code.</p>
+is based on CERN e-groups (Active Directory distribution lists), and
+user authentication is done using the central OAuth2 providers.</p>
 <p>The application is designed around common Python and Flask framework
 patterns, with some help from the flask-restplus framework to provide
 boilerplate REST code. A factory pattern is used to mount the same APIs
@@ -195,16 +201,73 @@ $ export FLASK_DEBUG=1
 $ flask run
 </pre></div>
 </div>
-<p>Accessing <code class="docutils literal"><span class="pre">/login</span></code> in debug mode <em>will immediately authorise you</em>.</p>
+<p>Accessing <code class="docutils literal"><span class="pre">/login</span></code> in debug mode <em>will immediately authorise you as an
+uber-admin</em>.</p>
 <p>There is also a shorthand Makefile option available as <code class="docutils literal"><span class="pre">make</span> <span class="pre">devserver</span></code>
 with corresponding <code class="docutils literal"><span class="pre">make</span> <span class="pre">stop</span></code>.</p>
+<p>It is also possible to run the Dockerised image with <code class="docutils literal"><span class="pre">make</span> <span class="pre">image</span> <span class="pre">run</span></code>.
+Remember that you can determine which random port the container
+was assigned with <code class="docutils literal"><span class="pre">docker</span> <span class="pre">port</span> <span class="pre">&lt;name</span> <span class="pre">of</span> <span class="pre">container&gt;</span></code>.</p>
 <div class="section" id="configuration">
 <span id="configuration"></span><h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h3>
-<p>The NetApp back-end uses the environment variables <code class="docutils literal"><span class="pre">ONTAP_HOST</span></code>,
-<code class="docutils literal"><span class="pre">ONTAP_USERNAME</span></code>, <code class="docutils literal"><span class="pre">ONTAP_PASSWORD</span></code>, and <code class="docutils literal"><span class="pre">ONTAP_VSERVER</span></code> to set up the
-hostname, user name, password and vserver/vfiler to communicate with. If
-these variables are not found, the NetApp back-end will default to use
-the in-memory dummy back-end.</p>
+<p>Configuration is done using environment variables, as per the 12-factor
+app pattern. The following environment variables are used:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">SAPI_OAUTH_CLIENT_ID</span></code>: The public client ID for the OAuth2 service
+the storage API runs as</li>
+<li><code class="docutils literal"><span class="pre">SAPI_OAUTH_SECRET_KEY</span></code>: The private key of the OAuth2 service the
+storage API runs as</li>
+</ul>
+<p>The following keys are optional:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">SAPI_OAUTH_TOKEN_URL</span></code>: The URL to get OAuth2 Tokens from. <strong>Default</strong>:
+<code class="docutils literal"><span class="pre">https://oauth.web.cern.ch/OAuth/Token</span></code></li>
+<li><code class="docutils literal"><span class="pre">SAPI_OAUTH_AUTHORIZE_URL</span></code>: The URL to send OAuth2 Authorization
+requests to. <strong>Default</strong>: <code class="docutils literal"><span class="pre">https://oauth.web.cern.ch/OAuth/Authorize</span></code></li>
+<li><code class="docutils literal"><span class="pre">SAPI_OAUTH_GROUPS_URL</span></code>: The URL to send a GET request with the
+current OAuth2 token to receive a list of groups the current user is a
+member of. <strong>Default</strong>: <code class="docutils literal"><span class="pre">https://oauthresource.web.cern.ch/api/Groups</span></code></li>
+<li><code class="docutils literal"><span class="pre">SAPI_OAUTH_CALLBACK_URL_RELATIVE</span></code>: The relative (to the app&#8217;s root)
+URL to report as the call-back URL to the OAuth2 Authorize server. You
+most likely do not need to change this, unless you have some really
+exotic routing pattern. <strong>Default</strong>: <code class="docutils literal"><span class="pre">/oauth-done</span></code></li>
+</ul>
+<p>The following configuration options control the role-based access control:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">SAPI_ROLE_USER_GROUPS</span></code>: A comma-separated list of groups whose users
+are just plain users. If the list is empty or unset, unauthenticated
+users are included in the user role and given access to certain
+(non-destructive) endpoints. See the API documentation!</li>
+<li><code class="docutils literal"><span class="pre">SAPI_ROLE_ADMIN_GROUPS</span></code>: A comma-separated list of groups whose users
+are (at least) administrators. Empty list or unset variable means
+the role is disabled.</li>
+<li><code class="docutils literal"><span class="pre">SAPI_ROLE_UBER_ADMIN_GROUPS</span></code>: A comma-separated list of groups whose
+users are uber-admins. Empty list
+or unset variable means the role is disabled.</li>
+</ul>
+<p>Please note that roles are distinct, e.g. the admin role is not
+contained within the uber-admin-role. If you want both, you need to have
+both.</p>
+<p>Back-ends are configured using the following pattern:</p>
+<ul>
+<li><p class="first"><code class="docutils literal"><span class="pre">SAPI_BACKENDS</span></code>: A unicorn emoji-separated (:unicorn:) list of back-ends to enable,
+and their configuration as per the following pattern:
+<code class="docutils literal"><span class="pre">endpoint_name:BackEndClass:option_name:option_value:another_option_name:another_option_value</span></code>,
+where endpoint_name is the part that goes into the
+<code class="docutils literal"><span class="pre">/&lt;endpoint_name&gt;/volumes&gt;</span></code> part of the URL, <code class="docutils literal"><span class="pre">BackEndClass</span></code> is the
+name of a class that implements the corresponding back-end
+(e.g. <code class="docutils literal"><span class="pre">DummyStorage</span></code>), and the following set of rainbow emoji-separated
+options (:rainbow:) will be passed as keys and value arguments to that back-ends
+constructor.</p>
+<p>The following example sets up a NetApp back-end and RAM-backed dummy back-end:
+<code class="docutils literal"><span class="pre">export</span> <span class="pre">SAPI_BACKENDS=&quot;dummy🌈DummyStorage🦄netapp🌈NetappStorage🌈username🌈storage-api🌈password🌈myPassword:&#64;;🌈vserver🌈vs3sx50&quot;</span></code></p>
+<p>Please note that it is perfectly possible to set up multiple endpoints
+with the same back-end, e.g. multiple NetApp filers or clusters with
+different vservers on different endpoints. Endpoints needs to be
+unique though.</p>
+</li>
+</ul>
+<p><strong>Without at least one configured endpoint, the app will not run.</strong></p>
 </div>
 </div>
 <div class="section" id="testing-and-continuous-integration">
@@ -220,16 +283,14 @@ tests can be increased using <code class="docutils literal"><span class="pre">-v
 </div>
 <div class="section" id="deployment">
 <span id="deployment"></span><h2>Deployment<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h2>
-<p>The API is deployed via an RPM, which sets up a clean Python virtual
-environment and installs using normal Pip proceducers into it (e.g. the
-same as the ones used for development). An example config for Apache
-featuring SSO/Shibboleth config and proper virtual environment handling
-is available in <code class="docutils literal"><span class="pre">templates/storage-api.conf</span></code>. For more information, see
-<a class="reference external" href="http://modwsgi.readthedocs.io/en/develop/user-guides/virtual-environments.html">the mod_wsgi documentation on the subject</a>.</p>
-<p>To combine https access with Single Sign On a Shibboleth &amp;
-Apache setup is required. The setup steps are quite well described by
-<a class="reference external" href="https://alexpearce.me/2014/10/setting-up-flask-with-apache-and-shibboleth/">Alex Pearce article</a>,
-especially targeting a CERN environment.</p>
+<p>The API is deployed via a standard Docker container to
+OpenShift. Provided you are authenticated with CERN&#8217;s GitLab as a
+registry in Docker, running <code class="docutils literal"><span class="pre">make</span> <span class="pre">image</span> <span class="pre">push-image</span></code> will compile the
+image and push it to the registry. If you have also set
+<code class="docutils literal"><span class="pre">OPENSHIFT_PUSH_TOKEN</span></code> to an authentication token with access to pushing
+images to the the OpenShift project, <code class="docutils literal"><span class="pre">make</span> <span class="pre">deploy-os</span></code> will finally
+deploy the new image to OpenShift as a rolling deployment. The entire
+process can be run with <code class="docutils literal"><span class="pre">make</span> <span class="pre">image</span> <span class="pre">push-image</span> <span class="pre">deploy-os</span></code>.</p>
 </div>
 <div class="section" id="documentation">
 <span id="documentation"></span><h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
@@ -283,7 +344,7 @@ by Travis to
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.3.0',
+            VERSION:'2.0.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

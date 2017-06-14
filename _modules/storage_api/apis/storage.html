@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>storage_api.apis.storage &mdash; CERN Unified Storage API 1.3.0 documentation</title>
+  <title>storage_api.apis.storage &mdash; CERN Unified Storage API 2.0.1 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="CERN Unified Storage API 1.3.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="CERN Unified Storage API 2.0.1 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                1.3.0
+                2.0.1
               </div>
             
           
@@ -143,8 +143,8 @@
 <span class="c1"># or submit itself to any jurisdiction.</span>
 
 <span class="kn">import</span> <span class="nn">storage_api.apis</span>
-<span class="kn">from</span> <span class="nn">storage_api.apis.common.auth</span> <span class="k">import</span> <span class="n">in_group</span>
-<span class="kn">from</span> <span class="nn">storage_api.apis.common</span> <span class="k">import</span> <span class="n">ADMIN_GROUP</span>
+<span class="kn">from</span> <span class="nn">storage_api.apis.common.auth</span> <span class="k">import</span> <span class="n">in_role</span>
+<span class="kn">from</span> <span class="nn">storage_api.apis.common</span> <span class="k">import</span> <span class="n">ADMIN_ROLE</span><span class="p">,</span> <span class="n">UBER_ADMIN_ROLE</span><span class="p">,</span> <span class="n">USER_ROLE</span>
 <span class="kn">from</span> <span class="nn">storage_api.utils</span> <span class="k">import</span> <span class="n">dict_without</span><span class="p">,</span> <span class="n">filter_none</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -169,13 +169,7 @@
                            <span class="s2">&quot; this may either be the name of a volume, or&quot;</span>
                            <span class="s2">&quot; node_name:/junction/path.&quot;</span><span class="p">)</span>
 
-<span class="n">SUBSYSTEM_MAPPING</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;netapp&#39;</span><span class="p">:</span> <span class="s1">&#39;NetappStorage&#39;</span><span class="p">,</span>
-                     <span class="s1">&#39;ceph&#39;</span><span class="p">:</span> <span class="s1">&#39;DummyStorage&#39;</span><span class="p">,</span>
-                     <span class="s1">&#39;dummy&#39;</span><span class="p">:</span> <span class="s1">&#39;DummyStorage&#39;</span><span class="p">}</span>
-
-<span class="n">SUBSYSTEM_DESCRIPTION</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;The subsystem to run the command on.&quot;</span>
-                         <span class="s2">&quot; Must be one of: </span><span class="si">{}</span><span class="s2">&quot;</span>
-                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SUBSYSTEM_MAPPING</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+<span class="n">SUBSYSTEM_DESCRIPTION</span> <span class="o">=</span> <span class="s2">&quot;The subsystem to run the command on.&quot;</span>
 
 <span class="n">DISALLOWED_VOLUME_NAME_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;.*[^a-z0-9:/_\.-].*&quot;</span><span class="p">)</span>
 
@@ -212,14 +206,10 @@
     <span class="k">with</span> <span class="n">exception_is_errorcode</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">,</span> <span class="mi">404</span><span class="p">,</span>
                                 <span class="n">message</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;No such subsystem. &quot;</span>
                                          <span class="s2">&quot;Allowed values are: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">)</span>
-                                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">SUBSYSTEM_MAPPING</span><span class="o">.</span><span class="n">keys</span><span class="p">()))):</span>
-        <span class="n">canonical_name</span> <span class="o">=</span> <span class="n">SUBSYSTEM_MAPPING</span><span class="p">[</span><span class="n">backend_name</span><span class="p">]</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">extensions</span><span class="p">[</span><span class="n">canonical_name</span><span class="p">]</span>
-    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Backend </span><span class="si">{}</span><span class="s2"> not installed, using dummy back-end&quot;</span>
-                  <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">canonical_name</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">extensions</span><span class="p">[</span><span class="s1">&#39;DummyStorage&#39;</span><span class="p">]</span></div>
+                                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                                    <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;SUBSYSTEM&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()))):</span>
+        <span class="n">instance_id</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;SUBSYSTEM&#39;</span><span class="p">][</span><span class="n">backend_name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">current_app</span><span class="o">.</span><span class="n">extensions</span><span class="p">[</span><span class="n">instance_id</span><span class="p">]</span></div>
 
 
 <span class="n">policy_rule_list_field</span> <span class="o">=</span> <span class="n">fields</span><span class="o">.</span><span class="n">List</span><span class="p">(</span><span class="n">fields</span><span class="o">.</span><span class="n">String</span><span class="p">(</span>
@@ -332,27 +322,31 @@
     <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Get a list of all volumes&quot;</span><span class="p">,</span>
              <span class="nb">id</span><span class="o">=</span><span class="s1">&#39;get_volumes&#39;</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">marshal_with</span><span class="p">(</span><span class="n">volume_read_model</span><span class="p">,</span> <span class="n">as_list</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">USER_ROLE</span><span class="p">)</span>
 <div class="viewcode-block" id="AllVolumes.get"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.AllVolumes.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">volumes</span></div></div>
 
 
+<span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">USER_ROLE</span><span class="p">)</span>
 <span class="nd">@api</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&lt;string:subsystem&gt;/volumes/&lt;path:volume_name&gt;&#39;</span><span class="p">)</span>
 <span class="nd">@api</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s1">&#39;subsystem&#39;</span><span class="p">,</span> <span class="n">SUBSYSTEM_DESCRIPTION</span><span class="p">)</span>
 <span class="nd">@api</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s1">&#39;volume_name&#39;</span><span class="p">,</span> <span class="n">VOLUME_NAME_DESCRIPTION</span><span class="p">)</span>
 <div class="viewcode-block" id="Volume"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.Volume">[docs]</a><span class="k">class</span> <span class="nc">Volume</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
 
-    <span class="nd">@api</span><span class="o">.</span><span class="n">marshal_with</span><span class="p">(</span><span class="n">volume_read_model</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The volume named volume_name&quot;</span><span class="p">)</span>
+    <span class="nd">@api</span><span class="o">.</span><span class="n">marshal_with</span><span class="p">(</span><span class="n">volume_read_model</span><span class="p">,</span>
+                      <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The volume named volume_name&quot;</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Get a specific volume by name&quot;</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;No such volume exists&quot;</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">201</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;A new volume was created&quot;</span><span class="p">)</span>
-<div class="viewcode-block" id="Volume.get"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.Volume.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">USER_ROLE</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;GET for </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">volume_name</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="n">DISALLOWED_VOLUME_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">volume_name</span><span class="p">):</span>
             <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid volume name&quot;</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="n">keyerror_is_404</span><span class="p">():</span>
-            <span class="k">return</span> <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">get_volume</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
 
     <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">body</span><span class="o">=</span><span class="n">volume_create_w_snapshot_model</span><span class="p">,</span>
              <span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Create a new volume with the given details. &quot;</span>
@@ -367,8 +361,8 @@
     <span class="nd">@api</span><span class="o">.</span><span class="n">marshal_with</span><span class="p">(</span><span class="n">volume_read_model</span><span class="p">,</span>
                       <span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;The newly created volume&quot;</span>
                                    <span class="s2">&quot; (if created), otherwise nothing&quot;</span><span class="p">))</span>
-    <span class="nd">@in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_GROUP</span><span class="p">)</span>
-<div class="viewcode-block" id="Volume.post"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.Volume.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_ROLE</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">DISALLOWED_VOLUME_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">volume_name</span><span class="p">):</span>
             <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid volume name&quot;</span><span class="p">)</span>
 
@@ -377,8 +371,10 @@
 
         <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;from_volume&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;from_snapshot&#39;</span><span class="p">]:</span>
             <span class="k">with</span> <span class="n">keyerror_is_404</span><span class="p">(),</span> <span class="n">valueerror_is_400</span><span class="p">():</span>
-                <span class="n">new_vol</span> <span class="o">=</span> <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">clone_volume</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;from_volume&#39;</span><span class="p">],</span>
-                                                          <span class="n">data</span><span class="p">[</span><span class="s1">&#39;from_snapshot&#39;</span><span class="p">])</span>
+                <span class="n">new_vol</span> <span class="o">=</span> <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">clone_volume</span><span class="p">(</span>
+                    <span class="n">volume_name</span><span class="p">,</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;from_volume&#39;</span><span class="p">],</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;from_snapshot&#39;</span><span class="p">])</span>
 
         <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;from_snapshot&#39;</span><span class="p">]:</span>
             <span class="k">with</span> <span class="n">keyerror_is_404</span><span class="p">():</span>
@@ -392,41 +388,43 @@
                     <span class="o">**</span><span class="n">dict_without</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">data</span><span class="p">),</span>
                                    <span class="s1">&#39;from_snapshot&#39;</span><span class="p">,</span>
                                    <span class="s1">&#39;from_volume&#39;</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">new_vol</span><span class="p">,</span> <span class="mi">201</span></div>
+        <span class="k">return</span> <span class="n">new_vol</span><span class="p">,</span> <span class="mi">201</span>
 
     <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Restrict the volume named *volume_name*&quot;</span>
                           <span class="s2">&quot; but do not actually delete it&quot;</span><span class="p">))</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">204</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Successfully restricted&quot;</span><span class="p">,</span>
                   <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-    <span class="nd">@in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_GROUP</span><span class="p">)</span>
-<div class="viewcode-block" id="Volume.delete"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.Volume.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">UBER_ADMIN_ROLE</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">DISALLOWED_VOLUME_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">volume_name</span><span class="p">):</span>
             <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid volume name&quot;</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">keyerror_is_404</span><span class="p">():</span>
             <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">restrict_volume</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span>
-        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">204</span></div>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">204</span>
 
     <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Partially update volume_name&quot;</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="n">volume_write_model</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="nd">@in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_GROUP</span><span class="p">)</span>
-<div class="viewcode-block" id="Volume.patch"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.Volume.patch">[docs]</a>    <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">UBER_ADMIN_ROLE</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">patch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">DISALLOWED_VOLUME_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">volume_name</span><span class="p">):</span>
             <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid volume name&quot;</span><span class="p">)</span>
 
-        <span class="n">data</span> <span class="o">=</span> <span class="n">filter_none</span><span class="p">(</span><span class="n">marshal</span><span class="p">(</span><span class="n">storage_api</span><span class="o">.</span><span class="n">apis</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span> <span class="n">volume_write_model</span><span class="p">))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">filter_none</span><span class="p">(</span><span class="n">marshal</span><span class="p">(</span><span class="n">storage_api</span><span class="o">.</span><span class="n">apis</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span>
+                                   <span class="n">volume_write_model</span><span class="p">))</span>
         <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PATCH with payload </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">)))</span>
         <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">keyerror_is_404</span><span class="p">():</span>
                 <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">patch_volume</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;No PATCH data provided!&quot;</span><span class="p">)</span></div></div>
+            <span class="k">raise</span> <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;No PATCH data provided!&quot;</span><span class="p">)</span></div>
 
 
 <span class="nd">@api</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&lt;string:subsystem&gt;/volumes/&lt;path:volume_name&gt;/snapshots&#39;</span><span class="p">)</span>
 <span class="nd">@api</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s1">&#39;subsystem&#39;</span><span class="p">,</span> <span class="n">SUBSYSTEM_DESCRIPTION</span><span class="p">)</span>
 <span class="nd">@api</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s1">&#39;volume_name&#39;</span><span class="p">,</span> <span class="n">VOLUME_NAME_DESCRIPTION</span><span class="p">)</span>
 <div class="viewcode-block" id="AllSnapshots"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.AllSnapshots">[docs]</a><span class="k">class</span> <span class="nc">AllSnapshots</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
-    <span class="nd">@api</span><span class="o">.</span><span class="n">marshal_with</span><span class="p">(</span><span class="n">snapshot_model</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;All snapshots for the volume&quot;</span><span class="p">,</span>
+    <span class="nd">@api</span><span class="o">.</span><span class="n">marshal_with</span><span class="p">(</span><span class="n">snapshot_model</span><span class="p">,</span>
+                      <span class="n">description</span><span class="o">=</span><span class="s2">&quot;All snapshots for the volume&quot;</span><span class="p">,</span>
                       <span class="n">as_list</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <div class="viewcode-block" id="AllSnapshots.get"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.AllSnapshots.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">DISALLOWED_VOLUME_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">volume_name</span><span class="p">):</span>
@@ -434,7 +432,8 @@
         <span class="k">return</span> <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">get_snapshots</span><span class="p">(</span><span class="n">volume_name</span><span class="p">)</span></div></div>
 
 
-<span class="nd">@api</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&lt;string:subsystem&gt;/volumes/&lt;path:volume_name&gt;/snapshots/&lt;string:snapshot_name&gt;&#39;</span><span class="p">)</span>
+<span class="nd">@api</span><span class="o">.</span><span class="n">route</span><span class="p">((</span><span class="s1">&#39;/&lt;string:subsystem&gt;/volumes/&#39;</span>
+           <span class="s1">&#39;&lt;path:volume_name&gt;/snapshots/&lt;string:snapshot_name&gt;&#39;</span><span class="p">))</span>
 <span class="nd">@api</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s1">&#39;subsystem&#39;</span><span class="p">,</span> <span class="n">SUBSYSTEM_DESCRIPTION</span><span class="p">)</span>
 <span class="nd">@api</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s1">&#39;volume_name&#39;</span><span class="p">,</span> <span class="n">VOLUME_NAME_DESCRIPTION</span><span class="p">)</span>
 <span class="nd">@api</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s1">&#39;snapshot_name&#39;</span><span class="p">,</span> <span class="s1">&#39;The snapshot name&#39;</span><span class="p">)</span>
@@ -448,8 +447,9 @@
         <span class="k">with</span> <span class="n">keyerror_is_404</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">get_snapshot</span><span class="p">(</span><span class="n">volume_name</span><span class="p">,</span> <span class="n">snapshot_name</span><span class="p">)</span></div>
 
-    <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">409</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Too many snapshots, cannot create another. &quot;</span>
-                                    <span class="s2">&quot;Try `purge_old_if_needed=true`.&quot;</span><span class="p">))</span>
+    <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">409</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Too many snapshots, cannot create&quot;</span>
+                                    <span class="s2">&quot; another. Try&quot;</span>
+                                    <span class="s2">&quot; `purge_old_if_needed=true`.&quot;</span><span class="p">))</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">201</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Successfully created a snapshot&quot;</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="n">snapshot_put_model</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Create a new snapshot of *volume_name*&quot;</span>
@@ -469,7 +469,7 @@
                   <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;No such snapshot&quot;</span><span class="p">,</span>
                   <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-    <span class="nd">@in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_GROUP</span><span class="p">)</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_ROLE</span><span class="p">)</span>
 <div class="viewcode-block" id="Snapshots.delete"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.Snapshots.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">snapshot_name</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">DISALLOWED_VOLUME_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">volume_name</span><span class="p">):</span>
             <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid volume name&quot;</span><span class="p">)</span>
@@ -487,6 +487,7 @@
                       <span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;An empty list (if no locks were&quot;</span>
                                    <span class="s2">&quot; held) or a single dict describing the&quot;</span>
                                    <span class="s2">&quot; host holding the lock&quot;</span><span class="p">))</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">USER_ROLE</span><span class="p">)</span>
 <div class="viewcode-block" id="AllLocks.get"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.AllLocks.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">DISALLOWED_VOLUME_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">volume_name</span><span class="p">):</span>
             <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid volume name&quot;</span><span class="p">)</span>
@@ -495,14 +496,15 @@
             <span class="k">return</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">mby_lock</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[{</span><span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="n">mby_lock</span><span class="p">}]</span></div></div>
 
 
-<span class="nd">@api</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&lt;string:subsystem&gt;/volumes/&lt;path:volume_name&gt;/locks/&lt;string:host&gt;&#39;</span><span class="p">)</span>
+<span class="nd">@api</span><span class="o">.</span><span class="n">route</span><span class="p">((</span><span class="s1">&#39;/&lt;string:subsystem&gt;/volumes/&#39;</span>
+            <span class="s1">&#39;&lt;path:volume_name&gt;/locks/&lt;string:host&gt;&#39;</span><span class="p">))</span>
 <span class="nd">@api</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s1">&#39;subsystem&#39;</span><span class="p">,</span> <span class="n">SUBSYSTEM_DESCRIPTION</span><span class="p">)</span>
 <span class="nd">@api</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s1">&#39;volume_name&#39;</span><span class="p">,</span> <span class="n">VOLUME_NAME_DESCRIPTION</span><span class="p">)</span>
 <span class="nd">@api</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s1">&#39;host&#39;</span><span class="p">,</span> <span class="s2">&quot;the host holding the lock in question&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="Locks"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.Locks">[docs]</a><span class="k">class</span> <span class="nc">Locks</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Lock the volume with host holding the lock&quot;</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">201</span><span class="p">,</span> <span class="s2">&quot;A new lock was added&quot;</span><span class="p">)</span>
-    <span class="nd">@in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_GROUP</span><span class="p">)</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_ROLE</span><span class="p">)</span>
 <div class="viewcode-block" id="Locks.put"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.Locks.put">[docs]</a>    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">host</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">DISALLOWED_VOLUME_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">volume_name</span><span class="p">):</span>
             <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid volume name&quot;</span><span class="p">)</span>
@@ -512,7 +514,7 @@
 
     <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Force the lock for the host&quot;</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">204</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Lock successfully forced&quot;</span><span class="p">)</span>
-    <span class="nd">@in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_GROUP</span><span class="p">)</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">UBER_ADMIN_ROLE</span><span class="p">)</span>
 <div class="viewcode-block" id="Locks.delete"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.Locks.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">volume_name</span><span class="p">,</span> <span class="n">host</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">DISALLOWED_VOLUME_NAME_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">volume_name</span><span class="p">):</span>
             <span class="n">api</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;Invalid volume name&quot;</span><span class="p">)</span>
@@ -528,7 +530,7 @@
                       <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The full policy&quot;</span><span class="p">,</span>
                       <span class="n">as_list</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Get all ACLs present on the back-end&quot;</span><span class="p">)</span>
-    <span class="nd">@in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_GROUP</span><span class="p">)</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_ROLE</span><span class="p">)</span>
 <div class="viewcode-block" id="AllExports.get"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.AllExports.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">policies</span></div></div>
 
@@ -541,18 +543,19 @@
     <span class="nd">@api</span><span class="o">.</span><span class="n">marshal_with</span><span class="p">(</span><span class="n">export_policy_model</span><span class="p">,</span>
                       <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Get the rules of a specific policy&quot;</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Display the rules of a given policy&quot;</span><span class="p">)</span>
-    <span class="nd">@in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_GROUP</span><span class="p">)</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_ROLE</span><span class="p">)</span>
 <div class="viewcode-block" id="Export.get"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.Export.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
         <span class="k">with</span> <span class="n">keyerror_is_404</span><span class="p">():</span>
             <span class="n">rules</span> <span class="o">=</span> <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">get_policy</span><span class="p">(</span><span class="n">policy</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">policy</span><span class="p">,</span>
                     <span class="s1">&#39;rules&#39;</span><span class="p">:</span> <span class="n">rules</span><span class="p">}</span></div>
 
-    <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Grant hosts matching a given pattern access to the given volume&quot;</span><span class="p">)</span>
+    <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Grant hosts matching&quot;</span>
+                          <span class="s2">&quot; a given pattern access to the given volume&quot;</span><span class="p">))</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">201</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The provided access rules were added&quot;</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;A policy with that name already exists&quot;</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">expect</span><span class="p">(</span><span class="n">policy_rule_write_model</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="nd">@in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_GROUP</span><span class="p">)</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_ROLE</span><span class="p">)</span>
 <div class="viewcode-block" id="Export.post"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.Export.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
         <span class="n">rules</span> <span class="o">=</span> <span class="n">marshal</span><span class="p">(</span><span class="n">storage_api</span><span class="o">.</span><span class="n">apis</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span>
                         <span class="n">policy_rule_write_model</span><span class="p">)[</span><span class="s1">&#39;rules&#39;</span><span class="p">]</span>
@@ -563,7 +566,7 @@
     <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Delete the entire policy&quot;</span><span class="p">))</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">204</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Successfully deleted the policy&quot;</span><span class="p">)</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;No such policy exists&quot;</span><span class="p">)</span>
-    <span class="nd">@in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_GROUP</span><span class="p">)</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_ROLE</span><span class="p">)</span>
 <div class="viewcode-block" id="Export.delete"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.Export.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">policy</span><span class="p">):</span>
         <span class="k">with</span> <span class="n">keyerror_is_404</span><span class="p">():</span>
             <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">remove_policy</span><span class="p">(</span><span class="n">policy</span><span class="p">)</span>
@@ -576,17 +579,19 @@
 <span class="nd">@api</span><span class="o">.</span><span class="n">param</span><span class="p">(</span><span class="s1">&#39;rule&#39;</span><span class="p">,</span> <span class="s2">&quot;The policy rule to operate on&quot;</span><span class="p">)</span>
 <div class="viewcode-block" id="ExportRule"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.ExportRule">[docs]</a><span class="k">class</span> <span class="nc">ExportRule</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
 
-    <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Grant hosts matching a given pattern access to the given resource&quot;</span><span class="p">)</span>
-    <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">201</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;The provided access rule was added or already present&quot;</span><span class="p">)</span>
-    <span class="nd">@in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_GROUP</span><span class="p">)</span>
+    <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Grant hosts matching a given pattern access&quot;</span><span class="p">)</span>
+    <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">201</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;The provided access rule&quot;</span>
+                                    <span class="s2">&quot; was added or already present&quot;</span><span class="p">))</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_ROLE</span><span class="p">)</span>
 <div class="viewcode-block" id="ExportRule.put"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.ExportRule.put">[docs]</a>    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">policy</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
         <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">ensure_policy_rule_present</span><span class="p">(</span><span class="n">policy</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span>
         <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">201</span></div>
 
     <span class="nd">@api</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Delete rule from policy&quot;</span><span class="p">))</span>
-    <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">204</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Successfully deleted the rule, or rule did not exist&quot;</span><span class="p">)</span>
+    <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">204</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Successfully deleted the rule,&quot;</span>
+                                    <span class="s2">&quot; or rule did not exist&quot;</span><span class="p">))</span>
     <span class="nd">@api</span><span class="o">.</span><span class="n">response</span><span class="p">(</span><span class="mi">404</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;No such policy exists&quot;</span><span class="p">)</span>
-    <span class="nd">@in_group</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_GROUP</span><span class="p">)</span>
+    <span class="nd">@in_role</span><span class="p">(</span><span class="n">api</span><span class="p">,</span> <span class="n">ADMIN_ROLE</span><span class="p">)</span>
 <div class="viewcode-block" id="ExportRule.delete"><a class="viewcode-back" href="../../../source/storage_api.apis.html#storage_api.apis.storage.ExportRule.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subsystem</span><span class="p">,</span> <span class="n">policy</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
         <span class="n">backend</span><span class="p">(</span><span class="n">subsystem</span><span class="p">)</span><span class="o">.</span><span class="n">ensure_policy_rule_absent</span><span class="p">(</span><span class="n">policy</span><span class="p">,</span> <span class="n">rule</span><span class="p">)</span>
         <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">204</span></div></div>
@@ -623,7 +628,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.3.0',
+            VERSION:'2.0.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

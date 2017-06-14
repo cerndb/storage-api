@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>storage_api.apis package &mdash; CERN Unified Storage API 1.3.0 documentation</title>
+  <title>storage_api.apis package &mdash; CERN Unified Storage API 2.0.1 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="CERN Unified Storage API 1.3.0 documentation" href="../index.html"/>
+    <link rel="top" title="CERN Unified Storage API 2.0.1 documentation" href="../index.html"/>
         <link rel="up" title="storage_api package" href="storage_api.html"/>
         <link rel="next" title="storage_api.apis.common package" href="storage_api.apis.common.html"/>
         <link rel="prev" title="storage_api package" href="storage_api.html"/> 
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                1.3.0
+                2.0.1
               </div>
             
           
@@ -96,7 +96,8 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="storage_api.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="storage_api.html#module-storage_api.app">storage_api.app module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storage_api.html#storage-api-app-module">storage_api.app module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="storage_api.html#module-storage_api.conf">storage_api.conf module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="storage_api.html#module-storage_api.utils">storage_api.utils module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="storage_api.html#module-storage_api">Module contents</a></li>
 </ul>
@@ -169,9 +170,9 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-storage_api.apis.storage">
-<span id="storage-api-apis-storage-module"></span><h2>storage_api.apis.storage module<a class="headerlink" href="#module-storage_api.apis.storage" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<div class="section" id="storage-api-apis-storage-module">
+<h2>storage_api.apis.storage module<a class="headerlink" href="#storage-api-apis-storage-module" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-storage_api.apis.storage"></span><dl class="class">
 <dt id="storage_api.apis.storage.AllExports">
 <em class="property">class </em><code class="descclassname">storage_api.apis.storage.</code><code class="descname">AllExports</code><span class="sig-paren">(</span><em>api=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/apis/storage.html#AllExports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.apis.storage.AllExports" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_restplus.resource.Resource</span></code></p>
@@ -409,46 +410,10 @@
 
 </dd></dl>
 
-<dl class="class">
+<dl class="function">
 <dt id="storage_api.apis.storage.Volume">
-<em class="property">class </em><code class="descclassname">storage_api.apis.storage.</code><code class="descname">Volume</code><span class="sig-paren">(</span><em>api=None</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/apis/storage.html#Volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.apis.storage.Volume" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_restplus.resource.Resource</span></code></p>
-<dl class="method">
-<dt id="storage_api.apis.storage.Volume.delete">
-<code class="descname">delete</code><span class="sig-paren">(</span><em>subsystem</em>, <em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/apis/storage.html#Volume.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.apis.storage.Volume.delete" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">storage_api.apis.storage.</code><code class="descname">Volume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/apis/storage.html#Volume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.apis.storage.Volume" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="attribute">
-<dt id="storage_api.apis.storage.Volume.endpoint">
-<code class="descname">endpoint</code><em class="property"> = '/_volume'</em><a class="headerlink" href="#storage_api.apis.storage.Volume.endpoint" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="storage_api.apis.storage.Volume.get">
-<code class="descname">get</code><span class="sig-paren">(</span><em>subsystem</em>, <em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/apis/storage.html#Volume.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.apis.storage.Volume.get" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="storage_api.apis.storage.Volume.mediatypes">
-<code class="descname">mediatypes</code><span class="sig-paren">(</span><em>resource_cls</em><span class="sig-paren">)</span><a class="headerlink" href="#storage_api.apis.storage.Volume.mediatypes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="storage_api.apis.storage.Volume.methods">
-<code class="descname">methods</code><em class="property"> = ['DELETE', 'GET', 'PATCH', 'POST']</em><a class="headerlink" href="#storage_api.apis.storage.Volume.methods" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="storage_api.apis.storage.Volume.patch">
-<code class="descname">patch</code><span class="sig-paren">(</span><em>subsystem</em>, <em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/apis/storage.html#Volume.patch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.apis.storage.Volume.patch" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="storage_api.apis.storage.Volume.post">
-<code class="descname">post</code><span class="sig-paren">(</span><em>subsystem</em>, <em>volume_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/storage_api/apis/storage.html#Volume.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#storage_api.apis.storage.Volume.post" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
 
 <dl class="function">
 <dt id="storage_api.apis.storage.backend">
@@ -524,7 +489,7 @@ api.abort with a suitable error and corresponding message.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'1.3.0',
+            VERSION:'2.0.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

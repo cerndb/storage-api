@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>storage_api.utils &mdash; CERN Unified Storage API 1.3.0 documentation</title>
+  <title>storage_api.utils &mdash; CERN Unified Storage API 2.0.1 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="CERN Unified Storage API 1.3.0 documentation" href="../../index.html"/>
+    <link rel="top" title="CERN Unified Storage API 2.0.1 documentation" href="../../index.html"/>
         <link rel="up" title="Module code" href="../index.html"/> 
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                1.3.0
+                2.0.1
               </div>
             
           
@@ -173,10 +173,17 @@
 <span class="c1"># http://stackoverflow.com/a/26853961</span>
 <span class="c1"># Waiting for python 3.5 when we can just do z = {**x, **y}</span>
 <div class="viewcode-block" id="merge_two_dicts"><a class="viewcode-back" href="../../source/storage_api.html#storage_api.utils.merge_two_dicts">[docs]</a><span class="k">def</span> <span class="nf">merge_two_dicts</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Given two dicts, merge them into a new dict as a shallow copy.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Given two dicts, merge them into a new dict as a shallow copy,</span>
+<span class="sd">    keeping keys from y if they are already in x</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">z</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">z</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">z</span></div>
+
+
+<div class="viewcode-block" id="pairwise"><a class="viewcode-back" href="../../source/storage_api.html#storage_api.utils.pairwise">[docs]</a><span class="k">def</span> <span class="nf">pairwise</span><span class="p">(</span><span class="n">iterable</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">zip</span><span class="p">(</span><span class="n">iterable</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">],</span> <span class="n">iterable</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">])</span></div>
 </pre></div>
 
            </div>
@@ -210,7 +217,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'1.3.0',
+            VERSION:'2.0.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

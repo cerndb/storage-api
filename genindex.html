@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; CERN Unified Storage API 1.3.0 documentation</title>
+  <title>Index &mdash; CERN Unified Storage API 2.0.1 documentation</title>
   
 
   
@@ -34,7 +34,7 @@
         <link rel="index" title="Index"
               href="#"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="CERN Unified Storage API 1.3.0 documentation" href="index.html"/> 
+    <link rel="top" title="CERN Unified Storage API 2.0.1 documentation" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                1.3.0
+                2.0.1
               </div>
             
           
@@ -160,15 +160,13 @@
 </li>
       <li><a href="source/storage_api.apis.html#storage_api.apis.storage.AllLocks">AllLocks (class in storage_api.apis.storage)</a>
 </li>
-      <li><a href="source/storage_api.apis.html#storage_api.apis.storage.AllSnapshots">AllSnapshots (class in storage_api.apis.storage)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/storage_api.apis.html#storage_api.apis.storage.AllSnapshots">AllSnapshots (class in storage_api.apis.storage)</a>
+</li>
       <li><a href="source/storage_api.apis.html#storage_api.apis.storage.AllVolumes">AllVolumes (class in storage_api.apis.storage)</a>
 </li>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.annotate_exception">annotate_exception() (in module storage_api.extensions.storage)</a>
-</li>
-      <li><a href="source/storage_api.html#storage_api.app.authorized">authorized() (in module storage_api.app)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -194,6 +192,8 @@
       </ul></li>
       <li><a href="source/storage_api.html#storage_api.utils.compose_decorators">compose_decorators() (in module storage_api.utils)</a>
 </li>
+      <li><a href="source/storage_api.html#storage_api.conf.conf_to_dict">conf_to_dict() (in module storage_api.conf)</a>
+</li>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.DummyStorage.create_lock">create_lock() (storage_api.extensions.storage.DummyStorage method)</a>
 
       <ul>
@@ -202,6 +202,8 @@
         <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.StorageBackend.create_lock">(storage_api.extensions.storage.StorageBackend method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.DummyStorage.create_policy">create_policy() (storage_api.extensions.storage.DummyStorage method)</a>
 
       <ul>
@@ -210,8 +212,6 @@
         <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.StorageBackend.create_policy">(storage_api.extensions.storage.StorageBackend method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.DummyStorage.create_snapshot">create_snapshot() (storage_api.extensions.storage.DummyStorage method)</a>
 
       <ul>
@@ -244,8 +244,6 @@
         <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Locks.delete">(storage_api.apis.storage.Locks method)</a>
 </li>
         <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Snapshots.delete">(storage_api.apis.storage.Snapshots method)</a>
-</li>
-        <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Volume.delete">(storage_api.apis.storage.Volume method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -287,11 +285,7 @@
 </li>
         <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Snapshots.endpoint">(storage_api.apis.storage.Snapshots attribute)</a>
 </li>
-        <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Volume.endpoint">(storage_api.apis.storage.Volume attribute)</a>
-</li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.DummyStorage.ensure_policy_rule_absent">ensure_policy_rule_absent() (storage_api.extensions.storage.DummyStorage method)</a>
 
       <ul>
@@ -300,6 +294,8 @@
         <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.StorageBackend.ensure_policy_rule_absent">(storage_api.extensions.storage.StorageBackend method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.DummyStorage.ensure_policy_rule_present">ensure_policy_rule_present() (storage_api.extensions.storage.DummyStorage method)</a>
 
       <ul>
@@ -349,11 +345,7 @@
 </li>
         <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Snapshots.get">(storage_api.apis.storage.Snapshots method)</a>
 </li>
-        <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Volume.get">(storage_api.apis.storage.Volume method)</a>
-</li>
       </ul></li>
-      <li><a href="source/storage_api.html#storage_api.app.get_cern_oauth_token">get_cern_oauth_token() (in module storage_api.app)</a>
-</li>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.DummyStorage.get_policy">get_policy() (storage_api.extensions.storage.DummyStorage method)</a>
 
       <ul>
@@ -406,7 +398,7 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="source/storage_api.apis.common.html#storage_api.apis.common.auth.in_group">in_group() (in module storage_api.apis.common.auth)</a>
+      <li><a href="source/storage_api.apis.common.html#storage_api.apis.common.auth.in_role">in_role() (in module storage_api.apis.common.auth)</a>
 </li>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.StorageBackend.init_app">init_app() (storage_api.extensions.storage.StorageBackend method)</a>
 </li>
@@ -416,8 +408,14 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/storage_api.html#storage_api.conf.load_backend_conf">load_backend_conf() (in module storage_api.conf)</a>
+</li>
+      <li><a href="source/storage_api.html#storage_api.conf.load_oauth_conf">load_oauth_conf() (in module storage_api.conf)</a>
+</li>
       <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Locks">Locks (class in storage_api.apis.storage)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.DummyStorage.locks">locks() (storage_api.extensions.storage.DummyStorage method)</a>
 
       <ul>
@@ -426,12 +424,6 @@
         <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.StorageBackend.locks">(storage_api.extensions.storage.StorageBackend method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="source/storage_api.html#storage_api.app.login">login() (in module storage_api.app)</a>
-</li>
-      <li><a href="source/storage_api.html#storage_api.app.logout">logout() (in module storage_api.app)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -455,8 +447,6 @@
 </li>
         <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Snapshots.mediatypes">(storage_api.apis.storage.Snapshots method)</a>
 </li>
-        <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Volume.mediatypes">(storage_api.apis.storage.Volume method)</a>
-</li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -478,8 +468,6 @@
         <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Locks.methods">(storage_api.apis.storage.Locks attribute)</a>
 </li>
         <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Snapshots.methods">(storage_api.apis.storage.Snapshots attribute)</a>
-</li>
-        <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Volume.methods">(storage_api.apis.storage.Volume attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -514,9 +502,9 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.NetappStorage.parse_volume_name">parse_volume_name() (storage_api.extensions.storage.NetappStorage method)</a>
+      <li><a href="source/storage_api.html#storage_api.utils.pairwise">pairwise() (in module storage_api.utils)</a>
 </li>
-      <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Volume.patch">patch() (storage_api.apis.storage.Volume method)</a>
+      <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.NetappStorage.parse_volume_name">parse_volume_name() (storage_api.extensions.storage.NetappStorage method)</a>
 </li>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.patch_and_diff">patch_and_diff() (in module storage_api.extensions.storage)</a>
 </li>
@@ -528,22 +516,20 @@
         <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.StorageBackend.patch_volume">(storage_api.extensions.storage.StorageBackend method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.DummyStorage.policies">policies (storage_api.extensions.storage.DummyStorage attribute)</a>
 
       <ul>
         <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.NetappStorage.policies">(storage_api.extensions.storage.NetappStorage attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.StorageBackend.policies">policies() (storage_api.extensions.storage.StorageBackend method)</a>
 </li>
       <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Export.post">post() (storage_api.apis.storage.Export method)</a>
 
       <ul>
         <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Snapshots.post">(storage_api.apis.storage.Snapshots method)</a>
-</li>
-        <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Volume.post">(storage_api.apis.storage.Volume method)</a>
 </li>
       </ul></li>
       <li><a href="source/storage_api.apis.html#storage_api.apis.storage.ExportRule.put">put() (storage_api.apis.storage.ExportRule method)</a>
@@ -602,6 +588,10 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/storage_api.html#storage_api.conf.set_auth_string">set_auth_string() (in module storage_api.conf)</a>
+</li>
+      <li><a href="source/storage_api.html#storage_api.conf.set_oauth_property">set_oauth_property() (in module storage_api.conf)</a>
+</li>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.DummyStorage.set_policy">set_policy() (storage_api.extensions.storage.DummyStorage method)</a>
 
       <ul>
@@ -610,21 +600,25 @@
         <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.StorageBackend.set_policy">(storage_api.extensions.storage.StorageBackend method)</a>
 </li>
       </ul></li>
+      <li><a href="source/storage_api.apis.common.html#storage_api.apis.common.auth.setup_oauth">setup_oauth() (in module storage_api.apis.common.auth)</a>
+</li>
+      <li><a href="source/storage_api.apis.common.html#storage_api.apis.common.auth.setup_roles_from_env">setup_roles_from_env() (in module storage_api.apis.common.auth)</a>
+</li>
       <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Snapshots">Snapshots (class in storage_api.apis.storage)</a>
 </li>
       <li><a href="source/storage_api.html#module-storage_api">storage_api (module)</a>
 </li>
       <li><a href="source/storage_api.apis.html#module-storage_api.apis">storage_api.apis (module)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/storage_api.apis.common.html#module-storage_api.apis.common">storage_api.apis.common (module)</a>
 </li>
       <li><a href="source/storage_api.apis.common.html#module-storage_api.apis.common.auth">storage_api.apis.common.auth (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/storage_api.apis.html#module-storage_api.apis.storage">storage_api.apis.storage (module)</a>
 </li>
-      <li><a href="source/storage_api.html#module-storage_api.app">storage_api.app (module)</a>
+      <li><a href="source/storage_api.html#module-storage_api.conf">storage_api.conf (module)</a>
 </li>
       <li><a href="source/storage_api.extensions.html#module-storage_api.extensions">storage_api.extensions (module)</a>
 </li>
@@ -730,7 +724,7 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Volume">Volume (class in storage_api.apis.storage)</a>
+      <li><a href="source/storage_api.apis.html#storage_api.apis.storage.Volume">Volume() (in module storage_api.apis.storage)</a>
 </li>
       <li><a href="source/storage_api.extensions.html#storage_api.extensions.storage.DummyStorage.volumes">volumes (storage_api.extensions.storage.DummyStorage attribute)</a>
 
@@ -776,7 +770,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.3.0',
+            VERSION:'2.0.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
