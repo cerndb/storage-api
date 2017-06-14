@@ -11,6 +11,7 @@
 
 
 SOURCES:=$(shell find storage_api -name "*.py")
+VERSION:=$(shell grep "__version__ =" storage_api/apis/__init__.py | sed "s|.*= '\(.*\)'|\1|")
 
 clean:
 	find . -name \*.pyc -o -name \*.pyo -o -name __pycache__ -exec rm -rf {} +
@@ -27,7 +28,7 @@ lint: $(SOURCES)
 .PHONY: lint
 
 devserver.PID:
-	FLASK_APP=storage_api.app FLASK_DEBUG=true flask run & echo $$! > $@;
+	SAPI_BACKENDS="dummy🌈DummyStorage" SAPI_OAUTH_CLIENT_ID="blergh" SAPI_OAUTH_SECRET_KEY="bork" FLASK_APP=storage_api.app FLASK_DEBUG=true flask run & echo $$! > $@;
 
 
 devserver: devserver.PID
@@ -60,13 +61,18 @@ doc_deploy: swagger.json html
 .PHONY: doc_deploy
 
 image:
-	docker build -t  "gitlab-registry.cern.ch/db/storage-api-mirror:runner" .
+	docker build -t  "gitlab-registry.cern.ch/db/storage-api-mirror:runner" -t "gitlab-registry.cern.ch/db/storage-api-mirror:$(VERSION)" .
 
 push-image:
-	docker	push "gitlab-registry.cern.ch/db/storage-api-mirror:runner"
+	docker push "gitlab-registry.cern.ch/db/storage-api-mirror:runner"
+	docker push "gitlab-registry.cern.ch/db/storage-api-mirror:$(VERSION)"
 
-deploy-os:
-	oc import-image --token ${OPENSHIFT_PUSH_TOKEN} --namespace it-db-storage-api --server "https://openshift.cern.ch" "db/storage-api-mirror:runner"
+deploy-os-prod:
+	oc import-image --token ${OPENSHIFT_PUSH_TOKEN_PROD} --namespace it-db-storage-api --server "https://openshift.cern.ch" "db/storage-api-mirror:runner"
+
+deploy-os-dev:
+	oc tag --token ${OPENSHIFT_PUSH_TOKEN_DEV} --namespace it-db-storage-api-dev --server "https://openshift.cern.ch" --source=docker "gitlab-registry.cern.ch/db/storage-api-mirror:$(VERSION)" "db/storage-api-mirror-dev:$(VERSION)"
+	oc import-image --token ${OPENSHIFT_PUSH_TOKEN_DEV} --namespace it-db-storage-api-dev --server "https://openshift.cern.ch" "db/storage-api-mirror-dev:$(VERSION)"
 
 run:
 	docker run -it --rm --publish-all "gitlab-registry.cern.ch/db/storage-api-mirror:runner"
