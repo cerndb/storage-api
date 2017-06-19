@@ -41,7 +41,7 @@ build-doc:
     - npm install -g spectacle-docs
   script:
     - make html
-    - make doc_deploy
+    # - make doc_deploy
 
 deploy-doc:
   stage: deploy
