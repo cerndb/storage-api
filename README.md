@@ -1,7 +1,7 @@
 # CERN Unified Storage API
 
-[![Build Status](https://travis-ci.org/cerndb/storage-api.svg?branch=master)](https://travis-ci.org/cerndb/storage-api)
-[![Coverage Status](https://coveralls.io/repos/github/cerndb/storage-api/badge.svg?branch=master)](https://coveralls.io/github/cerndb/storage-api?branch=master)
+[![build status](https://gitlab.cern.ch/db/storage-api/badges/master/build.svg)](https://gitlab.cern.ch/db/storage-api/commits/master)
+[![coverage report](https://gitlab.cern.ch/db/storage-api/badges/master/coverage.svg)](https://gitlab.cern.ch/db/storage-api/commits/master)
 
 ## Aim of the project
 
