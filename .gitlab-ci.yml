@@ -1,6 +1,12 @@
 stages:
+ - test
  - build
  - deploy
+
+perform-tests:
+  image: python:3
+  before_script:
+
 
 build-docker-image:
   stage: build
@@ -16,12 +22,34 @@ deploy-openshift:
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script: "oc import-image $IMAGE_NAME  --server=$OPENSHIFT_SERVER --token=$IMAGE_IMPORT_TOKEN --namespace $OPENSHIFT_PROJECT_NAME"
 
+build-doc:
+  image: python:3
+  artifacts:
+    paths:
+      - doc/html
+  stage: build
+  before_script:
+    - apt-get update && apt-get install -y nodejs npm
+    - pip install -r requirements.txt
+    - python setup.py install
+    - npm install -g spectacle-docs
+  script:
+    - make html
+    - make doc_deploy
+
 deploy-doc:
   stage: deploy
+  image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
   script:
-    - pip install -r requirements.txt
-    - APXS=~/virtualenv/python3.5/bin/mod_wsgi-apxs pip install mod_wsgi
-    - python setup.py install
-    - nvm use stable
-    - npm install -g spectacle-docs
-    - make doc_deploy
+    - deploy-dfs
+
+
+lint:
+  image: python:3
+  stage: test
+  allow_failure: true
+  before_script:
+    - pip install flake8
+
+  script:
+    - make lint
