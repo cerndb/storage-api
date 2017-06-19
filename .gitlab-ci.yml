@@ -15,3 +15,13 @@ deploy-openshift:
   stage: deploy
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script: "oc import-image $IMAGE_NAME  --server=$OPENSHIFT_SERVER --token=$IMAGE_IMPORT_TOKEN --namespace $OPENSHIFT_PROJECT_NAME"
+
+deploy-doc:
+  stage: deploy
+  script:
+    - pip install -r requirements.txt
+    - APXS=~/virtualenv/python3.5/bin/mod_wsgi-apxs pip install mod_wsgi
+    - python setup.py install
+    - nvm use stable
+    - npm install -g spectacle-docs
+    - make doc_deploy
