@@ -34,7 +34,7 @@ build-doc:
       - doc/html
   stage: build
   before_script:
-    - curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+    - curl -sL https://deb.nodesource.com/setup_6.x | bash -
     - apt-get update && apt-get install -y nodejs
     - pip install -r requirements.txt
     - python setup.py install
