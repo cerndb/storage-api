@@ -34,7 +34,7 @@ build-doc:
       - doc/html
   stage: build
   before_script:
-    - apt-get update && apt-get install -y nodejs npm
+    - apt-get update && apt-get install -y nodejs npm nodejs-legacy
     - pip install -r requirements.txt
     - python setup.py install
     - npm install -g spectacle-docs
