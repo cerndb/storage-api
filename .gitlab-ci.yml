@@ -9,10 +9,8 @@ perform-tests:
   before_script:
     - pip install -r requirements.txt
     - python setup.py install
-    - pip install coveralls
   script:
     - make test
-    - coveralls
 
 
 build-docker-image:
