@@ -31,7 +31,8 @@ build-doc:
   image: python:3
   artifacts:
     paths:
-      - doc/html
+      - html
+    when: always
   stage: build
   before_script:
     - curl -sL https://deb.nodesource.com/setup_6.x | bash -
