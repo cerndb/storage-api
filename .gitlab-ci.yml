@@ -8,7 +8,7 @@ variables:
   RESOURCE: storage-api
   ###
   ### You shouldn't change the following variables
-  NAMESPACE: storage-api
+  NAMESPACE: it-db-storage-api
   OPENSHIFT_SERVER: https://openshift-dev.cern.ch
   OPENSHIFT_SERVER_PROD: https://openshift.cern.ch
 
@@ -90,7 +90,7 @@ lint:
 
 ### 'Import image' stage
 ### Loads the build tag into OpenShift
-deploy_dev:
+dev-deploy:
   when: manual
   only:
     - tags
@@ -103,8 +103,9 @@ deploy_dev:
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
     GIT_STRATEGY: none
+    NAMESPACE: test-${NAMESPACE}
 
-update_template_dev:
+dev-template:
   stage: provision
   environment: dev
   when: manual
@@ -116,3 +117,4 @@ update_template_dev:
     - oc replace template --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n ${NAMESPACE} -f storage-api-openshift-template.yaml
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
+    NAMESPACE: test-${NAMESPACE}

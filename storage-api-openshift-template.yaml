@@ -108,14 +108,10 @@ objects:
 - apiVersion: v1
   kind: Route
   metadata:
-    annotations:
-      cern.ch/generated.host.replaced: "true"
-    creationTimestamp: null
     labels:
       app: storage-api
     name: slash
   spec:
-    host: it-db-storage-api.web.cern.ch
     port:
       targetPort: 8000-tcp
     tls:
@@ -123,7 +119,7 @@ objects:
       termination: edge
     to:
       kind: Service
-      name: storage-api-mirror
+      name: storage-api
       weight: 100
     wildcardPolicy: None
   status:
@@ -132,7 +128,6 @@ objects:
       - lastTransitionTime: 2017-04-23T08:29:09Z
         status: "True"
         type: Admitted
-      host: it-db-storage-api.web.cern.ch
       routerName: router
       wildcardPolicy: None
 parameters:
