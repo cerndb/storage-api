@@ -9,12 +9,13 @@ variables:
   ###
   ### You shouldn't change the following variables
   NAMESPACE: storage-api
-  OPENSHIFT_SERVER_DEV: https://openshift-dev.cern.ch
+  OPENSHIFT_SERVER: https://openshift-dev.cern.ch
   OPENSHIFT_SERVER_PROD: https://openshift.cern.ch
 
 stages:
  - test
  - build
+ - provision
  - deploy
 
 perform-tests:
@@ -89,7 +90,7 @@ lint:
 
 ### 'Import image' stage
 ### Loads the build tag into OpenShift
-import_image_dev:
+deploy_dev:
   when: manual
   only:
     - tags
@@ -97,6 +98,21 @@ import_image_dev:
   environment: dev
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
-    - oc import-image ${RESOURCE}:${CI_BUILD_TAG:-latest} --token=${TOKEN} --server=${OPENSHIFT_SERVER_DEV} -n ${NAMESPACE}
+    - oc --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n ${NAMESPACE} tag ${RESOURCE}:${CI_BUILD_TAG:-latest} ${RESOURCE}:${CI_BUILD_TAG:-latest}
+    - oc import-image ${RESOURCE}:${CI_BUILD_TAG:-latest} --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n ${NAMESPACE}
+  variables:
+    TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
+    GIT_STRATEGY: none
+
+update_template_dev:
+  stage: provision
+  environment: dev
+  when: manual
+  only:
+    - tags
+    - master
+  image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
+  script:
+    - oc replace template --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n ${NAMESPACE} -f storage-api-openshift-template.yaml
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
