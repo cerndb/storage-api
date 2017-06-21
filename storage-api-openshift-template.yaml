@@ -1,0 +1,154 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: storage-api
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    labels:
+      app: storage-api
+    name: storage-api
+  spec:
+    ports:
+    - name: 8000-tcp
+      port: 8000
+      protocol: TCP
+      targetPort: 8000
+    selector:
+      deploymentconfig: storage-api
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    labels:
+      app: storage-api
+    name: storage-api
+  spec:
+    replicas: 1
+    selector:
+      app: storage-api
+      deploymentconfig: storage-api
+    strategy:
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        labels:
+          app: storage-api
+          deploymentconfig: storage-api
+      spec:
+        containers:
+        - env:
+          - name: SAPI_BACKENDS
+            value: ${SAPI_BACKENDS}
+          - name: SAPI_OAUTH_CLIENT_ID
+            value: ${SAPI_OAUTH_CLIENT_ID}
+          - name: SAPI_OAUTH_SECRET_KEY
+            value: ${SAPI_OAUTH_SECRET_KEY}
+          - name: SAPI_ROLE_USER_GROUPS
+            value: ${SAPI_ROLE_USER_GROUPS}
+          - name: SAPI_ROLE_ADMIN_GROUPS
+            value: ${SAPI_ROLE_ADMIN_GROUPS}
+          - name: SAPI_ROLE_UBER_ADMIN_GROUPS
+            value: ${SAPI_ROLE_UBER_ADMIN_GROUPS}
+          image: gitlab-registry.cern.ch/db/storage-api
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 8000
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: storage-api
+          ports:
+          - containerPort: 8000
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: 8000
+              scheme: HTTP
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - storage-api
+        from:
+          kind: ImageStreamTag
+          name: storage-api-mirror:runner
+          namespace: it-db-storage-api
+      type: ImageChange
+  status: {}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    annotations:
+      cern.ch/generated.host.replaced: "true"
+    creationTimestamp: null
+    labels:
+      app: storage-api
+    name: slash
+  spec:
+    host: it-db-storage-api.web.cern.ch
+    port:
+      targetPort: 8000-tcp
+    tls:
+      insecureEdgeTerminationPolicy: Redirect
+      termination: edge
+    to:
+      kind: Service
+      name: storage-api-mirror
+      weight: 100
+    wildcardPolicy: None
+  status:
+    ingress:
+    - conditions:
+      - lastTransitionTime: 2017-04-23T08:29:09Z
+        status: "True"
+        type: Admitted
+      host: it-db-storage-api.web.cern.ch
+      routerName: router
+      wildcardPolicy: None
+parameters:
+  - name: SAPI_BACKENDS
+    required: true
+    description: "A list of back-ends to enable, with their settings. See the README!"
+
+  - name: SAPI_OAUTH_CLIENT_ID
+    required: true
+  - name: SAPI_OAUTH_SECRET_KEY
+    required: true
+  - name: SAPI_ROLE_ADMIN_GROUPS
+    required: true
+  - name: SAPI_ROLE_USER_GROUPS
+    value: ""
+    required: false
+    description: "If empty, assign the User role to unauthenticated users"
+  - name: SAPI_ROLE_UBER_ADMIN_GROUPS
+    required: true
