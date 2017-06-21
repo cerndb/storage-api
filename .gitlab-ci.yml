@@ -98,12 +98,11 @@ dev-deploy:
   environment: dev
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
-    - oc --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n ${NAMESPACE} tag ${RESOURCE}:${CI_BUILD_TAG:-latest} ${RESOURCE}:${CI_BUILD_TAG:-latest}
-    - oc import-image ${RESOURCE}:${CI_BUILD_TAG:-latest} --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n ${NAMESPACE}
+    - oc --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n test-${NAMESPACE} tag ${RESOURCE}:${CI_BUILD_TAG:-latest} ${RESOURCE}:${CI_BUILD_TAG:-latest}
+    - oc import-image ${RESOURCE}:${CI_BUILD_TAG:-latest} --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n test-${NAMESPACE}
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
     GIT_STRATEGY: none
-    NAMESPACE: test-${NAMESPACE}
 
 dev-template:
   stage: provision
@@ -114,7 +113,6 @@ dev-template:
     - master
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
-    - oc replace template --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n ${NAMESPACE} -f storage-api-openshift-template.yaml
+    - oc replace template --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n test-${NAMESPACE} -f storage-api-openshift-template.yaml
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
-    NAMESPACE: test-${NAMESPACE}
