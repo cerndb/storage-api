@@ -76,3 +76,9 @@ deploy-os-dev:
 
 run:
 	docker run -it --rm --publish-all "gitlab-registry.cern.ch/db/storage-api-mirror:runner"
+
+push_version:
+	make test
+	git push origin :refs/tags/${VERSION}
+	git tag -f ${VERSION}
+	git push --tags

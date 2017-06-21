@@ -1,3 +1,17 @@
+variables:
+  ### Disable cache in Docker builds, as this has occasionally resulted in images not containing what was
+  ### expected multiple MRs where being built/retried.
+  NO_CACHE: 'true'
+  ### Replace RESOURCE with the name of the image you want to build and publish in OpenShift
+  ### Important! In order for this template to work, the name of the gitlab repo must match
+  ### also the variable name
+  RESOURCE: storage-api
+  ###
+  ### You shouldn't change the following variables
+  NAMESPACE: storage-api
+  OPENSHIFT_SERVER_DEV: https://openshift-dev.cern.ch
+  OPENSHIFT_SERVER_PROD: https://openshift.cern.ch
+
 stages:
  - test
  - build
@@ -12,20 +26,31 @@ perform-tests:
   script:
     - make test
 
-
-build-docker-image:
+build-tag:
   stage: build
+  only:
+    - tags
   tags:
    - docker-image-build
-  script: "echo building $CI_REGISTRY_IMAGE:runner" # No empty scripts are allowed
+  script: "echo building $CI_REGISTRY_IMAGE" # No empty scripts are allowed
   variables:
-   TO: $CI_REGISTRY_IMAGE:runner # Where to push resulting image
+   TO: $CI_REGISTRY_IMAGE:${CI_BUILD_TAG} # Where to push resulting image
 
-deploy-openshift:
-  allow_failure: true
-  stage: deploy
-  image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
-  script: "oc import-image $IMAGE_NAME  --server=$OPENSHIFT_SERVER --token=$IMAGE_IMPORT_TOKEN --namespace $OPENSHIFT_PROJECT_NAME"
+build-latest:
+  build_latest:
+  stage: build
+  only:
+  - master
+  tags:
+  - docker-image-build
+  script: "echo 'Building Docker image...'"
+
+
+# deploy-openshift:
+#   allow_failure: true
+#   stage: deploy
+#   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
+#   script: "oc import-image $IMAGE_NAME  --server=$OPENSHIFT_SERVER --token=$IMAGE_IMPORT_TOKEN --namespace $OPENSHIFT_PROJECT_NAME"
 
 build-doc:
   image: python:3
@@ -46,6 +71,8 @@ build-doc:
 
 deploy-doc:
   stage: deploy
+  only:
+    - master
   image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
   script:
     - deploy-dfs
@@ -60,3 +87,17 @@ lint:
 
   script:
     - make lint
+
+### 'Import image' stage
+### Loads the build tag into OpenShift
+import_image_dev:
+  when: manual
+  only:
+    - tags
+  stage: import_image
+  environment: dev
+  image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
+  script:
+    - oc import-image ${RESOURCE}:${CI_BUILD_TAG:-latest} --token=${TOKEN} --server=${OPENSHIFT_SERVER_DEV} -n ${NAMESPACE}
+  variables:
+    TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
