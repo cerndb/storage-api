@@ -116,3 +116,17 @@ dev-template:
     - oc replace template --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n test-${NAMESPACE} -f storage-api-openshift-template.yaml
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
+
+
+prod-template:
+  stage: provision
+  environment: prod
+  when: manual
+  only:
+    - tags
+    - master
+  image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
+  script:
+    - oc replace template --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n test-${NAMESPACE} -f storage-api-openshift-template.yaml
+  variables:
+    TOKEN: ${SERVICE_ACCOUNT_TOKEN_PROD}

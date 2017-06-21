@@ -147,3 +147,19 @@ parameters:
     description: "If empty, assign the User role to unauthenticated users"
   - name: SAPI_ROLE_UBER_ADMIN_GROUPS
     required: true
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: storage-api
+    name: storage-api
+  spec:
+    tags:
+    - annotations:
+      from:
+        kind: DockerImage
+      generation: 20
+      importPolicy: {}
+      name: storage-api
+  status:
+    dockerImageRepository: ""
