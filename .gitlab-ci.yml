@@ -37,7 +37,6 @@ build-tag:
    TO: $CI_REGISTRY_IMAGE:${CI_BUILD_TAG} # Where to push resulting image
 
 build-latest:
-  build_latest:
   stage: build
   only:
   - master
@@ -94,7 +93,7 @@ import_image_dev:
   when: manual
   only:
     - tags
-  stage: import_image
+  stage: deploy
   environment: dev
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
