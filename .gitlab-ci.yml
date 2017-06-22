@@ -109,7 +109,6 @@ dev-deploy:
 dev-template:
   stage: provision
   environment: dev
-  when: manual
   only:
     - tags
     - master

@@ -102,7 +102,6 @@ objects:
         from:
           kind: ImageStreamTag
           name: storage-api:latest
-          namespace: test-it-db-storage-api
       type: ImageChange
   status: {}
 - apiVersion: v1
