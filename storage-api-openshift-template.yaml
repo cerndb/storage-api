@@ -101,8 +101,8 @@ objects:
         - storage-api
         from:
           kind: ImageStreamTag
-          name: storage-api-mirror:runner
-          namespace: it-db-storage-api
+          name: storage-api:latest
+          namespace: test-it-db-storage-api
       type: ImageChange
   status: {}
 - apiVersion: v1
@@ -130,6 +130,27 @@ objects:
         type: Admitted
       routerName: router
       wildcardPolicy: None
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    labels:
+      app: storage-api
+    name: storage-api
+  spec:
+    tags:
+    - annotations:
+        openshift.io/generated-by: OpenShiftWebConsole
+        openshift.io/imported-from: gitlab-registry.cern.ch/db/storage-api:latest
+      from:
+        kind: DockerImage
+        name: gitlab-registry.cern.ch/db/storage-api:latest
+      generation: 20
+      importPolicy: {}
+      name: storage-api
+  status:
+    dockerImageRepository: ""
+
+
 parameters:
   - name: SAPI_BACKENDS
     required: true
@@ -147,19 +168,3 @@ parameters:
     description: "If empty, assign the User role to unauthenticated users"
   - name: SAPI_ROLE_UBER_ADMIN_GROUPS
     required: true
-- apiVersion: v1
-  kind: ImageStream
-  metadata:
-    labels:
-      app: storage-api
-    name: storage-api
-  spec:
-    tags:
-    - annotations:
-      from:
-        kind: DockerImage
-      generation: 20
-      importPolicy: {}
-      name: storage-api
-  status:
-    dockerImageRepository: ""

@@ -88,8 +88,10 @@ lint:
   script:
     - make lint
 
-### 'Import image' stage
-### Loads the build tag into OpenShift
+## Ugly hack: tag whatever tagged image we built as :latest on
+## OpenShift, causing it to (re)deploy that. Unfortunately, OS does not
+## speak versions, as far as I understand it.
+## Also, for good measure: actually import the image.
 dev-deploy:
   when: manual
   only:
@@ -98,7 +100,7 @@ dev-deploy:
   environment: dev
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
-    - oc --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n test-${NAMESPACE} tag ${RESOURCE}:${CI_BUILD_TAG:-latest} ${RESOURCE}:${CI_BUILD_TAG:-latest}
+    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace test-${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/${RESOURCE}:${CI_BUILD_TAG:-latest} ${RESOURCE}:latest
     - oc import-image ${RESOURCE}:${CI_BUILD_TAG:-latest} --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n test-${NAMESPACE}
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
