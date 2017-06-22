@@ -100,8 +100,8 @@ dev-deploy:
   environment: dev
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
-    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace test-${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/${RESOURCE}:${CI_BUILD_TAG:-latest} ${RESOURCE}:latest
     - oc import-image ${RESOURCE}:${CI_BUILD_TAG:-latest} --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n test-${NAMESPACE}
+    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace test-${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/${RESOURCE}:${CI_BUILD_TAG:-latest} ${RESOURCE}:latest
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
     GIT_STRATEGY: none
