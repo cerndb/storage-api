@@ -144,14 +144,22 @@ tests can be increased using `-vvvv` with a variable number of `v`:s
 
 ## Deployment
 
-The API is deployed via a standard Docker container to
-OpenShift. Provided you are authenticated with CERN's GitLab as a
-registry in Docker, running `make image push-image` will compile the
-image and push it to the registry. If you have also set
-`OPENSHIFT_PUSH_TOKEN` to an authentication token with access to pushing
-images to the the OpenShift project, `make deploy-os` will finally
-deploy the new image to OpenShift as a rolling deployment. The entire
-process can be run with `make image push-image deploy-os`.
+The API is deployed via a standard Docker container to OpenShift. It is
+automatically built by the GitLab Continuous Integration system on
+tagged releases; whenever a tag is pushed to the GitLab repository, a
+corresponding Docker Image is built and tagged with the same
+tag. Additionally, a template for OpenShift is available at
+`storage-api-openshift-template`. During version releases, the template
+will be pushed to both production and test environments automatically,
+as the operation doesn't affect the currently running service.
+
+Whenever all the build steps have passed, images can be manually
+deployed from the GitLab Pipeline to OpenShift using the jobs
+`dev-deploy` and `prod-deploy` respectively.
+
+To start a release, run `make push_version`, which will automatically
+tag the current tree with the corresponding version (as extracted from
+the source code), and commence the process.
 
 ## Documentation
 

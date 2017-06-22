@@ -10,7 +10,6 @@ variables:
   ### You shouldn't change the following variables
   NAMESPACE: it-db-storage-api
   OPENSHIFT_SERVER: https://openshift-dev.cern.ch
-  OPENSHIFT_SERVER_PROD: https://openshift.cern.ch
 
 stages:
  - test
@@ -44,13 +43,6 @@ build-latest:
   tags:
   - docker-image-build
   script: "echo 'Building Docker image...'"
-
-
-# deploy-openshift:
-#   allow_failure: true
-#   stage: deploy
-#   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
-#   script: "oc import-image $IMAGE_NAME  --server=$OPENSHIFT_SERVER --token=$IMAGE_IMPORT_TOKEN --namespace $OPENSHIFT_PROJECT_NAME"
 
 build-doc:
   image: python:3
@@ -106,6 +98,21 @@ dev-deploy:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
     GIT_STRATEGY: none
 
+prod-deploy:
+  when: manual
+  only:
+    - tags
+  stage: deploy
+  environment: prod
+  image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
+  script:
+    - oc import-image ${RESOURCE}:${CI_BUILD_TAG:-latest} --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n ${NAMESPACE}
+    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace ${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/${RESOURCE}:${CI_BUILD_TAG:-latest} ${RESOURCE}:latest
+  variables:
+    TOKEN: ${SERVICE_ACCOUNT_TOKEN_PROD}
+    GIT_STRATEGY: none
+    OPENSHIFT_SERVER: https://openshift.cern.ch
+
 dev-template:
   stage: provision
   environment: dev
@@ -131,3 +138,4 @@ prod-template:
     - oc replace template --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n ${NAMESPACE} -f storage-api-openshift-template.yaml
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_PROD}
+    OPENSHIFT_SERVER: https://openshift.cern.ch
