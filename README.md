@@ -127,7 +127,7 @@ Back-ends are configured using the following pattern:
   Please note that it is perfectly possible to set up multiple endpoints
   with the same back-end, e.g. multiple NetApp filers or clusters with
   different vservers on different endpoints. Endpoints needs to be
-  unique though.
+  unique though.q
  
 **Without at least one configured endpoint, the app will not run.**
 

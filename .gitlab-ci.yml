@@ -65,6 +65,7 @@ deploy-doc:
   stage: deploy
   only:
     - master
+    - tags
   image: gitlab-registry.cern.ch/ci-tools/ci-web-deployer:latest
   script:
     - deploy-dfs
@@ -92,8 +93,8 @@ dev-deploy:
   environment: dev
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
-    - oc import-image ${RESOURCE}:${CI_BUILD_TAG:-latest} --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n test-${NAMESPACE}
     - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace test-${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/${RESOURCE}:${CI_BUILD_TAG:-latest} ${RESOURCE}:latest
+    - oc import-image ${RESOURCE}:latest --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n test-${NAMESPACE}
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
     GIT_STRATEGY: none
@@ -106,8 +107,8 @@ prod-deploy:
   environment: prod
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
-    - oc import-image ${RESOURCE}:${CI_BUILD_TAG:-latest} --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n ${NAMESPACE}
     - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace ${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/${RESOURCE}:${CI_BUILD_TAG:-latest} ${RESOURCE}:latest
+    - oc import-image ${RESOURCE}:latest --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n ${NAMESPACE}
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_PROD}
     GIT_STRATEGY: none
