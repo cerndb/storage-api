@@ -663,7 +663,7 @@ class NetappStorage(StorageBackend):
                                         username=username,
                                         password=password,
                                         vserver=vserver,
-                                        timeout_s=timeout_s)
+                                        timeout_s=int(timeout_s))
         import requests
 
         # FIXME: implement proper certificates, Miro!
