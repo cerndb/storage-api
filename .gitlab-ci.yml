@@ -128,7 +128,6 @@ dev-template:
 prod-template:
   stage: provision
   environment: prod
-  when: manual
   only:
     - tags
     - master

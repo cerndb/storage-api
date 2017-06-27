@@ -110,6 +110,8 @@ objects:
     labels:
       app: storage-api
     name: slash
+    annotations:
+      haproxy.router.openshift.io/timeout: 60s
   spec:
     port:
       targetPort: 8000-tcp
