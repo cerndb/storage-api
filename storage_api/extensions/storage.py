@@ -734,8 +734,9 @@ class NetappStorage(StorageBackend):
         """
 
         return [self.format_volume(v) for v in self.server.volumes
-                if not re.match("^aggr0.*", v.containing_aggregate_name)
-                and not v.state == 'restricted']
+                if not v.state == 'restricted'
+                and v.containing_aggregate_name
+                and not re.match("^aggr0.*", v.containing_aggregate_name)]
 
     @normalised_with('volume', allow_unknown=True)
     def get_volume(self, volume_name):
