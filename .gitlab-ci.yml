@@ -34,7 +34,7 @@ build-tag:
    - docker-image-build
   script: "echo building $CI_REGISTRY_IMAGE" # No empty scripts are allowed
   variables:
-   TO: $CI_REGISTRY_IMAGE:${CI_BUILD_TAG} # Where to push resulting image
+   TO: $CI_REGISTRY_IMAGE:${CI_COMMIT_TAG} # Where to push resulting image
 
 build-latest:
   stage: build
@@ -93,7 +93,7 @@ dev-deploy:
   environment: dev
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
-    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace test-${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/${RESOURCE}:${CI_BUILD_TAG:-latest} ${RESOURCE}:latest
+    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace test-${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/${RESOURCE}:${CI_COMMIT_TAG:-latest} ${RESOURCE}:latest
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
     GIT_STRATEGY: none
@@ -106,7 +106,7 @@ prod-deploy:
   environment: prod
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
-    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace ${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/${RESOURCE}:${CI_BUILD_TAG:-latest} ${RESOURCE}:latest
+    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace ${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/${RESOURCE}:${CI_COMMIT_TAG:-latest} ${RESOURCE}:latest
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_PROD}
     GIT_STRATEGY: none
