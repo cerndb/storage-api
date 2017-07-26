@@ -75,7 +75,12 @@ deploy-os-dev:
 	oc import-image --token ${OPENSHIFT_PUSH_TOKEN_DEV} --namespace it-db-storage-api-dev --server "https://openshift.cern.ch" "db/storage-api-mirror-dev:$(VERSION)"
 
 run:
-	docker run -it --rm --publish-all "gitlab-registry.cern.ch/db/storage-api-mirror:runner"
+	docker run -it --rm --publish=8000:8000 \
+	-e SAPI_BACKENDS=dummy🌈DummyStorage \
+	-e SAPI_OAUTH_CLIENT_ID=blergh \
+	-e SAPI_OAUTH_SECRET_KEY=bork \
+	-e FLASK_APP=storage_api.app \
+	-e FLASK_DEBUG=true "gitlab-registry.cern.ch/db/storage-api-mirror:runner"
 
 push_version:
 	make test
