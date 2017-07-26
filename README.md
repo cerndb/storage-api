@@ -127,7 +127,7 @@ Back-ends are configured using the following pattern:
   Please note that it is perfectly possible to set up multiple endpoints
   with the same back-end, e.g. multiple NetApp filers or clusters with
   different vservers on different endpoints. Endpoints needs to be
-  unique though.q
+  unique though.
  
 **Without at least one configured endpoint, the app will not run.**
 
@@ -153,6 +153,12 @@ tag. Additionally, a template for OpenShift is available at
 will be pushed to both production and test environments automatically,
 as the operation doesn't affect the currently running service.
 
+OpenShift's HAProxy is set to a very long timeout for the route -- about
+60 seconds (see the template), and the same goes for uwsgi's harakiri
+setting. This is due to the fact that volume listings on big production
+filers can take a long while to complete -- closer to a minute in a
+worst-case scenario.
+
 Whenever all the build steps have passed, images can be manually
 deployed from the GitLab Pipeline to OpenShift using the jobs
 `dev-deploy` and `prod-deploy` respectively.
@@ -168,4 +174,6 @@ flask-restplus and served at the path `/`, with a JSON description
 available at `/swagger.json`. A HTML version is also rendered by
 [Spectacle](http://sourcey.com/spectacle/) and published automatically
 by GihLab CI to
-[https://db-storage-api-docs.web.cern.ch](https://db-storage-api-docs.web.cern.ch) (only CERN-internal, unfortunately).
+[https://db-storage-api-docs.web.cern.ch](https://db-storage-api-docs.web.cern.ch)
+(only CERN-internal, unfortunately). A copy is also
+[available at GitHub pages](http://cerndb.github.io/storage-api/).
