@@ -661,7 +661,7 @@ def test_put_export_rule(client, namespace, auth, policy_status, policy_name):
 
     with maybe_authorised(client, authorised):
         for rule in rules:
-            put_code, _ = _put(client, ("{}/{}".format(policy, rule)))
+            put_code, _ = _put(client, ("{}/rule/{}".format(policy, rule)))
             put_codes.append(put_code)
 
     with user_set(client):
@@ -702,7 +702,7 @@ def test_delete_export_rule(client, namespace, auth,
 
     with maybe_authorised(client, authorised):
         for rule in rules:
-            delete_code, _ = _delete(client, ("{}/{}".format(policy, rule)))
+            delete_code, _ = _delete(client, ("{}/rule/{}".format(policy, rule)))
             delete_codes.append(delete_code)
 
     with user_set(client):
@@ -719,3 +719,31 @@ def test_delete_export_rule(client, namespace, auth,
         assert all(filter(lambda c: c == 201, delete_codes))
         assert get_code == 200
         assert get_result['rules'] == []
+
+
+def test_create_get_export_rule_with_slash(client):
+    policy_name = "192.168.0.0/24"
+    policy = 'dummy/export/{}'.format(policy_name)
+    with user_set(client):
+        post_code, _ = _post(client, policy, data={'rules': []})
+        assert post_code == 201
+        get_code, _ = _get(client, policy)
+        assert get_code == 200
+
+
+def test_put_to_export_rule_with_slash(client):
+    policy_name = "192.168.2.0/24"
+    policy = 'dummy/export/{}'.format(policy_name)
+    rules = []
+
+    with user_set(client):
+        post_code, _ = _post(client, policy, data={'rules': []})
+        assert post_code == 201
+        get_code, _ = _get(client, policy)
+        assert get_code == 200
+
+        rules = ["127.0.0.1", "10.10.10.1/24"]
+
+        for rule in rules:
+            put_code, _ = _put(client, ("{}/rule/{}".format(policy, rule)))
+            assert put_code == 201

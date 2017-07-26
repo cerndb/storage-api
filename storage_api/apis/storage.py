@@ -401,7 +401,7 @@ class AllExports(Resource):
             return backend(subsystem).policies
 
 
-@api.route('/<string:subsystem>/export/<string:policy>')
+@api.route('/<string:subsystem>/export/<path:policy>')
 @api.param('subsystem', SUBSYSTEM_DESCRIPTION)
 @api.param('policy', "The policy to operate on")
 class Export(Resource):
@@ -439,7 +439,7 @@ class Export(Resource):
         return '', 204
 
 
-@api.route('/<string:subsystem>/export/<string:policy>/<path:rule>')
+@api.route('/<string:subsystem>/export/<path:policy>/rule/<path:rule>')
 @api.param('subsystem', SUBSYSTEM_DESCRIPTION)
 @api.param('policy', "The policy to operate on")
 @api.param('rule', "The policy rule to operate on")

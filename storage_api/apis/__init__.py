@@ -17,7 +17,7 @@ authorizations = {}
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
-__version__ = '2.0.3'
+__version__ = '3.0.0'
 
 api = Api(
     title='CERN Unified Storage API',
