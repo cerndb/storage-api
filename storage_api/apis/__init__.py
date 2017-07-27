@@ -12,13 +12,15 @@ import logging
 from flask_restplus import Api
 
 from .storage import api as unified_ns
+from .introspect import api as introspection_ns
 from .common.auth import authorizations
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 SAPI_MOUNTPOINT = "/sapi"
+INTROSPECTION_MOUNTPOINT = "/conf"
 
-__version__ = '3.0.0'
+__version__ = '3.1.0'
 
 api = Api(
     title='CERN Unified Storage API',
@@ -26,7 +28,7 @@ api = Api(
     description='A unified storage API for all data-storage back-ends.',
     authorizations=authorizations,
     validate=True,
-    default="sapi",
 )
 
 api.add_namespace(unified_ns, path=SAPI_MOUNTPOINT)
+api.add_namespace(introspection_ns, path=INTROSPECTION_MOUNTPOINT)

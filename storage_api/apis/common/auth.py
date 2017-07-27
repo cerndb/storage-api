@@ -125,6 +125,36 @@ def setup_oauth(app, login_endpoint, logout_endpoint):
         return flask.session.get('cern_token')
 
 
+def is_in_role(group_name):
+    user = session.get('user', None)
+    if not user:
+        current_app.logger.error("User not authenticated at all!")
+        if current_app.config['USER_IS_UNAUTHENTICATED'] and \
+           group_name == USER_ROLE:
+            current_app.logger.info("Setting user role...")
+            user = {}
+            user['roles'] = set([USER_ROLE])
+            session.user = user
+        else:
+            return False
+
+        current_app.logger.info("Testing if user is in group {}"
+                                .format(group_name))
+
+    if group_name in user.get('roles', []):
+        current_app.logger.info("The user had role {}!"
+                                .format(group_name))
+        return True
+    else:
+        current_app.logger.error("Logged-in user did not have role {}"
+                                 .format(group_name))
+        current_app.logger.debug("User had roles {}"
+                                 .format(", "
+                                         .join(user.get('roles', []))))
+
+        return False
+
+
 def in_role(api, group_name):
     """
     Decorator: call flask.abort(403) if user is not in the specified
@@ -149,33 +179,10 @@ def in_role(api, group_name):
                       .format(group_name), model=None)
         @api.doc(security=[{'sso': ['read', 'write']}])
         def group_wrapper(*args, **kwargs):
-            user = session.get('user', None)
-            if not user:
-                current_app.logger.error("User not authenticated at all!")
-                if current_app.config['USER_IS_UNAUTHENTICATED'] and \
-                   group_name == USER_ROLE:
-                    current_app.logger.info("Setting user role...")
-                    user = {}
-                    user['roles'] = set([USER_ROLE])
-                    session.user = user
-                else:
-                    api.abort(403, "The current user is not logged in!")
-
-            current_app.logger.info("Testing if user is in group {}"
-                                    .format(group_name))
-
-            if group_name in user.get('roles', []):
-                current_app.logger.info("The user had role {}!"
-                                        .format(group_name))
-                return func(*args, **kwargs)
+            if not is_in_role(group_name):
+                api.abort(403, ("The current user is not in role {}"
+                                .format(group_name)))
             else:
-                current_app.logger.error("Logged-in user did not have role {}"
-                                         .format(group_name))
-                current_app.logger.debug("User had roles {}"
-                                         .format(", "
-                                                 .join(user.get('roles', []))))
-
-                api.abort(403, "The user does not have the role {}"
-                          .format(group_name))
+                return func(*args, **kwargs)
         return group_wrapper
     return group_decorator
