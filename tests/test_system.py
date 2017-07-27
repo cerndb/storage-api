@@ -1,4 +1,5 @@
 from storage_api import extensions
+from storage_api.apis import SAPI_MOUNTPOINT
 
 import json
 from contextlib import contextmanager
@@ -15,6 +16,8 @@ import pytest
 
 _DEFAULT_HEADERS = {'Content-Type': 'application/json',
                     'Accept': 'application/json'}
+
+ROOT_URL = SAPI_MOUNTPOINT
 
 
 class LiveTests(LiveServerTestCase):
@@ -112,11 +115,12 @@ class GenericLiveTests(LiveTests):
                     reason="Requires a live filer")
 class NetappLiveTests(LiveTests):
     def test_netapp_create_delete_volume(self):
+        ns = "%s/test" % ROOT_URL
         s = self.login_session()
         url = self.get_server_url()
         with self.perform(
                 'post',
-                "/test/volumes/nothing:/test_volume_api_system_test_14",
+                "%s/volumes/nothing:/test_volume_api_system_test_14" % ns,
                 payload=json.dumps({'name':
                                     'my_test_volume_api_system_test_14',
                                     'size_total': 20971520})) as (r, code):
@@ -124,17 +128,20 @@ class NetappLiveTests(LiveTests):
             try:
                 assert code == 201
                 all_names = [v['name'] for v in
-                             s.get(url + "/test/volumes").json()]
+                             s.get(url + "{}/test/volumes"
+                                   .format(ns)).json()]
                 assert r['name'] in all_names
 
-                r2 = s.delete(url + "/test/volumes/{}:{}"
-                              .format(r['filer_address'],
+                r2 = s.delete(url + "{}/test/volumes/{}:{}"
+                              .format(ns,
+                                      r['filer_address'],
                                       r['junction_path']),
                               headers=_DEFAULT_HEADERS)
                 assert r2.status_code == 204
 
                 assert r['name'] not in [v['name'] for v in
-                                         s.get(url + "/test/volumes").json()]
+                                         s.get(url + "%s/test/volumes" % ns)\
+                                         .json()]
             finally:
                 try:
                     self.hard_delete_volume(volume_name=r['name'])
@@ -142,8 +149,9 @@ class NetappLiveTests(LiveTests):
                     pass
 
     def test_get_protected_resource(self):
-        url = self.get_server_url()
+        url = self.get_server_url() + ROOT_URL
         s = self.login_session()
+
 
         r1 = s.post(url + "/test/volumes/bork", data=json.dumps({}),
                     headers=_DEFAULT_HEADERS)
@@ -161,7 +169,7 @@ class NetappLiveTests(LiveTests):
             result = r1.json()  # noqa
 
     def test_netapp_get_specific_volume(self):
-        url = self.get_server_url()
+        url = self.get_server_url() + ROOT_URL
         s = self.login_session()
 
         NUM_COMPARISONS = 5

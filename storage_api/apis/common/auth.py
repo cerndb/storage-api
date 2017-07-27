@@ -21,6 +21,13 @@ USER_ROLE = 'USER_ROLE'
 ADMIN_ROLE = 'ADMIN_ROLE'
 UBER_ADMIN_ROLE = 'UBER_ADMIN_ROLE'
 
+# Warning! This is an ugly hack: this information is needed when the API
+# is initialised and so has to be static. However, the autorisation URL
+# in particular is set later in the process.
+authorizations = {"sso": {"type": "oauth2",
+                          "authorizationUrl": "/login",
+                          "flow": "implicit"}}
+
 
 def setup_roles_from_env(app):
     """

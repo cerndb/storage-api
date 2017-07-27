@@ -12,10 +12,11 @@ import logging
 from flask_restplus import Api
 
 from .storage import api as unified_ns
-authorizations = {}
-
+from .common.auth import authorizations
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
+
+SAPI_MOUNTPOINT = "/sapi"
 
 __version__ = '3.0.0'
 
@@ -25,6 +26,7 @@ api = Api(
     description='A unified storage API for all data-storage back-ends.',
     authorizations=authorizations,
     validate=True,
+    default="sapi",
 )
 
-api.add_namespace(unified_ns)
+api.add_namespace(unified_ns, path=SAPI_MOUNTPOINT)

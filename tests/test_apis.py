@@ -1,4 +1,5 @@
 from storage_api.apis import common
+from storage_api.apis import SAPI_MOUNTPOINT
 from storage_api.utils import compose_decorators
 
 import json
@@ -19,6 +20,8 @@ _DEFAULT_HEADERS = {'Content-Type': 'application/json',
                     'Accept': 'application/json'}
 
 log = logging.getLogger(__name__)
+
+ROOT_URL = SAPI_MOUNTPOINT
 
 
 def nice_strings(bad_chars):
@@ -41,7 +44,8 @@ policy_name_strings = partial(nice_strings,
                               bad_chars=['\n', '/', '?', '#', '%'])
 
 # Useful parameterisations:
-params_namespaces = pytest.mark.parametrize('namespace', ["ceph", "netapp"])
+params_namespaces = pytest.mark.parametrize('namespace', [ROOT_URL + "/ceph",
+                                                          ROOT_URL + "/netapp"])
 params_vol_presence = pytest.mark.parametrize('vol_exists',
                                               ["vol_present", "vol_absent"])
 params_policy_presence = pytest.mark.parametrize(
@@ -120,7 +124,7 @@ _patch = partial(_open, method="PATCH")
 
 
 def init_vols_from_params(client, namespace, auth, vol_exists, volume_name):
-    volume_resource = '/{}/volumes/{}'.format(namespace, volume_name)
+    volume_resource = '{}/volumes/{}'.format(namespace, volume_name)
     authorised = auth == "authorised"
     volume_exists = vol_exists == "vol_present"
 
@@ -146,7 +150,7 @@ def maybe_authorised(client, authorised):
 
 @params_namespaces
 def test_list_no_volumes(client, namespace):
-    code, response = _get(client, "/{}/volumes".format(namespace))
+    code, response = _get(client, "{}/volumes".format(namespace))
     assert code == 200
     assert response == []
 
@@ -154,7 +158,7 @@ def test_list_no_volumes(client, namespace):
 @params_namespaces
 def test_post_to_existing_volume_errors(client, namespace):
     volume_name = "samevolume"
-    resource = '/{}/volumes/{}'.format(namespace, volume_name)
+    resource = '{}/volumes/{}'.format(namespace, volume_name)
     with user_set(client):
         post_code, post_response = _post(client, resource, data={})
         assert post_code == 201
@@ -168,7 +172,7 @@ def test_post_to_existing_volume_errors(client, namespace):
     assert 'errors' not in stored_resource
     assert stored_resource['name'] == volume_name
 
-    assert len(_get(client, '/{}/volumes'.format(namespace))[1]) == 1
+    assert len(_get(client, '{}/volumes'.format(namespace))[1]) == 1
 
 
 @params_vol_ns_auth
@@ -242,7 +246,7 @@ def test_delete_volume(client, auth, vol_exists, volume_name, namespace):
 
 @params_namespaces
 def test_create_wrong_group(client, namespace):
-    resource = '/{}/volumes/wrong_group'.format(namespace)
+    resource = '{}/volumes/wrong_group'.format(namespace)
 
     with user_set(client, user={'group': ['completely-unauthorised-group']}):
         post_code, _post_result = _post(client, resource, data={})
@@ -254,7 +258,7 @@ def test_create_wrong_group(client, namespace):
 
 @params_namespaces
 def test_create_snapshot_from_volume(client, namespace):
-    volume = '/{}/volumes/{}'.format(namespace, uuid.uuid1())
+    volume = '{}/volumes/{}'.format(namespace, uuid.uuid1())
 
     with user_set(client):
         _post_code, _post_result = _post(client, volume,
@@ -286,7 +290,7 @@ def test_create_snapshot_from_volume(client, namespace):
 
 @params_namespaces
 def test_rollback_from_snapshot(client, namespace):
-    volume = '/{}/volumes/{}'.format(namespace, uuid.uuid1())
+    volume = '{}/volumes/{}'.format(namespace, uuid.uuid1())
 
     snapshot_name = "snapshot"
     snapshot_resource = "{}/snapshots/{}".format(volume, snapshot_name)
@@ -305,7 +309,7 @@ def test_rollback_from_snapshot(client, namespace):
 @params_namespaces
 def test_clone_from_snapshot(client, namespace):
     master_name = str(uuid.uuid1())
-    volume = '/{}/volumes/{}'.format(namespace, master_name)
+    volume = '{}/volumes/{}'.format(namespace, master_name)
     clone_volume = '{}/volumes/{}'.format(namespace, "clone")
 
     snapshot_name = "snapshot"
@@ -326,7 +330,7 @@ def test_clone_from_snapshot(client, namespace):
 @params_namespaces
 def test_clone_from_snapshot_name_collission(client, namespace):
     volume_name = str(uuid.uuid1())
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    volume = '{}/volumes/{}'.format(namespace, volume_name)
 
     snapshot_name = "snapshot"
     snapshot_resource = "{}/snapshots/{}".format(volume, snapshot_name)
@@ -346,7 +350,7 @@ def test_clone_from_snapshot_name_collission(client, namespace):
 @params_namespaces
 def test_clone_from_snapshot_source_does_not_exist(client, namespace):
     volume_name = str(uuid.uuid1())
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    volume = '{}/volumes/{}'.format(namespace, volume_name)
 
     with user_set(client):
         post_code, post_result = _post(client,
@@ -391,7 +395,7 @@ def test_patch_volume(client, namespace, vol_exists, auth,
 def test_delete_snapshot_nonexistent_snapshot_and_volume(client,
                                                          namespace,
                                                          volume_name):
-    volume = '/{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
+    volume = '{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
     snapshot = '{}/snapshots/my-snapshot'.format(volume, volume_name)
 
     with user_set(client):
@@ -412,7 +416,7 @@ def test_delete_snapshot_nonexistent_snapshot_and_volume(client,
 @params_namespaces
 @params_auth_status
 def test_delete_snapshot(client, namespace, auth, volume_name):
-    volume = '/{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
+    volume = '{}/volumes/{}-{}'.format(namespace, volume_name, namespace)
     snapshot = '{}/snapshots/my-snapshot'.format(volume, volume_name)
     authorised = auth == "authorised"
 
@@ -442,7 +446,7 @@ def test_delete_snapshot(client, namespace, auth, volume_name):
 @params_volume_names
 @params_namespaces
 def test_get_empty_locks(client, namespace, volume_name):
-    volume = '/{}/volumes/{}'.format(namespace, volume_name, namespace)
+    volume = '{}/volumes/{}'.format(namespace, volume_name, namespace)
     with user_set(client):
         _post(client, volume)
     get_code, get_result = _get(client, volume + '/locks')
@@ -517,7 +521,7 @@ def test_force_lock_on_volume(client, namespace,
 def test_lock_locked_volume(client, namespace, volume_name):
     host1 = "dbhost1.cern.ch"
     host2 = "dbhost2.cern.ch"
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    volume = '{}/volumes/{}'.format(namespace, volume_name)
     lock1 = '{}/locks/{}'.format(volume, host1)
     lock2 = '{}/locks/{}'.format(volume, host2)
 
@@ -540,7 +544,7 @@ def test_lock_locked_volume(client, namespace, volume_name):
 @params_namespaces
 def test_lock_volume_idempotent(client, namespace, volume_name):
     host = "dbhost1.cern.ch"
-    volume = '/{}/volumes/{}'.format(namespace, volume_name)
+    volume = '{}/volumes/{}'.format(namespace, volume_name)
     lock = '{}/locks/{}'.format(volume, host)
 
     with user_set(client):
@@ -721,9 +725,10 @@ def test_delete_export_rule(client, namespace, auth,
         assert get_result['rules'] == []
 
 
-def test_create_get_export_rule_with_slash(client):
+@params_namespaces
+def test_create_get_export_rule_with_slash(client, namespace):
     policy_name = "192.168.0.0/24"
-    policy = 'dummy/export/{}'.format(policy_name)
+    policy = '{}/export/{}'.format(namespace, policy_name)
     with user_set(client):
         post_code, _ = _post(client, policy, data={'rules': []})
         assert post_code == 201
@@ -731,9 +736,10 @@ def test_create_get_export_rule_with_slash(client):
         assert get_code == 200
 
 
-def test_put_to_export_rule_with_slash(client):
+@params_namespaces
+def test_put_to_export_rule_with_slash(client, namespace):
     policy_name = "192.168.2.0/24"
-    policy = 'dummy/export/{}'.format(policy_name)
+    policy = '{}/export/{}'.format(namespace, policy_name)
     rules = []
 
     with user_set(client):

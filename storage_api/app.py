@@ -19,11 +19,14 @@ from flask import Flask
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
+
 api.init_app(app)
 conf.load_backend_conf(app, backends_module=extensions)
 conf.load_oauth_conf(app)
 auth.setup_roles_from_env(app)
-auth.setup_oauth(app, login_endpoint="/login", logout_endpoint="/logout")
+auth.setup_oauth(app,
+                 login_endpoint=auth.authorizations['sso']['authorizationUrl'],
+                 logout_endpoint="/logout")
 
 
 if __name__ == '__main__':

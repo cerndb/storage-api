@@ -23,7 +23,7 @@ from flask_restplus import Namespace, Resource, fields, marshal
 from flask import current_app
 from netapp.api import APIError
 
-api = Namespace('/',
+api = Namespace('sapi',
                 description='Storage operations')
 
 log = logging.getLogger(__name__)
