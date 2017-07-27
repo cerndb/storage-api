@@ -24,7 +24,7 @@ class Subsystems(Resource):
         return list(current_app.config['SUBSYSTEM'].keys())
 
 
-@api.route('/role')
+@api.route('/roles')
 class Roles(Resource):
 
     @api.doc(description="Get a list of all available roles")
@@ -32,7 +32,7 @@ class Roles(Resource):
         return USER_ROLES
 
 
-@api.route('/role/<string:role>/egroups')
+@api.route('/roles/<string:role>/egroups')
 class RoleEgroups(Resource):
 
     @api.doc(description="Get a list of all egroups for a given role")
@@ -43,7 +43,7 @@ class RoleEgroups(Resource):
             return list(current_app.config['{}_GROUPS'.format(role)])
 
 
-@api.route('/role/<string:role>/am_i_a')
+@api.route('/roles/<string:role>/am_i_a')
 class AmIA(Resource):
 
     @api.doc(description=("Returns True if the user is the given role,"
