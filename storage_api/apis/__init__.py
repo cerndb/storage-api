@@ -17,10 +17,10 @@ from .common.auth import authorizations
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
-SAPI_MOUNTPOINT = "/sapi"
+__version__ = '3.2.0'
+__major_version__ = __version__.split(".")[0]
 INTROSPECTION_MOUNTPOINT = "/conf"
-
-__version__ = '3.1.0'
+SAPI_MOUNTPOINT = "/v{}".format(__major_version__)
 
 api = Api(
     title='CERN Unified Storage API',

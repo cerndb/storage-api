@@ -1,7 +1,7 @@
 import logging
 
 from flask_restplus import Namespace, Resource
-from flask import current_app
+from flask import current_app, session
 
 from .common.auth import USER_ROLES
 from .common import auth
@@ -14,6 +14,9 @@ api = Namespace('introspect',
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
+
+role_param = api.param('role', "The name of a role, one of {}."
+                       .format(", ".join(USER_ROLES)))
 
 
 @api.route('/subsystems')
@@ -33,6 +36,7 @@ class Roles(Resource):
 
 
 @api.route('/roles/<string:role>/egroups')
+@role_param
 class RoleEgroups(Resource):
 
     @api.doc(description="Get a list of all egroups for a given role")
@@ -44,6 +48,7 @@ class RoleEgroups(Resource):
 
 
 @api.route('/roles/<string:role>/am_i_a')
+@role_param
 class AmIA(Resource):
 
     @api.doc(description=("Returns True if the user is the given role,"
@@ -51,3 +56,11 @@ class AmIA(Resource):
     def get(self, role):
         role_content = getattr(auth, '{}_ROLE'.format(role))
         return auth.is_in_role(role_content)
+
+
+@api.route('/me/roles')
+class UserRoles(Resource):
+
+    @api.doc(description="List the roles of the current user")
+    def get(self):
+        return list(auth.user_roles())

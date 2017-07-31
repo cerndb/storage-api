@@ -126,33 +126,7 @@ def setup_oauth(app, login_endpoint, logout_endpoint):
 
 
 def is_in_role(group_name):
-    user = session.get('user', None)
-    if not user:
-        current_app.logger.error("User not authenticated at all!")
-        if current_app.config['USER_IS_UNAUTHENTICATED'] and \
-           group_name == USER_ROLE:
-            current_app.logger.info("Setting user role...")
-            user = {}
-            user['roles'] = set([USER_ROLE])
-            session.user = user
-        else:
-            return False
-
-        current_app.logger.info("Testing if user is in group {}"
-                                .format(group_name))
-
-    if group_name in user.get('roles', []):
-        current_app.logger.info("The user had role {}!"
-                                .format(group_name))
-        return True
-    else:
-        current_app.logger.error("Logged-in user did not have role {}"
-                                 .format(group_name))
-        current_app.logger.debug("User had roles {}"
-                                 .format(", "
-                                         .join(user.get('roles', []))))
-
-        return False
+    return group_name in user_roles()
 
 
 def in_role(api, group_name):
@@ -186,3 +160,20 @@ def in_role(api, group_name):
                 return func(*args, **kwargs)
         return group_wrapper
     return group_decorator
+
+
+def user_roles():
+    """
+    Return the roles of the current user. Also handles setting the
+    USER_ROLE for non-authenticated users, if enabled.
+    """
+
+    user = session.get('user', None)
+    if not user:
+        current_app.logger.warning("User not authenticated at all!")
+        if current_app.config['USER_IS_UNAUTHENTICATED']:
+            current_app.logger.info("Setting user role...")
+            user = {}
+            user['roles'] = set([USER_ROLE])
+            session.user = user
+    return user.get('roles', set())
