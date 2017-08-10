@@ -1,9 +1,0 @@
-Flask==0.11.1
-flask-restplus==0.10.1
-Flask-OAuthlib==0.9.3
-requests==2.13.0
-ordered-set==2.0.1
-jsonschema==2.5.1
-swagger-spec-validator==2.0.2
-Cerberus==1.1
--e git+https://github.com/cerndb/netapp-api-python.git#egg=netapp-api

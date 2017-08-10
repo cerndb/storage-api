@@ -28,7 +28,7 @@ lint: $(SOURCES)
 .PHONY: lint
 
 devserver.PID:
-	SAPI_BACKENDS="dummy🌈DummyStorage" SAPI_OAUTH_CLIENT_ID="blergh" SAPI_OAUTH_SECRET_KEY="bork" FLASK_APP=storage_api.app FLASK_DEBUG=true flask run & echo $$! > $@;
+	FLASK_APP=storage_api.app FLASK_DEBUG=true flask run & echo $$! > $@;
 
 
 devserver: devserver.PID

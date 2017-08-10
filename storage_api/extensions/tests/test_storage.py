@@ -23,7 +23,7 @@ def id_from_vol(v, backend):
 
 
 def new_volume(backend):
-    run_id = 42
+    run_id = 44
     name = ':/volumename_{}'.format(run_id)
 
     return backend.create_volume(name,
@@ -62,15 +62,16 @@ def on_all_backends(func):
     storage provided here.
     """
 
-    vserver = os.environ.get('ONTAP_VSERVER', 'vs1rac11')
-    ontap_host = os.environ.get('ONTAP_HOST', 'dbnasa-cluster-mgmt')
+    vserver = os.environ.get('ONTAP_VSERVER', 'vserver-placeholder')
+    ontap_host = os.environ.get('ONTAP_HOST', 'host-placeholder')
     ontap_username = os.environ.get('ONTAP_USERNAME', "user-placeholder")
     ontap_password = os.environ.get('ONTAP_PASSWORD', "password-placeholder")
 
     backend = NetappStorage(hostname=ontap_host,
                             username=ontap_username,
                             password=ontap_password,
-                            vserver=vserver)
+                            vserver=vserver,
+                            timeout_s=30)
     recorder = betamax.Betamax(backend.server.session)
 
     @functools.wraps(func)
@@ -235,21 +236,26 @@ def test_set_policy(storage, recorder):
         storage.remove_policy("a_policy_400")
 
 
+@pytest.mark.skipif('ONTAP_HOST' not in os.environ,
+                    reason="Requires a live filer")
 @on_all_backends
 def test_delete_policy(storage, recorder):
     rules = ["host1.db.cern.ch", "db.cern.ch"]
-    policy_name = "a_policy_924"
+    policy_name = "a_policy_925"
 
-    with recorder.use_cassette('delete_policy'):
-        storage.create_policy(policy_name, rules)
-        assert policy_name in [p['name'] for p in storage.policies]
-        storage.remove_policy(policy_name)
-        assert policy_name not in [p['name'] for p in storage.policies]
 
-        storage.create_policy(policy_name, rules)
-        assert policy_name in [p['name'] for p in storage.policies]
-        storage.remove_policy(policy_name)
-        assert policy_name not in [p['name'] for p in storage.policies]
+    storage.create_policy(policy_name, rules)
+    assert storage.get_policy(policy_name=policy_name)
+
+    storage.remove_policy(policy_name)
+    with pytest.raises(KeyError):
+        storage.get_policy(policy_name=policy_name)
+
+    storage.create_policy(policy_name, rules)
+    assert storage.get_policy(policy_name=policy_name)
+    storage.remove_policy(policy_name)
+    with pytest.raises(KeyError):
+        storage.get_policy(policy_name=policy_name)
 
 
 @on_all_backends
@@ -322,56 +328,58 @@ def test_rollback_volume(storage, recorder):
     # FIXME: no way of verifying that something was actually done
 
 
+@pytest.mark.skipif('ONTAP_HOST' not in os.environ,
+                    reason="Requires a live filer")
 @on_all_backends
 def test_ensure_policy_rule_present(storage, recorder):
     rule = "127.0.0.1"
     policy_name = "policy126"
 
-    with recorder.use_cassette('ensure_policy_rule_present',
-                               match_requests_on=['method', 'uri']):
-        storage.create_policy(policy_name=policy_name,
-                              rules=[])
+    storage.create_policy(policy_name=policy_name,
+                          rules=[])
 
-        storage.ensure_policy_rule_absent(policy_name=policy_name,
-                                          rule=rule)
+    storage.ensure_policy_rule_absent(policy_name=policy_name,
+                                      rule=rule)
 
+    storage.ensure_policy_rule_present(policy_name=policy_name,
+                                       rule=rule)
+
+    all_policies = storage.get_policy(policy_name=policy_name)
+
+    assert all_policies == [rule]
+
+    for r in 4 * [rule]:
         storage.ensure_policy_rule_present(policy_name=policy_name,
-                                           rule=rule)
-
-        all_policies = storage.get_policy(policy_name=policy_name)
-
-        assert all_policies == [rule]
-
-        for r in 4 * [rule]:
-            storage.ensure_policy_rule_present(policy_name=policy_name,
-                                               rule=r)
+                                           rule=r)
 
         assert storage.get_policy(policy_name=policy_name) == [rule]
 
-        storage.remove_policy(policy_name)
+    storage.remove_policy(policy_name)
 
 
+@pytest.mark.skipif('ONTAP_HOST' not in os.environ,
+                    reason="Requires a live filer")
 @on_all_backends
 def test_ensure_policy_rule_absent(storage, recorder):
     rule = "127.0.0.1"
     policy_name = "a_policy_53"
-    with recorder.use_cassette('ensure_policy_rule_absent'):
+
+    try:
+        storage.create_policy(policy_name=policy_name,
+                              rules=[rule])
+
+        assert rule in storage.get_policy(policy_name=policy_name)
+
+        for _ in range(1, 3):
+            storage.ensure_policy_rule_absent(policy_name=policy_name,
+                                              rule=rule)
+
+        assert storage.get_policy(policy_name=policy_name) == []
+    finally:
         try:
-            storage.create_policy(policy_name=policy_name,
-                                  rules=[rule])
-
-            assert rule in storage.get_policy(policy_name=policy_name)
-
-            for _ in range(1, 3):
-                storage.ensure_policy_rule_absent(policy_name=policy_name,
-                                                  rule=rule)
-
-            assert storage.get_policy(policy_name=policy_name) == []
-        finally:
-            try:
-                storage.remove_policy(policy_name=policy_name)
-            except KeyError:
-                pass
+            storage.remove_policy(policy_name=policy_name)
+        except KeyError:
+            pass
 
 
 @on_all_backends
@@ -542,24 +550,25 @@ def test_netapp_create_volume_w_compression(storage, recorder):
             delete_volume(storage, new_vol['name'])
 
 
+@pytest.mark.skipif('ONTAP_HOST' not in os.environ,
+                    reason="Requires a live filer")
 @on_all_backends
 def test_all_policies_formatting_bug(storage, recorder):
     rules = ["host1.db.cern.ch", "db.cern.ch", "foo.cern.ch"]
 
-    with recorder.use_cassette('all_policies_formatting_bug'):
-        try:
-            storage.create_policy("a_policy_400", rules)
-            found = False
-            for policy in storage.policies:
-                if policy['name'] == "a_policy_400":
-                    assert rules == policy['rules']
-                    found = True
-                    break
+    try:
+        storage.create_policy("a_policy_400", rules)
+        found = False
+        for policy in storage.policies:
+            if policy['name'] == "a_policy_400":
+                assert rules == policy['rules']
+                found = True
+                break
 
-            assert found
+        assert found
 
-        finally:
-            storage.remove_policy("a_policy_400")
+    finally:
+        storage.remove_policy("a_policy_400")
 
 
 @on_all_backends

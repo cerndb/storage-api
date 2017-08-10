@@ -23,6 +23,7 @@ from contextlib import contextmanager
 import functools
 from typing import Dict, Any
 import re
+from datetime import datetime
 
 from ordered_set import OrderedSet
 import cerberus
@@ -30,39 +31,47 @@ import flask
 import netapp.api
 
 log = logging.getLogger(__name__)
-SCHEMAS = [('volume', {
-    'name': {'type': 'string', 'minlength': 1,
-             'required': True},
+SCHEMAS = [
+    ('volume', {
+        'name': {'type': 'string', 'minlength': 1,
+                 'required': True},
 
-    'uuid': {'type': 'string', 'minlength': 1,
-             'required': False},
-    'active_policy_name': {'type': 'string', 'minlength': 1,
+        'uuid': {'type': 'string', 'minlength': 1,
+                 'required': False},
+        'active_policy_name': {'type': 'string', 'minlength': 1,
+                               'required': False},
+        'junction_path': {'type': 'string', 'minlength': 1,
+                          'required': False},
+        'aggregate_name': {'type': 'string', 'minlength': 1,
                            'required': False},
-    'junction_path': {'type': 'string', 'minlength': 1,
-                      'required': False},
-    'aggregate_name': {'type': 'string', 'minlength': 1,
-                       'required': False},
-    'state': {'type': 'string', 'minlength': 1,
-              'required': False},
-    'size_used': {'type': 'integer', 'min': 0,
-                  'required': True},
-    'size_total': {'type': 'integer', 'min': 0,
-                   'required': True},
-    'filer_address': {'type': 'string', 'minlength': 1,
+        'state': {'type': 'string', 'minlength': 1,
+                  'required': False},
+        'size_used': {'type': 'integer', 'min': 0,
                       'required': True},
-    'creation_time': {'type': 'datetime',
-                      'required': False},
-    'compression_enabled': {'type': 'boolean',
-                            'required': False},
-    'inline_compression': {'type': 'boolean',
-                           'required': False},
-    'percentage_snapshot_reserve': {'type': 'integer',
-                                    'required': False},
-    'percentage_snapshot_reserve_used': {'type': 'integer',
-                                         'required': False},
-    'caching_policy': {'type': 'string',
-                       'required': False,
-                       'nullable': True},
+        'size_total': {'type': 'integer', 'min': 0,
+                       'required': True},
+        'filer_address': {'type': 'string', 'minlength': 1,
+                          'required': True},
+        'creation_time': {'type': 'datetime',
+                          'required': False},
+        'compression_enabled': {'type': 'boolean',
+                                'required': False},
+        'inline_compression': {'type': 'boolean',
+                               'required': False},
+        'percentage_snapshot_reserve': {'type': 'integer',
+                                        'required': False},
+        'percentage_snapshot_reserve_used': {'type': 'integer',
+                                             'required': False},
+        'caching_policy': {'type': 'string',
+                           'required': False,
+                           'nullable': True},}),
+    ('snapshot',
+     {'name': {'type': 'string', 'minlength': 1,
+               'required': True},
+      'creation_time': {'type': 'datetime',
+                        'required': False},
+      'size_kbytes': {'type': 'integer', 'min': 0,
+                      'required': True},
 })]
 
 cerberus.schema_registry.extend(SCHEMAS)
@@ -617,7 +626,9 @@ class DummyStorage(StorageBackend):
         log.info("Creating snapshot {}:{}".format(volume_name, snapshot_name))
         with annotate_exception(KeyError, vol_404(volume_name)):
             self.snapshots_store[volume_name][snapshot_name] = {
-                'name': snapshot_name}
+                'name': snapshot_name,
+                'size_kbytes': 42,
+                'creation_time': datetime.now()}
 
     def get_snapshot(self, volume_name, snapshot_name):
         log.info("Fetching snapshot {}:{}".format(volume_name, snapshot_name))
@@ -629,6 +640,7 @@ class DummyStorage(StorageBackend):
         self.raise_if_snapshot_absent(volume_name, snapshot_name)
         self.snapshots_store[volume_name].pop(snapshot_name)
 
+    @normalised_with('snapshot', as_list=True)
     def get_snapshots(self, volume_name):
         log.info("Getting snapshots for {}".format(volume_name))
         self.raise_if_volume_absent(volume_name)
@@ -766,9 +778,13 @@ class NetappStorage(StorageBackend):
         self.server.set_volume_export_policy(volume_name=volume_name,
                                              policy_name=policy_name)
 
+    @normalised_with('snapshot', as_list=True)
     def get_snapshots(self, volume_name):
         volume_name = self.parse_volume_name(volume_name)
-        return [{'name': s} for s in self.server.snapshots_of(volume_name)]
+        return [{'name': s.name,
+                 'size_kbytes': s.size_kbytes,
+                 'creation_time': s.creation_time}
+                for s in self.server.snapshots_of(volume_name)]
 
     @property
     def policies(self):

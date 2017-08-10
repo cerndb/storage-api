@@ -1,14 +1,21 @@
--r requirements-runtime.txt
-
-pytest==3.0.5
+pytest==3.2.1
 pytest-cov == 2.3.1
-# pytest-logging==2015.11.4
-hypothesis==3.6.1
+pytest-logging==2015.11.4
+hypothesis==3.17.0
 hypothesis-pytest==0.19.0
-Flask-Testing==0.6.1
+Flask-Testing==0.6.2
 recommonmark==0.4.0
-sphinx-rtd-theme==0.1.9
-Sphinx==1.5.2
-sphinxcontrib-napoleon==0.6.0
+sphinx-rtd-theme==0.2.4
+Sphinx==1.6.3 # Updated from 1.5.2
+sphinxcontrib-napoleon==0.6.1
 betamax==0.8.0
 betamax-serializers==0.2.0
+Flask==0.12.2
+flask-restplus==0.10.1
+Flask-OAuthlib==0.9.4
+requests==2.18.3
+ordered-set==2.0.2
+jsonschema==2.6.0
+swagger-spec-validator==2.1.0
+Cerberus==1.1
+-e git+https://github.com/cerndb/netapp-api-python.git#egg=netapp-api>=0.11.0

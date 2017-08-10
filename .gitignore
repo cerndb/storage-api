@@ -14,3 +14,4 @@ doc/_build/
 doc/source/
 *.egg-info
 /.env
+src

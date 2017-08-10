@@ -19,6 +19,8 @@ betamax.Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
 
 ontap_username = os.environ.get('ONTAP_USERNAME', 'user-placeholder')
 ontap_password = os.environ.get('ONTAP_PASSWORD', 'password-placeholder')
+ontap_hostname = os.environ.get('ONTAP_HOST', 'host-placeholder')
+ontap_vserver = os.environ.get('ONTAP_VSERVER', 'vserver-placeholder')
 
 settings.register_profile("ci", settings(max_examples=10))
 settings.register_profile("exhaustive", settings(max_examples=400))
@@ -54,6 +56,9 @@ with betamax.Betamax.configure() as config:
             ('{0}:{1}'.format(ontap_username,
                               ontap_password)).encode('utf-8'))
         .decode('utf-8'))
+
+    config.define_cassette_placeholder('<ONTAP-HOST>', ontap_hostname)
+    config.define_cassette_placeholder('<ONTAP-VSERVER>', ontap_vserver)
 
 
 @pytest.fixture(scope="function")

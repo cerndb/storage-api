@@ -138,6 +138,8 @@ export_policy_model = api.model('Export Policy', {
 
 snapshot_model = api.model('Snapshot', {
     'name': fields.String(),
+    'size_kbytes': fields.Integer(),
+    'creation_time': fields.DateTime(dt_format='rfc822'),
     })
 
 volume_create_w_snapshot_model = api.inherit(
