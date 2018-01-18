@@ -64,7 +64,7 @@ SCHEMAS = [
                                              'required': False},
         'caching_policy': {'type': 'string',
                            'required': False,
-                           'nullable': True},}),
+                           'nullable': True}, }),
     ('snapshot',
      {'name': {'type': 'string', 'minlength': 1,
                'required': True},
@@ -72,7 +72,7 @@ SCHEMAS = [
                         'required': False},
       'size_kbytes': {'type': 'integer', 'min': 0,
                       'required': True},
-})]
+     })]
 
 cerberus.schema_registry.extend(SCHEMAS)
 

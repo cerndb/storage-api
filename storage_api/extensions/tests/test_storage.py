@@ -243,7 +243,6 @@ def test_delete_policy(storage, recorder):
     rules = ["host1.db.cern.ch", "db.cern.ch"]
     policy_name = "a_policy_925"
 
-
     storage.create_policy(policy_name, rules)
     assert storage.get_policy(policy_name=policy_name)
 
