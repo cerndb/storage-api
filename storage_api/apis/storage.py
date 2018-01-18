@@ -37,7 +37,7 @@ VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
 
 SUBSYSTEM_DESCRIPTION = "The subsystem to run the command on."
 
-DISALLOWED_VOLUME_NAME_RE = re.compile(".*[^a-z0-9:/_\.-].*")
+DISALLOWED_VOLUME_NAME_RE = re.compile(".*[^a-zA-Z0-9:/_\.-].*")
 
 
 @contextmanager
