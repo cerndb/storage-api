@@ -1,4 +1,5 @@
 # content of conftest.py
+# -*- coding: utf-8 -*-
 
 from storage_api import extensions
 

@@ -64,7 +64,8 @@ SCHEMAS = [
                                              'required': False},
         'caching_policy': {'type': 'string',
                            'required': False,
-                           'nullable': True}, }),
+                           'nullable': True},
+    }),
     ('snapshot',
      {'name': {'type': 'string', 'minlength': 1,
                'required': True},
@@ -99,6 +100,7 @@ def validate_value(v: cerberus.Validator, value: Dict[str, Any]):
 
 def normalised_with(schema_name: str,
                     allow_unknown: bool=False,
+
                     as_list: bool=False):
     """
     A decorator to normalise and validate the return values of a
