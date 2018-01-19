@@ -25,7 +25,8 @@ def test_read_empty_oauth_env_crashes(temp_app):
 @mock.patch.dict(os.environ, {})
 def test_read_empty_backend_env_crashes(temp_app):
     with pytest.raises(KeyError):
-        conf.load_backend_conf(temp_app, backends_module=mock.MagicMock)
+#        conf.load_backend_conf(temp_app, backends_module=mock.MagicMock)
+        conf.load_backend_conf(temp_app)
 
 
 @pytest.mark.parametrize('oauth_conf_key', OAUTH_CONF_KEYS)
