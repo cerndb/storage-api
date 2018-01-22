@@ -1,7 +1,7 @@
 import logging
 
 from flask_restplus import Namespace, Resource
-from flask import current_app, session
+from flask import current_app
 
 from .common.auth import USER_ROLES
 from .common import auth

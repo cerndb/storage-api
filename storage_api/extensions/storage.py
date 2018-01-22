@@ -66,14 +66,14 @@ SCHEMAS = [
                            'required': False,
                            'nullable': True},
     }),
-    ('snapshot',
-     {'name': {'type': 'string', 'minlength': 1,
-               'required': True},
-      'creation_time': {'type': 'datetime',
-                        'required': False},
-      'size_kbytes': {'type': 'integer', 'min': 0,
-                      'required': True},
-     })]
+    ('snapshot', {
+        'name': {'type': 'string', 'minlength': 1,
+                 'required': True},
+        'creation_time': {'type': 'datetime',
+                          'required': False},
+        'size_kbytes': {'type': 'integer', 'min': 0,
+                        'required': True},
+    })]
 
 cerberus.schema_registry.extend(SCHEMAS)
 

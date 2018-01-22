@@ -24,7 +24,7 @@ def conf_to_dict(conf_list):
     return dict(pairwise(conf_list))
 
 
-def load_backend_conf(app, backends_module=None):
+def load_backend_conf(app, backends_module):
     """
     Initialise back-ends into the app app, using the provided module to
     get back-end classes.
