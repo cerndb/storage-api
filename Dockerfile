@@ -1,4 +1,4 @@
-FROM python:3.7-alpine
+FROM python:alpine
 MAINTAINER albin.stjerna@cern.ch
 EXPOSE 8000
 
