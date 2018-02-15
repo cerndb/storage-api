@@ -100,7 +100,7 @@ def validate_value(v: cerberus.Validator, value: Dict[str, Any]):
 
 def normalised_with(schema_name: str,
                     allow_unknown: bool=False,
-
+                    ignore_none_values: bool=False,
                     as_list: bool=False):
     """
     A decorator to normalise and validate the return values of a
@@ -116,7 +116,9 @@ def normalised_with(schema_name: str,
         @functools.wraps(func)
         def inner_wrapper(*args, **kwargs):
             schema = cerberus.schema_registry.get(name=schema_name)
-            v = cerberus.Validator(schema, allow_unknown=allow_unknown)
+            v = cerberus.Validator(schema,
+                                   allow_unknown=allow_unknown,
+                                   ignore_none_values=ignore_none_values)
             return_value = func(*args, **kwargs)
 
             if as_list:
@@ -523,6 +525,7 @@ class DummyStorage(StorageBackend):
         with annotate_exception(KeyError, vol_404(volume_name)):
             return self.vols[volume_name]
 
+    @normalised_with('volume', ignore_none_values=True)
     def restrict_volume(self, volume_name):
         log.info("Restricting volume {}".format(volume_name))
         with annotate_exception(KeyError, vol_404(volume_name)):
@@ -752,7 +755,7 @@ class NetappStorage(StorageBackend):
                 and v.containing_aggregate_name
                 and not re.match("^aggr0.*", v.containing_aggregate_name)]
 
-    @normalised_with('volume', allow_unknown=True)
+    # Volume parameters validation does not need to take place since we also want to return offline and restricted volumes if asked
     def get_volume(self, volume_name):
         node, junction_path = self.node_junction_path(volume_name)
         try:
