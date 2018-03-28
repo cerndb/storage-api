@@ -760,8 +760,10 @@ class NetappStorage(StorageBackend):
         node, junction_path = self.node_junction_path(volume_name)
         try:
             if node is not None:
+                #volume = next(self.server.volumes.filter(
+              #       junction_path=junction_path, node=node))
                 volume = next(self.server.volumes.filter(
-                    junction_path=junction_path, node=node))
+                      junction_path=junction_path))
             else:
                 # Just a name was provided, not a node:junction_path
                 volume_name = junction_path
