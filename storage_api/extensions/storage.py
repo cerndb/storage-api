@@ -129,7 +129,11 @@ def normalised_with(schema_name: str,
                 except TypeError:  # pragma: no cover
                     raise ValidationError("Expected a list!")
             else:
-                return validate_value(v, return_value)
+                # if function called with decorator returns None do not validate since cerberus dislikes empty document
+                if return_value is not None:
+                    return validate_value(v, return_value)
+                else:
+                    return None
 
         return inner_wrapper
     return validator_decorator
