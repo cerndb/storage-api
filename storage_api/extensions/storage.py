@@ -129,7 +129,8 @@ def normalised_with(schema_name: str,
                 except TypeError:  # pragma: no cover
                     raise ValidationError("Expected a list!")
             else:
-                # if function called with decorator returns None do not validate since cerberus dislikes empty document
+                # if function called with decorator returns None do not
+                # validate since cerberus dislikes empty document
                 if return_value is not None:
                     return validate_value(v, return_value)
                 else:
@@ -759,13 +760,14 @@ class NetappStorage(StorageBackend):
                 and v.containing_aggregate_name
                 and not re.match("^aggr0.*", v.containing_aggregate_name)]
 
-    # Volume parameters validation does not need to take place since we also want to return offline and restricted volumes if asked
+    # Volume parameters validation does not need to take place since we
+    # also want to return offline and restricted volumes if asked
     def get_volume(self, volume_name):
         node, junction_path = self.node_junction_path(volume_name)
         try:
             if node is not None:
-                #volume = next(self.server.volumes.filter(
-              #       junction_path=junction_path, node=node))
+                # volume = next(self.server.volumes.filter(
+                #     junction_path=junction_path, node=node))
                 volume = next(self.server.volumes.filter(
                       junction_path=junction_path))
             else:
