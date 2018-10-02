@@ -6,7 +6,7 @@ hypothesis-pytest==0.19.0
 Flask-Testing==0.6.2
 recommonmark==0.4.0
 sphinx-rtd-theme==0.2.4
-Sphinx==1.6.3 # Updated from 1.5.2
+Sphinx==1.7 # Updated from 1.6.3
 sphinxcontrib-napoleon==0.6.1
 betamax==0.8.0
 betamax-serializers==0.2.0
