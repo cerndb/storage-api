@@ -18,4 +18,4 @@ ordered-set==2.0.2
 jsonschema==2.6.0
 swagger-spec-validator==2.1.0
 Cerberus==1.1
--e git+https://github.com/cerndb/netapp-api-python.git#egg=netapp-api>=0.11.0
+-e git+https://github.com/cerndb/netapp-api-python.git#egg=netapp-api>=1.0.1
