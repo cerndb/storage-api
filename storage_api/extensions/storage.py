@@ -752,7 +752,7 @@ class NetappStorage(StorageBackend):
     def volumes(self):
         """
         Explicitly ignores volumes belonging to aggr0 and volumes that
-        are restricted.
+        are restricted if not queried directly.
         """
 
         return [self.format_volume(v) for v in self.server.volumes
@@ -912,6 +912,8 @@ class NetappStorage(StorageBackend):
         compression = fields.get('compression_enabled', None)
         inline_compression = fields.get('inline_compression', None)
         export_policy_name = fields.get('active_policy_name', None)
+        autosize_enabled = fields.get('autosize_enabled', None)
+        max_size_bytes = fields.get('max_autosize', None)
 
         # None-patch the keys with default values.
         # This is needed, because the front-end gives us None if no
@@ -922,6 +924,12 @@ class NetappStorage(StorageBackend):
             compression = True
         if inline_compression is None:
             inline_compression = True
+        if autosize_enabled is None:
+            autosize_enabled = True
+        if max_size_bytes is None:
+            log.info("No max-autosize defined for {}. Setting up as size+20%"
+                     .format(volume_name))
+            max_size_bytes = int(fields['size_total'])*1.20 
 
         if fields.get('aggregate_name', None):
             aggregate_name = fields['aggregate_name']
@@ -960,6 +968,12 @@ class NetappStorage(StorageBackend):
                 inline_compression=inline_compression,
                 export_policy_name=export_policy_name,
                 aggregate_name=aggregate_name)
+
+            self.server.set_volume_autosize(
+                volume_name=volume_name,
+                autosize_enabled=autosize_enabled,
+                max_size_bytes=max_size_bytes)
+
             return self.format_volume(
                 self.server.volumes.single(volume_name=volume_name))
         except netapp.api.APIError as e:

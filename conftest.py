@@ -98,4 +98,4 @@ def client(temp_app):
     log.debug("App teardown initiated: re-initialising dummy backend")
     extensions.DummyStorage().init_app(temp_app, endpoint="dummy")
     extensions.DummyStorage().init_app(temp_app, endpoint="netapp")
-    extensions.DummyStorage().init_app(temp_app, endpoint="ceph")
+    #extensions.DummyStorage().init_app(temp_app, endpoint="ceph")

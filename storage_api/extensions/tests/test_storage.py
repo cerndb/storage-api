@@ -135,8 +135,7 @@ def test_patch_volume(storage, recorder):
         with ephermeral_volume(storage) as vol:
             storage.patch_volume(id_from_vol(vol, storage),
                                  autosize_enabled=True,
-                                 max_autosize=2*DEFAULT_VOLUME_SIZE,
-                                 autosize_increment=1234)
+                                 max_autosize=2*DEFAULT_VOLUME_SIZE)
 
             v = storage.get_volume(id_from_vol(vol, storage))
             assert v['autosize_enabled'] is True

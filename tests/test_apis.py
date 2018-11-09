@@ -67,7 +67,7 @@ params_ns_auth = compose_decorators(params_namespaces,
 @composite
 def patch_arguments(draw):
     keys = draw(lists(elements=sampled_from(["autosize_enabled",
-                                             "autosize_increment",
+                                             #"autosize_increment",
                                              "max_autosize"])))
 
     d = dict()
