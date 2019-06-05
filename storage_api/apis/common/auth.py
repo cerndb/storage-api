@@ -35,12 +35,11 @@ def setup_basic_auth(app):
     Setup role using HTTP basic authentication
     """
     basic_auth = BasicAuth(app)
-
     @app.route('/login_basic')
     @basic_auth.required
     def login_basic():
         flask.session['user'] = {}
-        flask.session['user']['roles'] = [ADMIN_ROLE]
+        flask.session['user']['roles'] = [USER_ROLE, ADMIN_ROLE]
         return flask.redirect('/')
 
 

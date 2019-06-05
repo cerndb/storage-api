@@ -29,10 +29,10 @@ def load_basic_auth_conf(app):
     Initialise basic authentication config parameters
     """
     env_var_name = 'BASIC_AUTH_USERNAME'
-    app.config[env_var_name] = os.getenv(env_var_name, "dummyuser")
+    app.config[env_var_name] = os.getenv(env_var_name)
 
     env_var_name = 'BASIC_AUTH_PASSWORD'
-    app.config[env_var_name] = os.getenv(env_var_name, "dummypassword")
+    app.config[env_var_name] = os.getenv(env_var_name)
 
 
 def load_backend_conf(app, backends_module):
