@@ -49,14 +49,14 @@ commands below.
 git clone https://github.com/cerndb/storage-api
 cd storage-api
 virtualenv --python=python3 v1
-source .v1/bin/activate
+source v1/bin/activate
 pip install -r requirements.txt
 ```
 
 You can run the API in the Flask development server without SSO like this:
 
 ```
-$ export FLASK_APP=app.py
+$ export FLASK_APP=storage_api/app.py
 $ export FLASK_DEBUG=1
 $ flask run
 ```
