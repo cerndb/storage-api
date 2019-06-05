@@ -15,6 +15,7 @@ from typing import Any # noqa
 from flask import session, current_app, url_for
 import flask
 from flask_oauthlib.client import OAuth
+from flask_basicauth import BasicAuth
 
 USER_ROLES = ["USER", "ADMIN", "UBER_ADMIN"]
 USER_ROLE = 'USER_ROLE'
@@ -28,6 +29,19 @@ authorizations = {"sso": {"type": "oauth2",
                           "authorizationUrl": "/login",
                           "flow": "implicit"}}
 
+
+
+def setup_basic_auth(app):
+    """
+    Setup role using HTTP basic authentication
+    """
+    basic_auth = BasicAuth(app)
+    @app.route('/login_basic')
+    @basic_auth.required
+    def login_basic():
+        flask.session['user'] = {}
+        flask.session['user']['roles'] = [ADMIN_ROLE]
+        return flask.redirect('/')
 
 def setup_roles_from_env(app):
     """
