@@ -30,7 +30,6 @@ authorizations = {"sso": {"type": "oauth2",
                           "flow": "implicit"}}
 
 
-
 def setup_basic_auth(app):
     """
     Setup role using HTTP basic authentication
@@ -42,6 +41,7 @@ def setup_basic_auth(app):
         flask.session['user'] = {}
         flask.session['user']['roles'] = [ADMIN_ROLE]
         return flask.redirect('/')
+
 
 def setup_roles_from_env(app):
     """
