@@ -23,6 +23,7 @@ def conf_to_dict(conf_list):
     assert len(conf_list) % 2 == 0
     return dict(pairwise(conf_list))
 
+
 def load_basic_auth_conf(app):
     """
     Initialise basic authentication config parameters
@@ -32,7 +33,7 @@ def load_basic_auth_conf(app):
 
     env_var_name = 'BASIC_AUTH_PASSWORD'
     app.config[env_var_name] = os.getenv(env_var_name, "dummypassword")
-    
+
 
 def load_backend_conf(app, backends_module):
     """

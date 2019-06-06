@@ -37,7 +37,7 @@ VOLUME_NAME_DESCRIPTION = ("The name of the volume. "
 
 SUBSYSTEM_DESCRIPTION = "The subsystem to run the command on."
 
-DISALLOWED_VOLUME_NAME_RE = re.compile(".*[^a-zA-Z0-9:/_\.-].*")
+DISALLOWED_VOLUME_NAME_RE = re.compile(r'.*[^a-zA-Z0-9:/_\.-].*')
 
 
 @contextmanager
@@ -400,7 +400,7 @@ class AllExports(Resource):
     @api.doc(description="Get all ACLs present on the back-end")
     @in_role(api, ADMIN_ROLE)
     def get(self, subsystem):
-            return backend(subsystem).policies
+        return backend(subsystem).policies
 
 
 @api.route('/<string:subsystem>/export/<path:policy>')

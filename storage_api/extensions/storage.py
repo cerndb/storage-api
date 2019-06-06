@@ -99,9 +99,9 @@ def validate_value(v: cerberus.Validator, value: Dict[str, Any]):
 
 
 def normalised_with(schema_name: str,
-                    allow_unknown: bool=False,
-                    ignore_none_values: bool=False,
-                    as_list: bool=False):
+                    allow_unknown: bool = False,
+                    ignore_none_values: bool = False,
+                    as_list: bool = False):
     """
     A decorator to normalise and validate the return values of a
     function according to a schema.
@@ -513,8 +513,8 @@ class DummyStorage(StorageBackend):
         self.vols = {}  # type: Dict[str, Dict[str, Any]]
         self.locks_store = {}  # type: Dict[str, str]
         self.rules_store = {}  # type: Dict[str, str]
-        self.snapshots_store = {}  # type: Dict[str, Dict[str, List[str]]]
-        self.policies_store = {}  # type: Dict[str, List[str]]
+        self.snapshots_store = {}  # Dict[str, Dict[str, List[str]]]
+        self.policies_store = {}  # Dict[str, List[str]]
 
     @property
     def volumes(self):
@@ -929,7 +929,7 @@ class NetappStorage(StorageBackend):
         if max_size_bytes is None:
             log.info("No max-autosize defined for {}. Setting up as size+20%"
                      .format(volume_name))
-            max_size_bytes = int(fields['size_total'])*1.20 
+            max_size_bytes = int(fields['size_total'])*1.20
 
         if fields.get('aggregate_name', None):
             aggregate_name = fields['aggregate_name']
