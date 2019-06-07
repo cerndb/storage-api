@@ -1,7 +1,7 @@
 # CERN Unified Storage API
 
-[![build status](https://gitlab.cern.ch/db/storage-api/badges/master/build.svg)](https://gitlab.cern.ch/db/storage-api/commits/master)
-[![coverage report](https://gitlab.cern.ch/db/storage-api/badges/master/coverage.svg)](https://gitlab.cern.ch/db/storage-api/commits/master)
+[![build status](https://gitlab.cern.ch/db/storage/storage-api/badges/master/build.svg)](https://gitlab.cern.ch/db/storage/storage-api/commits/master)
+[![coverage report](https://gitlab.cern.ch/db/storage/storage-api/badges/master/coverage.svg)](https://gitlab.cern.ch/db/storage/storage-api/commits/master)
 
 ## Aim of the project
 

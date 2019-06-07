@@ -61,18 +61,18 @@ doc_deploy: swagger.json html
 .PHONY: doc_deploy
 
 image:
-	docker build -t  "gitlab-registry.cern.ch/db/storage-api:runner" -t "gitlab-registry.cern.ch/db/storage-api:$(VERSION)" .
+	docker build -t  "gitlab-registry.cern.ch/db/storage/storage-api:runner" -t "gitlab-registry.cern.ch/db/storage/storage-api:$(VERSION)" .
 
 push-image:
-	docker push "gitlab-registry.cern.ch/db/storage-api:runner"
-	docker push "gitlab-registry.cern.ch/db/storage-api:$(VERSION)"
+	docker push "gitlab-registry.cern.ch/db/storage/storage-api:runner"
+	docker push "gitlab-registry.cern.ch/db/storage/storage-api:$(VERSION)"
 
 deploy-os-prod:
-	oc import-image --token ${OPENSHIFT_PUSH_TOKEN_PROD} --namespace it-db-storage-api --server "https://openshift.cern.ch" "db/storage-api:runner"
+	oc import-image --token ${OPENSHIFT_PUSH_TOKEN_PROD} --namespace it-db-storage-api --server "https://openshift.cern.ch" "db/storage/storage-api:runner"
 
 deploy-os-dev:
-	oc tag --token ${OPENSHIFT_PUSH_TOKEN_DEV} --namespace it-db-storage-api-dev --server "https://openshift.cern.ch" --source=docker "gitlab-registry.cern.ch/db/storage-api:$(VERSION)" "db/storage-api-dev:$(VERSION)"
-	oc import-image --token ${OPENSHIFT_PUSH_TOKEN_DEV} --namespace it-db-storage-api-dev --server "https://openshift.cern.ch" "db/storage-api-dev:$(VERSION)"
+	oc tag --token ${OPENSHIFT_PUSH_TOKEN_DEV} --namespace it-db-storage-api-dev --server "https://openshift.cern.ch" --source=docker "gitlab-registry.cern.ch/db/storage/storage-api:$(VERSION)" "db/storage/storage-api-dev:$(VERSION)"
+	oc import-image --token ${OPENSHIFT_PUSH_TOKEN_DEV} --namespace it-db-storage-api-dev --server "https://openshift.cern.ch" "db/storage/storage-api-dev:$(VERSION)"
 
 run:
 	docker run -it --rm --publish=8000:8000 \

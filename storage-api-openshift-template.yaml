@@ -62,7 +62,7 @@ objects:
             value: ${SAPI_ROLE_ADMIN_GROUPS}
           - name: SAPI_ROLE_UBER_ADMIN_GROUPS
             value: ${SAPI_ROLE_UBER_ADMIN_GROUPS}
-          image: gitlab-registry.cern.ch/db/storage-api
+          image: gitlab-registry.cern.ch/db/storage/storage-api
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -141,10 +141,10 @@ objects:
     tags:
     - annotations:
         openshift.io/generated-by: OpenShiftWebConsole
-        openshift.io/imported-from: gitlab-registry.cern.ch/db/storage-api:latest
+        openshift.io/imported-from: gitlab-registry.cern.ch/db/storage/storage-api:latest
       from:
         kind: DockerImage
-        name: gitlab-registry.cern.ch/db/storage-api:latest
+        name: gitlab-registry.cern.ch/db/storage/storage-api:latest
       generation: 20
       importPolicy: {}
       name: storage-api

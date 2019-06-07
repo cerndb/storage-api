@@ -93,7 +93,7 @@ dev-deploy:
   environment: dev
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
-    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace test-${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/${RESOURCE}:${CI_COMMIT_TAG:-latest} ${RESOURCE}:latest
+    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace test-${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/storage/${RESOURCE}:${CI_COMMIT_TAG:-latest} ${RESOURCE}:latest
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
     GIT_STRATEGY: none
@@ -106,7 +106,7 @@ prod-deploy:
   environment: prod
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
-    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace ${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/${RESOURCE}:${CI_COMMIT_TAG:-latest} ${RESOURCE}:latest
+    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace ${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/storage/${RESOURCE}:${CI_COMMIT_TAG:-latest} ${RESOURCE}:latest
   variables:
     TOKEN: ${SERVICE_ACCOUNT_TOKEN_PROD}
     GIT_STRATEGY: none
