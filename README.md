@@ -48,8 +48,9 @@ commands below.
 ```
 git clone https://github.com/cerndb/storage-api
 cd storage-api
-virtualenv --python=python3 v1
+python3 -m venv v1
 source v1/bin/activate
+pip install pip --upgrade
 pip install -r requirements.txt
 ```
 
