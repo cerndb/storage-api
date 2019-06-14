@@ -33,7 +33,4 @@ setup(name='storage-api',
           'flask_restplus',
           'flask',
           'flask_sso',
-      ],
-      dependency_links=[("git+https://https://github.com/cerndb/"
-                         "netapp-api-python.git"
-                         "#egg=netapp-api-0.10.0")])
+      ])
