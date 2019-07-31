@@ -144,7 +144,7 @@ objects:
         openshift.io/imported-from: gitlab-registry.cern.ch/db/storage/storage-api:latest
       from:
         kind: DockerImage
-        name: gitlab-registry.cern.ch/db/storage-api:latest
+        name: gitlab-registry.cern.ch/db/storage/storage-api:latest
       generation: 20
       importPolicy: {}
       name: storage-api
