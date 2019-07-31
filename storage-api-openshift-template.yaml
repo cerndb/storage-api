@@ -141,7 +141,7 @@ objects:
     tags:
     - annotations:
         openshift.io/generated-by: OpenShiftWebConsole
-        openshift.io/imported-from: gitlab-registry.cern.ch/db/storage-api:latest
+        openshift.io/imported-from: gitlab-registry.cern.ch/db/storage/storage-api:latest
       from:
         kind: DockerImage
         name: gitlab-registry.cern.ch/db/storage-api:latest
