@@ -51,6 +51,7 @@ build-doc:
       - html
     when: always
   stage: build
+  allow_failure: true
   before_script:
     - curl -sL https://deb.nodesource.com/setup_6.x | bash -
     - apt-get update && apt-get install -y nodejs
