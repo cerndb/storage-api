@@ -76,8 +76,8 @@ def on_all_backends(func):
 
     @functools.wraps(func)
     @pytest.mark.parametrize("storage,recorder", [(DummyStorage(),
-                                                   mock.MagicMock()),
-                                                  (backend, recorder)])
+                                                   mock.MagicMock())])#,
+                                                  #(backend, recorder)])
     def backend_wrapper(*args, **kwargs):
         func(*args, **kwargs)
     return backend_wrapper
