@@ -26,7 +26,20 @@ perform-tests:
   script:
     - make test
 
-build-tag:
+build-docker-dev:
+   stage: build
+   only:
+     - branches
+   except:
+     - master
+   tags:
+     - docker-image-build
+   script:
+     - "echo 'Building Docker dev image..'"
+   variables:
+     TO: ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_NAME}
+
+build-docker-tag:
   stage: build
   only:
     - tags
@@ -36,7 +49,7 @@ build-tag:
   variables:
    TO: $CI_REGISTRY_IMAGE:${CI_COMMIT_TAG} # Where to push resulting image
 
-build-latest:
+build-docker-latest:
   stage: build
   only:
   - master
@@ -89,17 +102,19 @@ lint:
 dev-deploy:
   when: manual
   only:
-    - tags
+    - branches
+  except:
+    - master
   stage: deploy
   environment: dev
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
-    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace test-${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/storage/${RESOURCE}:${CI_COMMIT_TAG:-latest} ${RESOURCE}:latest
+    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace test-${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/storage/${RESOURCE}:${CI_COMMIT_REF_NAME} ${RESOURCE}:latest
   variables:
-    TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
+    TOKEN: ${IMPORT_TOKEN_DEV}
     GIT_STRATEGY: none
 
-prod-deploy:
+prod-deploy-tag:
   when: manual
   only:
     - tags
@@ -109,7 +124,21 @@ prod-deploy:
   script:
     - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace ${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/storage/${RESOURCE}:${CI_COMMIT_TAG:-latest} ${RESOURCE}:latest
   variables:
-    TOKEN: ${SERVICE_ACCOUNT_TOKEN_PROD}
+    TOKEN: ${IMPORT_TOKEN_PROD}
+    GIT_STRATEGY: none
+    OPENSHIFT_SERVER: https://openshift.cern.ch
+
+prod-deploy-latest:
+  when: manual
+  only:
+    - master
+  stage: deploy
+  environment: prod
+  image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
+  script:
+    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace ${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/storage/${RESOURCE}:latest ${RESOURCE}:latest
+  variables:
+    TOKEN: ${IMPORT_TOKEN_PROD}
     GIT_STRATEGY: none
     OPENSHIFT_SERVER: https://openshift.cern.ch
 
@@ -117,24 +146,24 @@ dev-template:
   stage: provision
   environment: dev
   only:
-    - tags
+    - branches
+  except:
     - master
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
     - oc replace template --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n test-${NAMESPACE} -f storage-api-openshift-template.yaml
   variables:
-    TOKEN: ${SERVICE_ACCOUNT_TOKEN_DEV}
+    TOKEN: ${IMPORT_TOKEN_DEV}
 
 
 prod-template:
   stage: provision
   environment: prod
   only:
-    - tags
     - master
   image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
   script:
     - oc replace template --token=${TOKEN} --server=${OPENSHIFT_SERVER} -n ${NAMESPACE} -f storage-api-openshift-template.yaml
   variables:
-    TOKEN: ${SERVICE_ACCOUNT_TOKEN_PROD}
+    TOKEN: ${IMPORT_TOKEN_PROD}
     OPENSHIFT_SERVER: https://openshift.cern.ch

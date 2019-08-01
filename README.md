@@ -164,6 +164,39 @@ Whenever all the build steps have passed, images can be manually
 deployed from the GitLab Pipeline to OpenShift using the jobs
 `dev-deploy` and `prod-deploy` respectively.
 
+NOTE: The deployment has been designed based on [KB0004574](https://cern.service-now.com/service-portal/article.do?n=KB0004574).  
+A couple of secrets are needed to be created in OpenShift, both dev and test instances for the deployment to work correctly:
+```bash
+$ sudo docker run --name openshift-client  --rm -i -t gitlab-registry.cern.ch/paas-tools/openshift-client:latest bash
+# Login to OpenShift DEV
+$ oc login https://openshift-dev.cern.ch
+Authentication required for https://openshift.cern.ch:443 (CERN)
+Username: yourusername
+Password: 
+Login successful.
+$ oc project test-it-db-storage-api
+Now using project "test-it-db-storage-api" on server "https://openshift-dev.cern.ch:443".
+$ user=diaglab
+$ token=TAKE_THIS_VALUE_FROM_THE VARIABLES_SECTION_IN_GITLAB_CERN_CH_DB
+# Generate the secret for OpenShift to be able to download images form the GitLab 
+$ auth=$(echo -n "${user}:${token}" | base64 -w 0)
+$ dockercfg=$(echo "{\"auths\": {\"gitlab-registry.cern.ch\": {\"auth\": \"${auth}\"}, \"gitlab.cern.ch\": {\"auth\": \"${auth}\"}}}")
+$ oc create secret generic gitlab-registry-auth --from-literal=.dockerconfigjson="${dockercfg}" --type=kubernetes.io/dockerconfigjson
+$ oc secrets link default gitlab-registry-auth --for=pull
+# Generate the token that will allow GitLAb to interact with OpenShift
+oc create serviceaccount gitlabci-deployer
+oc policy add-role-to-user registry-editor -z gitlabci-deployer
+oc policy add-role-to-user view -z gitlabci-deployer
+# Allow that service account to deploy as well
+oc policy add-role-to-user admin -z gitlabci-deployer
+# See the token and put it in the secrets section of GitLab as IMPORT_TOKEN_DEV
+oc serviceaccounts get-token gitlabci-deployer
+```
+
+Repeat the same steps in OpenShift production and save the token in GitLab as IMPORT_TOKEN_PROD
+
+
+
 To start a release, run `make push_version`, which will automatically
 tag the current tree with the corresponding version (as extracted from
 the source code), and commence the process.
