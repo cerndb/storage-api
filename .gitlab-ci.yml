@@ -77,6 +77,8 @@ build-doc:
 
 deploy-doc:
   stage: deploy
+  # Previous job, that buils the doc is not working correctly. Must be fixed
+  allow_failure: true
   only:
     - master
     - tags
@@ -141,6 +143,20 @@ prod-deploy-latest:
     TOKEN: ${IMPORT_TOKEN_PROD}
     GIT_STRATEGY: none
     OPENSHIFT_SERVER: https://openshift.cern.ch
+
+# We might want to deploy the latest image in the dev instance of the application
+dev-deploy-latest:
+  when: manual
+  only:
+    - master
+  stage: deploy
+  environment: dev
+  image: gitlab-registry.cern.ch/paas-tools/openshift-client:latest
+  script:
+    - oc tag --token=${TOKEN} --server=${OPENSHIFT_SERVER} --namespace ${NAMESPACE} --source=docker gitlab-registry.cern.ch/db/storage/${RESOURCE}:latest ${RESOURCE}:latest
+  variables:
+    TOKEN: ${IMPORT_TOKEN_DEV}
+    GIT_STRATEGY: none
 
 dev-template:
   stage: provision
