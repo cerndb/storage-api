@@ -35,6 +35,7 @@ def setup_basic_auth(app):
     Setup role using HTTP basic authentication
     """
     basic_auth = BasicAuth(app)
+
     @app.route('/login_basic')
     @basic_auth.required
     def login_basic():

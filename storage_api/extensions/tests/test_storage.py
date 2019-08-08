@@ -9,7 +9,6 @@ from contextlib import contextmanager
 
 import pytest
 import netapp.api
-import betamax
 
 
 DEFAULT_VOLUME_SIZE = 30000000
@@ -62,22 +61,9 @@ def on_all_backends(func):
     storage provided here.
     """
 
-    vserver = os.environ.get('ONTAP_VSERVER', 'vserver-placeholder')
-    ontap_host = os.environ.get('ONTAP_HOST', 'host-placeholder')
-    ontap_username = os.environ.get('ONTAP_USERNAME', "user-placeholder")
-    ontap_password = os.environ.get('ONTAP_PASSWORD', "password-placeholder")
-
-    backend = NetappStorage(hostname=ontap_host,
-                            username=ontap_username,
-                            password=ontap_password,
-                            vserver=vserver,
-                            timeout_s=30)
-    recorder = betamax.Betamax(backend.server.session)
-
     @functools.wraps(func)
     @pytest.mark.parametrize("storage,recorder", [(DummyStorage(),
-                                                   mock.MagicMock())])#,
-                                                  #(backend, recorder)])
+                                                   mock.MagicMock())])
     def backend_wrapper(*args, **kwargs):
         func(*args, **kwargs)
     return backend_wrapper
