@@ -992,18 +992,14 @@ class NetappStorage(StorageBackend):
 
     def patch_volume(self, volume_name, **data):
         previous = self.get_volume(volume_name)
-
         changed_keys, updated_volume = patch_and_diff(previous, data)
 
         # Autosize:
-        autosize_key = re.compile('autosize').match
-
-        if any(autosize_key(k) for k in changed_keys):
+        if 'max_autosize' in changed_keys:
             log.info("Updating autosize...")
             self.server.set_volume_autosize(
                 previous['name'],
                 max_size_bytes=updated_volume['max_autosize'],
-                increment_bytes=updated_volume['autosize_increment'],
                 autosize_enabled=updated_volume['autosize_enabled'])
 
         # Snapshot reserve space
