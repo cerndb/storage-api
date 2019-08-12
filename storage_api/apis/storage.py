@@ -85,6 +85,7 @@ policy_rule_list_field = fields.List(fields.String(
 volume_write_model = api.model('VolumeWrite', {
     'autosize_enabled': fields.Boolean(),
     'max_autosize': fields.Integer(),
+    'size_total': fields.Integer(),
     'active_policy_name': fields.String(min_length=1),
     'percentage_snapshot_reserve': fields.Integer(),
     'compression_enabled': fields.Boolean(),
