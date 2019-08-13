@@ -23,8 +23,8 @@ api.init_app(app)
 conf.load_basic_auth_conf(app)
 conf.load_oauth_conf(app)
 conf.load_backend_conf(app, backends_module=extensions)
-auth.setup_basic_auth(app)
 auth.setup_roles_from_env(app)
+auth.setup_basic_auth(app)
 auth.setup_oauth(app,
                  login_endpoint=auth.authorizations['sso']['authorizationUrl'],
                  logout_endpoint="/logout")
