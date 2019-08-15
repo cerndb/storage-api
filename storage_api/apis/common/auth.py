@@ -40,7 +40,7 @@ def setup_basic_auth(app):
     def login_basic():
         app.logger.info("Using basic authentication")
         flask.session['user'] = {}
-        flask.session['user']['roles'] = [USER_ROLE, ADMIN_ROLE]
+        flask.session['user']['roles'] = [USER_ROLE, ADMIN_ROLE, UBER_ADMIN_ROLE]
         app.logger.debug("User roles: %s" % (flask.session['user']['roles']))
         return flask.redirect('/')
 
