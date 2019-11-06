@@ -1,3 +1,3 @@
-import logging
+from storage_api.utils import init_logger
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+log = init_logger()

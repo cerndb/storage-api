@@ -13,7 +13,7 @@ from storage_api.apis.common.auth import in_role
 from storage_api.apis.common import ADMIN_ROLE, UBER_ADMIN_ROLE, USER_ROLE
 from storage_api.utils import dict_without, filter_none
 
-import logging
+from storage_api.utils import init_logger
 import traceback
 from contextlib import contextmanager
 from functools import partial
@@ -26,8 +26,7 @@ from netapp.api import APIError
 api = Namespace('sapi',
                 description='Storage operations')
 
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
+log = init_logger()
 
 
 VOLUME_NAME_DESCRIPTION = ("The name of the volume. "

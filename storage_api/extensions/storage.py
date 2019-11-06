@@ -18,7 +18,7 @@ and -- if possible -- suggestions on how to fix the situation.
 from storage_api.utils import merge_two_dicts
 
 from abc import ABCMeta, abstractmethod
-import logging
+from storage_api.utils import init_logger
 from contextlib import contextmanager
 import functools
 from typing import Dict, Any
@@ -30,7 +30,8 @@ import cerberus
 import flask
 import netapp.api
 
-log = logging.getLogger(__name__)
+#log = init_logger()(__name__)
+log = init_logger()
 SCHEMAS = [
     ('volume', {
         'name': {'type': 'string', 'minlength': 1,

@@ -3,6 +3,31 @@ This file contains various utilities, including this recipe for an
 ordered set http://code.activestate.com/recipes/576694/
 """
 
+import logging
+import sys
+
+def init_logger(
+    tag = 'SAPI',
+    level = logging.INFO,
+    line = '%(asctime)s [%(filename)s:%(lineno)d] [%(process)d] %(levelname)s %(name)s %(message)s',
+    # We just log to stdout. Service running in a container doesn't have permissions to write to local files
+    log_file = '/var/log/sapi.log',
+    stdout = True
+    ):
+    log = logging.getLogger(tag)
+    log.setLevel(level)
+    dateformat = "%Y-%m-%dT%H:%M:%S%z" # Same format as `date --iso-8601='seconds'`
+    formatter = logging.Formatter(fmt=line, datefmt=dateformat)
+    #lf = logging.FileHandler(log_file)
+    #lf.setFormatter(formatter)
+    #log.addHandler(lf)
+
+    if stdout:
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setFormatter(formatter)
+        log.addHandler(ch)
+
+    return log
 
 def dict_without(d, *keys):
     """

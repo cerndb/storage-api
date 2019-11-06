@@ -5,7 +5,7 @@ from storage_api import extensions
 
 import os
 import base64
-import logging
+from storage_api.utils import init_logger
 
 import pytest
 from hypothesis import settings, Verbosity
@@ -14,7 +14,7 @@ import betamax
 from betamax_serializers import pretty_json
 from unittest import mock
 
-log = logging.getLogger(__name__)
+log = init_logger()(__name__)
 
 betamax.Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
 

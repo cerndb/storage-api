@@ -1,4 +1,4 @@
-import logging
+from storage_api.utils import init_logger
 
 from flask_restplus import Namespace, Resource
 from flask import current_app
@@ -12,8 +12,7 @@ api = Namespace('introspect',
                 description='API configuration introspection')
 
 
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
+log = init_logger()
 
 role_param = api.param('role', "The name of a role, one of {}."
                        .format(", ".join(USER_ROLES)))

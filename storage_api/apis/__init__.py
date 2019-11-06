@@ -7,7 +7,7 @@
 # In applying this license, CERN does not waive the privileges and immunities
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
-import logging
+from storage_api.utils import init_logger
 
 from flask_restplus import Api
 
@@ -15,7 +15,7 @@ from .storage import api as unified_ns
 from .introspect import api as introspection_ns
 from .common.auth import authorizations
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
+log = init_logger()
 
 __version__ = '3.3.4'
 __major_version__ = __version__.split(".")[0]

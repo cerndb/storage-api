@@ -6,7 +6,7 @@ import json
 from urllib.parse import urlencode
 from contextlib import contextmanager
 import uuid
-import logging
+from storage_api.utils import init_logger
 from functools import partial
 
 import pytest
@@ -19,7 +19,7 @@ from hypothesis.strategies import (characters, text, lists,
 _DEFAULT_HEADERS = {'Content-Type': 'application/json',
                     'Accept': 'application/json'}
 
-log = logging.getLogger(__name__)
+log = init_logger()(__name__)
 
 ROOT_URL = SAPI_MOUNTPOINT
 

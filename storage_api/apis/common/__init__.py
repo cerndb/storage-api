@@ -8,9 +8,7 @@
 # granted to it by virtue of its status as Intergovernmental Organization
 # or submit itself to any jurisdiction.
 
-import logging
+from storage_api.utils import init_logger
 from .auth import ADMIN_ROLE, USER_ROLE, UBER_ADMIN_ROLE  # noqa
 
-
-log = logging.getLogger(__name__)
-log.addHandler(logging.NullHandler())
+log = init_logger()
