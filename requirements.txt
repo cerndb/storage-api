@@ -1,7 +1,7 @@
-pytest==3.3.2
-pytest-cov == 2.3.1
+pytest==5.2.2
+pytest-cov == 2.8.1
 pytest-logging==2015.11.4
-hypothesis==3.17.0
+hypothesis==4.43.5
 hypothesis-pytest==0.19.0
 Flask-Testing==0.6.2
 recommonmark==0.4.0

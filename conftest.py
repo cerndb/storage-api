@@ -14,7 +14,7 @@ import betamax
 from betamax_serializers import pretty_json
 from unittest import mock
 
-log = init_logger()(__name__)
+log = init_logger()
 
 betamax.Betamax.register_serializer(pretty_json.PrettyJSONSerializer)
 

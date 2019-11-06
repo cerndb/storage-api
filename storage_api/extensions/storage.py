@@ -30,8 +30,8 @@ import cerberus
 import flask
 import netapp.api
 
-#log = init_logger()(__name__)
 log = init_logger()
+
 SCHEMAS = [
     ('volume', {
         'name': {'type': 'string', 'minlength': 1,

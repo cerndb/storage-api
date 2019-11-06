@@ -10,7 +10,9 @@ from storage_api.utils import init_logger
 from functools import partial
 
 import pytest
+import hypothesis
 from hypothesis import given
+from hypothesis import settings
 from hypothesis.strategies import (characters, text, lists,
                                    composite, integers,
                                    booleans, sampled_from)
@@ -19,7 +21,12 @@ from hypothesis.strategies import (characters, text, lists,
 _DEFAULT_HEADERS = {'Content-Type': 'application/json',
                     'Accept': 'application/json'}
 
-log = init_logger()(__name__)
+log = init_logger()
+
+# https://hypothesis.readthedocs.io/en/latest/healthchecks.html
+# https://hypothesis.readthedocs.io/en/latest/settings.html#default-settings
+settings.register_profile("health_suppress_slow", suppress_health_check=(hypothesis.HealthCheck.too_slow,))
+settings.load_profile("health_suppress_slow")
 
 ROOT_URL = SAPI_MOUNTPOINT
 
@@ -55,9 +62,7 @@ params_auth_status = pytest.mark.parametrize('auth',
                                              ["authorised", "not_authorised"])
 
 
-params_volume_names = compose_decorators(given(volume_name=name_strings()))
-params_vol_ns_auth = compose_decorators(params_volume_names,
-                                        params_namespaces,
+params_vol_ns_auth = compose_decorators(params_namespaces,
                                         params_auth_status,
                                         params_vol_presence)
 params_ns_auth = compose_decorators(params_namespaces,
@@ -175,6 +180,7 @@ def test_post_to_existing_volume_errors(client, namespace):
     assert len(_get(client, '{}/volumes'.format(namespace))[1]) == 1
 
 
+@given(volume_name=name_strings())
 @params_vol_ns_auth
 def test_post_new_volume(client, namespace, auth, vol_exists, volume_name):
     resource, volume_exists, authorised = init_vols_from_params(client,
@@ -203,7 +209,7 @@ def test_post_new_volume(client, namespace, auth, vol_exists, volume_name):
     else:
         assert post_code == 400
 
-
+@given(volume_name=name_strings())
 @params_vol_ns_auth
 def test_get_volume(client, auth, vol_exists, volume_name, namespace):
     volume, volume_exists, _authorised = init_vols_from_params(client,
@@ -221,6 +227,7 @@ def test_get_volume(client, auth, vol_exists, volume_name, namespace):
         assert get_code == 200
 
 
+@given(volume_name=name_strings())
 @params_vol_ns_auth
 def test_delete_volume(client, auth, vol_exists, volume_name, namespace):
     resource, volume_exists, authorised = init_vols_from_params(client,
@@ -362,7 +369,7 @@ def test_clone_from_snapshot_source_does_not_exist(client, namespace):
     assert 'No such volume' in post_result['message']
 
 
-@given(patch_args=patch_arguments())
+@given(volume_name=name_strings(), patch_args=patch_arguments())
 @params_vol_ns_auth
 def test_patch_volume(client, namespace, vol_exists, auth,
                       volume_name, patch_args):
@@ -390,7 +397,7 @@ def test_patch_volume(client, namespace, vol_exists, auth,
             assert patch_code == 400
 
 
-@params_volume_names
+@given(volume_name=name_strings())
 @params_namespaces
 def test_delete_snapshot_nonexistent_snapshot_and_volume(client,
                                                          namespace,
@@ -412,7 +419,7 @@ def test_delete_snapshot_nonexistent_snapshot_and_volume(client,
     assert delete_code == 404
 
 
-@params_volume_names
+@given(volume_name=name_strings())
 @params_namespaces
 @params_auth_status
 def test_delete_snapshot(client, namespace, auth, volume_name):
@@ -443,7 +450,7 @@ def test_delete_snapshot(client, namespace, auth, volume_name):
         assert get_after == 200
 
 
-@params_volume_names
+@given(volume_name=name_strings())
 @params_namespaces
 def test_get_empty_locks(client, namespace, volume_name):
     volume = '{}/volumes/{}'.format(namespace, volume_name, namespace)
@@ -455,6 +462,7 @@ def test_get_empty_locks(client, namespace, volume_name):
     assert get_result == []
 
 
+@given(volume_name=name_strings())
 @params_vol_ns_auth
 def test_lock_volume(client, namespace, auth, vol_exists, volume_name):
     volume, volume_exists, authorised = init_vols_from_params(client,
@@ -482,6 +490,7 @@ def test_lock_volume(client, namespace, auth, vol_exists, volume_name):
         assert put_code == 404
 
 
+@given(volume_name=name_strings())
 @params_vol_ns_auth
 def test_force_lock_on_volume(client, namespace,
                               auth, vol_exists, volume_name):
@@ -516,7 +525,7 @@ def test_force_lock_on_volume(client, namespace,
         assert len(get_result) == 0
 
 
-@params_volume_names
+@given(volume_name=name_strings())
 @params_namespaces
 def test_lock_locked_volume(client, namespace, volume_name):
     host1 = "dbhost1.cern.ch"
@@ -540,7 +549,7 @@ def test_lock_locked_volume(client, namespace, volume_name):
         assert put_code == 201
 
 
-@params_volume_names
+@given(volume_name=name_strings())
 @params_namespaces
 def test_lock_volume_idempotent(client, namespace, volume_name):
     host = "dbhost1.cern.ch"

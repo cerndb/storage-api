@@ -17,7 +17,7 @@ from .common.auth import authorizations
 
 log = init_logger()
 
-__version__ = '3.3.4'
+__version__ = '3.3.5'
 __major_version__ = __version__.split(".")[0]
 INTROSPECTION_MOUNTPOINT = "/conf"
 SAPI_MOUNTPOINT = "/v{}".format(__major_version__)
