@@ -11,7 +11,7 @@ Sphinx==1.7 # Updated from 1.6.3
 sphinxcontrib-napoleon==0.6.1
 betamax==0.8.0
 betamax-serializers==0.2.0
-Flask==0.12.2
+Flask==1.0
 flask-restplus==0.10.1
 Flask-OAuthlib==0.9.4
 flask-basicauth==0.2.0
