@@ -16,7 +16,7 @@ flask-restplus==0.10.1
 Flask-OAuthlib==0.9.4
 flask-basicauth==0.2.0
 OAuthlib==2.1.0
-requests==2.18.3
+requests==2.20.0
 requests-oauthlib==1.1.0
 ordered-set==2.0.2
 jsonschema==2.6.0
